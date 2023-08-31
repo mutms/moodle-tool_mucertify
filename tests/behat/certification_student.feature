@@ -90,9 +90,9 @@ Feature: Certification completion by students tests
     And I press "Assign users"
     And I set the following fields to these values:
       | Users                    | Student 1 |
+      | timewindowstart[day]     | 5         |
       | timewindowstart[month]   | 11        |
       | timewindowstart[year]    | 2022      |
-      | timewindowstart[day]     | 5         |
       | timewindowstart[hour]    | 09        |
       | timewindowstart[minute]  | 00        |
     And I press dialog form button "Assign users"

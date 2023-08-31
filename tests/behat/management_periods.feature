@@ -247,9 +247,9 @@ Feature: Certification periods settings management tests
     And I press "Assign users"
     And I set the following fields to these values:
       | Users                    | Student 1 |
+      | timewindowstart[day]     | 5         |
       | timewindowstart[month]   | 10        |
       | timewindowstart[year]    | 2022      |
-      | timewindowstart[day]     | 5         |
       | timewindowstart[hour]    | 09        |
       | timewindowstart[minute]  | 00        |
     And I press dialog form button "Assign users"
@@ -258,21 +258,21 @@ Feature: Certification periods settings management tests
     When I press "Add period"
     And I set the following fields to these values:
       | Program                  | Program 002 |
+      | timewindowstart[day]     | 5           |
       | timewindowstart[month]   | 10          |
       | timewindowstart[year]    | 2023        |
-      | timewindowstart[day]     | 5           |
       | timewindowstart[hour]    | 09          |
       | timewindowstart[minute]  | 00          |
       | timefrom[enabled]        | 1           |
+      | timefrom[day]            | 5           |
       | timefrom[month]          | 10          |
       | timefrom[year]           | 2023        |
-      | timefrom[day]            | 5           |
       | timefrom[hour]           | 09          |
       | timefrom[minute]         | 00          |
       | timeuntil[enabled]       | 1           |
+      | timeuntil[day]           | 5           |
       | timeuntil[month]         | 10          |
       | timeuntil[year]          | 2024        |
-      | timeuntil[day]           | 5           |
       | timeuntil[hour]          | 09          |
       | timeuntil[minute]        | 00          |
     And I press dialog form button "Add period"
