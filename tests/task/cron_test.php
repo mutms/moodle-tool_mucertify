@@ -34,6 +34,8 @@ final class cron_test extends \advanced_testcase {
 
     public function test_execute() {
         $task = new cron();
+        ob_start();
         $task->execute();
+        ob_end_clean();
     }
 }

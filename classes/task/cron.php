@@ -43,13 +43,23 @@ class cron extends \core\task\scheduled_task {
             return;
         }
 
+        $trace = new \text_progress_trace();
+
+        $trace->output('assignment::fix_assignment_sources');
         \tool_certify\local\assignment::fix_assignment_sources(null, null);
+
+        $trace->output('certify::sync_certifications');
         \enrol_programs\local\source\certify::sync_certifications(null, null);
 
+        $trace->output('notification_manager::trigger_notifications');
         \tool_certify\local\notification_manager::trigger_notifications(null, null);
 
+        $trace->output('period::process_recertifications');
         \tool_certify\local\period::process_recertifications(null, null);
 
+        $trace->output('certificate::cron');
         \tool_certify\local\certificate::cron();
+
+        $trace->finished();
     }
 }
