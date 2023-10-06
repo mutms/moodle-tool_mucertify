@@ -467,7 +467,9 @@ final class certificate_test extends \advanced_testcase {
             'timerevoked' => null,
         ];
         $period4 = period::override_dates((object)$dateoverrides);
+        ob_start();
         (new \tool_certify\task\cron())->execute();
+        ob_end_clean();
         $period2 = $DB->get_record('tool_certify_periods', ['id' => $period2->id], '*', MUST_EXIST);
         $period3 = $DB->get_record('tool_certify_periods', ['id' => $period3->id], '*', MUST_EXIST);
         $period4 = $DB->get_record('tool_certify_periods', ['id' => $period4->id], '*', MUST_EXIST);
