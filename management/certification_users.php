@@ -211,9 +211,7 @@ foreach ($assignments as $assignment) {
     username_load_fields_from_object($user, $assignment, 'user', $userfieldsapi::for_userpic()->get_required_fields());
     $userurl = new moodle_url('/admin/tool/certify/management/user_assignment.php', ['id' => $assignment->id]);
     $fullnametext = fullname($user);
-    $userpicture = $OUTPUT->user_picture($user, ['alttext' => $fullnametext]);
-    $fullname = html_writer::link($userurl, $fullnametext);
-    $row[] = $userpicture . $fullname;
+    $row[] = html_writer::link($userurl, $fullnametext);
 
     if ($assignment->timefrom) {
         $row[] = userdate($assignment->timefrom, $dateformat);
