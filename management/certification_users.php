@@ -159,7 +159,7 @@ switch ($status) {
         $statusselect = "AND (EXISTS (
            SELECT 1 
              FROM {tool_certify_periods} p3
-            WHERE p3.allocationid = a.id AND p3.timerevoked IS NULL
+            WHERE p3.certificationid = a.certificationid AND p3.userid = a.userid AND p3.timerevoked IS NULL
                   AND p3.timecertified IS NOT NULL AND p3.timefrom <= $now AND (p3.timeuntil IS NULL OR p3.timeuntil > $now)
            ) OR a.timecertifieduntil > $now) AND a.archived = 0 AND c.archived = 0";
         break;
@@ -173,10 +173,10 @@ switch ($status) {
 $sql = "SELECT a.*, s.type AS sourcetype, $userfields,
                (SELECT MIN(p1.timefrom)
                   FROM {tool_certify_periods} p1
-                 WHERE p1.allocationid = a.id AND p1.timerevoked IS NULL AND p1.timecertified IS NOT NULL) AS timefrom,
+                 WHERE p1.certificationid = a.certificationid AND p1.userid = a.userid AND p1.timerevoked IS NULL AND p1.timecertified IS NOT NULL) AS timefrom,
                (SELECT MIN(p2.timeuntil)
                   FROM {tool_certify_periods} p2
-                 WHERE p2.allocationid = a.id AND p2.timerevoked IS NULL AND p2.timecertified IS NOT NULL
+                 WHERE p2.certificationid = a.certificationid  AND p2.userid = a.userid AND p2.timerevoked IS NULL AND p2.timecertified IS NOT NULL
                        AND p2.timefrom <= $now AND (p2.timeuntil IS NULL OR p2.timeuntil > $now)) AS timeuntil
           FROM {tool_certify_assignments} a
           JOIN {tool_certify_certifications} c ON c.id = a.certificationid

@@ -96,6 +96,15 @@ Feature: Certification completion by students tests
       | timewindowstart[hour]    | 09        |
       | timewindowstart[minute]  | 00        |
     And I press dialog form button "Assign users"
+    And I press "Assign users"
+    And I set the following fields to these values:
+      | Users                    | Student 2 |
+      | timewindowstart[month]   | 11        |
+      | timewindowstart[year]    | 2022      |
+      | timewindowstart[day]     | 5         |
+      | timewindowstart[hour]    | 09        |
+      | timewindowstart[minute]  | 00        |
+    And I press dialog form button "Assign users"
     And I log out
 
     When I log in as "student1"
@@ -110,3 +119,14 @@ Feature: Certification completion by students tests
     And I am on My certifications page
     And I follow "Certification 001"
     Then I should see "Valid" in the "Certification status:" definition list item
+    And I log out
+
+    When I log in as "manager1"
+    And I am on all certifications management page
+    And I follow "Certification 001"
+    And I click on "Users" "link" in the "#region-main" "css_element"
+    And I set the following fields to these values:
+      | status                    | Valid |
+    Then the following should exist in the "certification_assignments" table:
+      | First name / Last name | Certification status     |
+      | Student 1              | Valid                    |
