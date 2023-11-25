@@ -29,28 +29,33 @@ function xmldb_tool_certify_upgrade($oldversion) {
 
     $dbman = $DB->get_manager();
 
-    if ($oldversion < 2023080601) {
-        // Define table message_popup_notifications to be created.
+    if ($oldversion < 2023112500) {
+
+        // Define table tool_certify_src_commholds to be created.
         $table = new xmldb_table('tool_certify_src_commholds');
 
-        // Adding fields to table message_popup_notifications.
-        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE);
-        $table->add_field('userid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL);
-        $table->add_field('quantity', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL);
-        $table->add_field('holdkey', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL);
-        $table->add_field('certificationid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL);
+        // Adding fields to table tool_certify_src_commholds.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('userid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('quantity', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('holdkey', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('certificationid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
 
-        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+        // Adding keys to table tool_certify_src_commholds.
+        $table->add_key('id', XMLDB_KEY_PRIMARY, ['id']);
         $table->add_key('userid', XMLDB_KEY_FOREIGN, ['userid'], 'user', ['id']);
-        $table->add_key('holdkey', XMLDB_KEY_FOREIGN, ['holdkey'], 'local_commerce_holdkeys', ['id']);
         $table->add_key('certificationid', XMLDB_KEY_FOREIGN, ['certificationid'], 'tool_certify_certifications', ['id']);
 
+        // Adding indexes to table tool_certify_src_commholds.
+        $table->add_index('holdkey', XMLDB_INDEX_NOTUNIQUE, ['holdkey']);
+
+        // Conditionally launch create table for tool_certify_src_commholds.
         if (!$dbman->table_exists($table)) {
             $dbman->create_table($table);
         }
 
-        // Popup savepoint reached.
-        upgrade_plugin_savepoint(true, 2023080601, 'tool', 'certify');
+        // Certify savepoint reached.
+        upgrade_plugin_savepoint(true, 2023112500, 'tool', 'certify');
     }
 
     return true;

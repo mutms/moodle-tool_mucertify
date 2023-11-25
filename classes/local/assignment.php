@@ -16,7 +16,6 @@
 
 namespace tool_certify\local;
 
-use tool_certify\local\source\ecommerce;
 use stdClass;
 
 /**
@@ -42,8 +41,8 @@ final class assignment {
             source\approval::get_type() => source\approval::class,
         ];
 
-        if (get_config('local_commerce', 'enablecommerce')) {
-            $types[ecommerce::get_type()] = ecommerce::class;
+        if (source\ecommerce::is_commerce_enabled()) {
+            $types[source\ecommerce::get_type()] = source\ecommerce::class;
         }
 
         return $types;

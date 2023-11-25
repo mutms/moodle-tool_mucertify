@@ -49,6 +49,10 @@ class benefithandler_test extends advanced_testcase {
         $CFG->enablecompletion = true;
         $this->resetAfterTest();
 
+        if (!\tool_certify\local\source\ecommerce::is_commerce_available()) {
+            $this->markTestSkipped('Commerce not available');
+        }
+
         \local_commerce\local\util::enable_commerce();
     }
 
@@ -189,7 +193,7 @@ class benefithandler_test extends advanced_testcase {
         static::assertTrue($handler->benefitcurrentlypossessed($enrolleduser->id));
 
         static::assertEquals(
-            [10, new moodle_url('/enrol/certifications/my/certification.php', ['id' => $certification->id])],
+            [10, new moodle_url('/admin/tool/certify/my/certification.php', ['id' => $certification->id])],
             $handler->getredirecturl(0)
         );
     }

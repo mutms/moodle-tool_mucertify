@@ -27,7 +27,7 @@ defined('MOODLE_INTERNAL') || die();
 
 /** @var stdClass $plugin */
 
-$plugin->version   = 2023080601;
+$plugin->version   = 2023112500;
 $plugin->requires  = 2022112802.00; // 4.1.2 (Build: 20230313)
 $plugin->component = 'tool_certify'; // Full name of the plugin (used for diagnostics)
 $plugin->release   = 'v2.2+';
