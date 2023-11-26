@@ -103,6 +103,16 @@ class provider implements
             'privacy:metadata:table:tool_certify_usr_snapshots'
         );
 
+        $collection->add_database_table(
+            'tool_certify_src_commholds',
+            [
+                'userid' => 'privacy:metadata:field:userid',
+                'quantity' => 'privacy:metadata:field:quantity',
+                'programid' => 'privacy:metadata:field:programid',
+            ],
+            'privacy:metadata:table:tool_certify_src_commholds'
+        );
+
         return $collection;
     }
 
