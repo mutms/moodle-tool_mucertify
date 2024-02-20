@@ -16,6 +16,7 @@
 
 namespace tool_certify\local\source;
 
+use enrol_programs\local\allocation;
 use tool_certify\local\assignment;
 
 use stdClass;

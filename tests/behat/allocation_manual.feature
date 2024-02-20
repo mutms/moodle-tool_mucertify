@@ -172,3 +172,52 @@ Feature: Manual certification assignment tests
       | Users | Tenant 1 Student |
     And I press dialog form button "Assign users"
     Then "Tenant 1 Student" row "Source" column of "certification_assignments" table should contain "Manual assignment"
+
+  @javascript @_file_upload
+  Scenario: Manager may assign users in bulk using csv to certification
+    Given I log in as "manager1"
+
+    And I am on all certifications management page
+    And I follow "Certification 000"
+    And I click on "Users" "link" in the "#region-main" "css_element"
+    Then I should not see "Upload assignments"
+    And I click on "Assignment settings" "link" in the "#region-main" "css_element"
+    And I click on "Update Manual assignment" "link"
+    And I set the following fields to these values:
+      | Active | Yes |
+    And I press dialog form button "Update"
+    And I click on "Users" "link" in the "#region-main" "css_element"
+    Then I should see "Upload assignments"
+    And I click on "Upload assignments" "button"
+    And I upload "admin/tool/certify/tests/fixtures/useruploadwithoutdates.csv" file to "CSV file" filemanager
+    And I press dialog form button "Continue"
+    Then I should see "User identification column"
+    And I should see "User mapping via"
+    When I press dialog form button "Upload assignments"
+    Then I should see "2 users were assigned to certification"
+    And I should see "1 errors detected when assigning certification"
+    And I should see "1 users were already assigned to certification"
+
+    And I am on all certifications management page
+    And I follow "Certification 001"
+    And I click on "Users" "link" in the "#region-main" "css_element"
+    And I click on "Assignment settings" "link" in the "#region-main" "css_element"
+    And I click on "Update Manual assignment" "link"
+    And I set the following fields to these values:
+      | Active | Yes |
+    And I press dialog form button "Update"
+    And I click on "Users" "link" in the "#region-main" "css_element"
+    Then I should see "Upload assignments"
+    And I click on "Upload assignments" "button"
+    And I upload "admin/tool/certify/tests/fixtures/useruploadwithdates.csv" file to "CSV file" filemanager
+    And I press dialog form button "Continue"
+    And I set the following fields to these values:
+     | Time window start | timewindowstart |
+     | Time window due   | timewindowdue   |
+     | Time window end   | timewindowend   |
+    When I press dialog form button "Upload assignments"
+    Then I should see "2 users were assigned to certification"
+    And I click on "Student 1" "link"
+    Then the following should exist in the "tool_certify_assignment_periods_table" table:
+      | Program     | Window opening     | Window closing    | Expiration  |
+      | Program 001 | 11/10/24, 00:00	 | 2/07/25, 00:00    | Never       |
