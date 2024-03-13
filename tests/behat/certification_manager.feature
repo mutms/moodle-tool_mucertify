@@ -104,7 +104,7 @@ Feature: Certification completion by managers tests
     And I click on "5/11/22" "link" in the "Program 001" "table_row"
     And I follow "Program 001"
 
-    When I click on "Edit" "link" in the "Program 001" "table_row"
+    When I click on "Override completion" "link" in the "Program 001" "table_row"
     And I set the following fields to these values:
       | timecompleted[enabled] | 1    |
     And I press dialog form button "Update"
