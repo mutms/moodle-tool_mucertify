@@ -16,10 +16,7 @@
 
 namespace tool_certify\local\source;
 
-use tool_certify\local\source\base;
 use stdClass;
-use tool_certify\local\assignment;
-use tool_certify\local\notification_manager;
 
 /**
  * Manual certification assignment.
@@ -188,64 +185,6 @@ final class manual extends base {
     }
 
     /**
-     * Stores csv file contents as normalised JSON file.
-     *
-     * NOTE: uploaded file is deleted and instead a new data.json file is stored.
-     *
-     * @param int $draftid
-     * @param array $filedata
-     * @return void
-     */
-    public static function store_uploaded_data(int $draftid, array $filedata): void {
-        global $USER;
-
-        $fs = get_file_storage();
-        $context = \context_user::instance($USER->id);
-
-        $fs->delete_area_files($context->id, 'tool_certify', 'upload', $draftid);
-
-        $content = json_encode($filedata, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-        $record = [
-            'contextid' => $context->id,
-            'component' => 'tool_certify',
-            'filearea' => 'upload',
-            'itemid' => $draftid,
-            'filepath' => '/',
-            'filename' => 'data.json',
-        ];
-
-        $fs->create_file_from_string($record, $content);
-    }
-
-    /**
-     * Returns preprocessed data.json user assignment file contents.
-     *
-     * @param int $draftid
-     * @return array|null
-     */
-    public static function get_uploaded_data(int $draftid): ?array {
-        global $USER;
-
-        if (!$draftid) {
-            return null;
-        }
-
-        $fs = get_file_storage();
-        $context = \context_user::instance($USER->id);
-
-        $file = $fs->get_file($context->id, 'tool_certify', 'upload', $draftid, '/', 'data.json');
-        if (!$file) {
-            return null;
-        }
-        $data = json_decode($file->get_content(), true);
-        if (!is_array($data)) {
-            return null;
-        }
-        $data = fix_utf8($data);
-        return $data;
-    }
-
-    /**
      * Returns preprocessed user assignment upload file contents.
      *
      * NOTE: data.json file is deleted.
@@ -286,7 +225,6 @@ final class manual extends base {
             }
         }
 
-        $userids = [];
         foreach ($filedata as $i => $row) {
             $userident = $row[$data->usercolumn];
             if (!$userident) {
@@ -319,16 +257,14 @@ final class manual extends base {
                 }
             }
 
-            if (!(self::assign_user($certification, $source, $user->id, [], $dateoverrides))) {
+            if (!self::assign_user($certification, $source, $user->id, [], $dateoverrides)) {
                 $result['errors']++;
                 continue;
             }
             \enrol_programs\local\source\certify::sync_certifications($certification->id, $user->id);
             \tool_certify\local\notification_manager::trigger_notifications($certification->id, $user->id);
-            $userids[] = $user->id;
+            $result['assigned']++;
         }
-
-        $result['assigned'] = count($userids);
 
         if (!empty($data->csvfile)) {
             $fs = get_file_storage();
@@ -338,26 +274,6 @@ final class manual extends base {
         }
 
         return $result;
-    }
-
-    /**
-     * Deletes old orphaned upload related data.
-     *
-     * @return void
-     */
-    public static function cleanup_uploaded_data(): void {
-        global $DB;
-
-        $fs = get_file_storage();
-        $sql = "SELECT contextid, itemid
-                  FROM {files}
-                 WHERE component = 'tool_certify' AND filearea = 'upload' AND filepath = '/' AND filename = '.'
-                       AND timecreated < :old";
-        $rs = $DB->get_recordset_sql($sql, ['old' => time() - 60*60*24*2]);
-        foreach ($rs as $dir) {
-            $fs->delete_area_files($dir->contextid, 'tool_certify', 'upload', $dir->itemid);
-        }
-        $rs->close();
     }
 }
 

@@ -60,7 +60,7 @@ management::setup_certification_page($currenturl, $context, $certification);
 
 $filedata = null;
 if ($draftitemid && confirm_sesskey()) {
-    $filedata = manual::get_uploaded_data($draftitemid);
+    $filedata = \tool_certify\local\util::get_uploaded_data($draftitemid);
 }
 
 if (!$filedata) {
@@ -94,10 +94,10 @@ if ($data = $form->get_data()) {
         $form->redirect_submitted($returnurl);
     }
     if (!$filedata && $form instanceof \tool_certify\local\form\source_manual_upload_file) {
-        $filedata = manual::get_uploaded_data($draftitemid);
+        $filedata = \tool_certify\local\util::get_uploaded_data($draftitemid);
         if ($filedata) {
             $form = new \tool_certify\local\form\source_manual_upload_options(null, ['certification' => $certification,
-                    'source' => $source, 'context' => $context, 'csvfile' => $draftitemid, 'filedata' => $filedata]);
+                'source' => $source, 'context' => $context, 'csvfile' => $draftitemid, 'filedata' => $filedata]);
         }
     }
 }

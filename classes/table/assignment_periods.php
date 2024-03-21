@@ -68,6 +68,7 @@ final class assignment_periods extends \table_sql {
 
         $columns = [
             'timewindowstart',
+            'timewindowdue',
             'timewindowend',
             'program',
             'timeuntil',
@@ -78,6 +79,7 @@ final class assignment_periods extends \table_sql {
         $columns[] = 'status';
         $headers = [
             get_string('windowstartdate', 'tool_certify'),
+            get_string('windowduedate', 'tool_certify'),
             get_string('windowenddate', 'tool_certify'),
             get_string('program', 'enrol_programs'),
             get_string('untildate', 'tool_certify'),
@@ -139,7 +141,17 @@ final class assignment_periods extends \table_sql {
     }
 
     /**
-     * Display the until date.
+     * Display the certification due date.
+     *
+     * @param stdClass $period
+     * @return string html used to display the plan name
+     */
+    public function col_timewindowdue(stdClass $period): string {
+        return period::get_windowdue_html($this->certification, $this->assignment, $period, true);
+    }
+
+    /**
+     * Display the window closing date.
      *
      * @param stdClass $period
      * @return string html used to display the plan name

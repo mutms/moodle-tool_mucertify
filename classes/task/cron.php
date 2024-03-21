@@ -60,6 +60,9 @@ class cron extends \core\task\scheduled_task {
         $trace->output('certificate::cron');
         \tool_certify\local\certificate::cron();
 
+        $trace->output('util::cleanup_uploaded_data');
+        \tool_certify\local\util::cleanup_uploaded_data();
+
         $trace->finished();
     }
 }

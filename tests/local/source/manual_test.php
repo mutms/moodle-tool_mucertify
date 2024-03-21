@@ -175,7 +175,7 @@ final class manual_test extends \advanced_testcase {
 
         $this->setUser($user1);
         $result = manual::get_management_certification_users_buttons($certification, $source);
-        $this->assertCount(1, $result);
+        $this->assertCount(2, $result);
 
         $certification->archived = '1';
         $result = manual::get_management_certification_users_buttons($certification, $source);
