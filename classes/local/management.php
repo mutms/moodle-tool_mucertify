@@ -141,7 +141,7 @@ final class management {
      * @param string $tablealias
      * @return array
      */
-    protected static function get_search_query(?\context $context, string $search, string $tablealias = ''): array {
+    public static function get_search_query(?\context $context, string $search, string $tablealias = ''): array {
         global $DB;
 
         if ($tablealias !== '' && substr($tablealias, -1) !== '.') {
