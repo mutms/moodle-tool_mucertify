@@ -16,8 +16,8 @@
 
 namespace tool_certify\external;
 
-use external_function_parameters;
-use external_value;
+use core_external\external_function_parameters;
+use core_external\external_value;
 
 /**
  * Provides list of program candidates for certification.

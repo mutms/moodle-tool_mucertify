@@ -125,9 +125,7 @@ final class form_source_manual_assign_users_test extends \advanced_testcase {
     }
 
     public function test_execution_tenant() {
-        global $DB, $CFG;
-        require_once("$CFG->dirroot/lib/externallib.php");
-
+        global $DB;
         if (!\tool_certify\local\tenant::is_available()) {
             $this->markTestSkipped('tenant support not available');
         }

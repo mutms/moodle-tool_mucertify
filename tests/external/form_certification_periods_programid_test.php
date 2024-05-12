@@ -25,13 +25,10 @@ namespace tool_certify\external;
  * @author     Petr Skoda
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
- * @runTestsInSeparateProcesses
  * @covers \tool_certify\external\form_certification_periods_programid
  */
 final class form_certification_periods_programid_test extends \advanced_testcase {
     public function setUp(): void {
-        global $CFG;
-        require_once("$CFG->dirroot/lib/externallib.php");
         $this->resetAfterTest();
     }
 
