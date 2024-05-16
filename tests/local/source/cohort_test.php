@@ -41,8 +41,13 @@ final class cohort_test extends \advanced_testcase {
     }
 
     public function test_is_new_allowed() {
-        $certification = new \stdClass();
-        $this->assertSame(true, cohort::is_new_allowed($certification));
+        /** @var \tool_certify_generator $generator */
+        $generator = $this->getDataGenerator()->get_plugin_generator('tool_certify');
+        $certification = $generator->create_certification();
+
+        $this->assertTrue(cohort::is_new_allowed($certification));
+        set_config('source_cohort_allownew', 0, 'tool_certify');
+        $this->assertFalse(cohort::is_new_allowed($certification));
     }
 
     public function test_is_update_allowed() {

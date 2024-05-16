@@ -42,6 +42,7 @@ final class ecommerce_test extends \advanced_testcase {
         }
 
         \local_commerce\local\util::enable_commerce();
+        set_config('source_ecommerce_allownew', 1, 'tool_certify');
     }
 
     public function test_get_type() {
@@ -54,6 +55,8 @@ final class ecommerce_test extends \advanced_testcase {
         $certification = $generator->create_certification();
 
         $this->assertTrue(ecommerce::is_new_allowed($certification));
+        set_config('source_ecommerce_allownew', 0, 'tool_certify');
+        $this->assertFalse(ecommerce::is_new_allowed($certification));
 
         \local_commerce\local\util::disable_commerce();
         $this->assertFalse(ecommerce::is_new_allowed($certification));

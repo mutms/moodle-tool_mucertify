@@ -20,18 +20,23 @@ Feature: Certifications navigation behat steps test
       | viewer1  | Viewer    | 1        | viewer1@example.com  |
       | viewer2  | Viewer    | 2        | viewer2@example.com  |
       | student1 | Student   | 1        | student1@example.com |
+      | admin1   | Admin     | 1        | admin1@example.com   |
     And the following "roles" exist:
       | name           | shortname |
       | Certification viewer | pviewer   |
+      | Program admin        | cadmin    |
     And the following "permission overrides" exist:
       | capability                   | permission | role    | contextlevel | reference |
       | tool/certify:view            | Allow      | pviewer | System       |           |
+      | tool/certify:admin           | Allow      | cadmin  | System       |           |
+      | moodle/site:configview       | Allow      | cadmin  | System       |           |
     And the following "role assigns" exist:
       | user     | role          | contextlevel | reference |
       | manager1 | manager       | System       |           |
       | manager2 | manager       | Category     | CAT1      |
       | viewer1  | pviewer       | System       |           |
       | viewer2  | pviewer       | Category     | CAT1      |
+      | admin1   | cadmin        | System       |           |
     And the following "tool_certify > certifications" exist:
       | fullname    | idnumber | category | public | archived |
       | Certification 000 | PR0      |          | 0      | 0        |
@@ -317,3 +322,35 @@ Feature: Certifications navigation behat steps test
     When I select "My certifications" from primary navigation
     Then I should see "My certifications"
     And I should see "No assigned certifications found."
+
+  @javascript
+  Scenario: Certification admin or site config capabilities are needed to see certification settings
+    Given the following "permission overrides" exist:
+      | capability                    | permission | role         | contextlevel | reference |
+      | moodle/site:config            | Allow      | manager      | System       |           |
+
+    When I log in as "admin1"
+    And I navigate to "Certifications > Certification settings" in site administration
+    Then I should see "Allow cohort allocation"
+    And I log out
+
+    When I log in as "manager1"
+    And I navigate to "Certifications > Certification settings" in site administration
+    Then I should see "Allow cohort allocation"
+    And I log out
+
+    When I log in as "admin"
+    And I am on all certifications management page
+    And I follow "Certification 000"
+    And I click on "Assignment settings" "link" in the "#region-main" "css_element"
+    Then I should see "Requests with approval:"
+    Then I navigate to "Certifications > Certification settings" in site administration
+    Then I should see "Allow cohort allocation"
+    And I set the following fields to these values:
+      | Allow approvals              |  0  |
+    And I press "Save changes"
+    Then I am on all certifications management page
+    And I follow "Certification 000"
+    And I click on "Assignment settings" "link" in the "#region-main" "css_element"
+    Then I should not see "Requests with approval:"
+    And I log out

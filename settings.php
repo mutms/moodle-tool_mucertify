@@ -35,6 +35,28 @@ if (enrol_is_enabled('programs')) {
         new lang_string('management', 'tool_certify'),
         new moodle_url("/admin/tool/certify/management/index.php"),
         'tool/certify:view'));
+
+    $settings = new admin_settingpage('certificationssettings',
+        new lang_string('settings', 'tool_certify'),
+        ['moodle/site:config', 'tool/certify:admin']);
+    $ADMIN->add('certifications', $settings);
+
+    $settings->add(new admin_setting_configcheckbox('tool_certify/source_approval_allownew',
+        new lang_string('source_approval_allownew', 'tool_certify'),
+        new lang_string('source_approval_allownew_desc', 'tool_certify'), 1));
+    $settings->add(new admin_setting_configcheckbox('tool_certify/source_cohort_allownew',
+        new lang_string('source_cohort_allownew', 'tool_certify'),
+        new lang_string('source_cohort_allownew_desc', 'tool_certify'), 1));
+    $settings->add(new admin_setting_configcheckbox('tool_certify/source_selfassignment_allownew',
+        new lang_string('source_selfassignment_allownew', 'tool_certify'),
+        new lang_string('source_selfassignment_allownew_desc', 'tool_certify'), 1));
+
+    if (\tool_certify\local\source\ecommerce::is_commerce_enabled()) {
+        $settings->add(new admin_setting_configcheckbox('tool_certify/source_ecommerce_allownew',
+            new lang_string('source_ecommerce_allownew', 'tool_certify'),
+            new lang_string('source_ecommerce_allownew_desc', 'tool_certify'), 0));
+    }
+
 }
 
 // Do not use enrol plugin settings, create a top level management section.

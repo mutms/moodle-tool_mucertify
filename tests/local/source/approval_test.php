@@ -16,6 +16,7 @@
 
 namespace tool_certify\local\source;
 
+use tool_certify\local\source\approval;
 use tool_certify\local\certification;
 
 /**
@@ -240,5 +241,15 @@ final class approval_test extends \advanced_testcase {
         $this->setUser($user2);
         approval::delete_request($request->id);
         $this->assertTrue(approval::can_user_request($certification1, $source1a, $user1->id));
+    }
+
+    public function test_is_new_allowed() {
+        /** @var \tool_certify_generator $generator */
+        $generator = $this->getDataGenerator()->get_plugin_generator('tool_certify');
+        $certification = $generator->create_certification();
+
+        $this->assertTrue(approval::is_new_allowed($certification));
+        set_config('source_approval_allownew', 0, 'tool_certify');
+        $this->assertFalse(approval::is_new_allowed($certification));
     }
 }

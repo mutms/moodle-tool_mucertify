@@ -60,7 +60,8 @@ abstract class base {
      * @return bool
      */
     public static function is_new_allowed(stdClass $certification): bool {
-        return true;
+        $type = static::get_type();
+        return (bool)get_config('tool_certify', 'source_' . $type . '_allownew');
     }
 
     /**

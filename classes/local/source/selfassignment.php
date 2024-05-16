@@ -39,16 +39,6 @@ final class selfassignment extends base {
     }
 
     /**
-     * Always allow enabling in certification.
-     *
-     * @param stdClass $certification
-     * @return bool
-     */
-    public static function is_new_allowed(stdClass $certification): bool {
-        return true;
-    }
-
-    /**
      * Is it possible to manually edit user assignment?
      *
      * @param stdClass $certification

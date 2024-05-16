@@ -44,6 +44,8 @@ final class selfassignment_test extends \advanced_testcase {
         $certification = $generator->create_certification();
 
         $this->assertTrue(selfassignment::is_new_allowed($certification));
+        set_config('source_selfassignment_allownew', 0, 'tool_certify');
+        $this->assertFalse(selfassignment::is_new_allowed($certification));
     }
 
     public function test_can_user_request() {
