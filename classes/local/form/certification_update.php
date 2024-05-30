@@ -59,9 +59,24 @@ final class certification_update extends \local_openlms\dialog_form {
         $mform->addElement('hidden', 'id');
         $mform->setType('id', PARAM_INT);
 
+        // Add custom fields to the form.
+        $handler = \tool_certify\customfield\fields_handler::create();
+        $handler->instance_form_definition($mform, $data->id);
+
         $this->add_action_buttons(true, get_string('updatecertification', 'tool_certify'));
 
+        // Prepare custom fields data.
+        $handler->instance_form_before_set_data($data);
+
         $this->set_data($data);
+    }
+
+    public function definition_after_data() {
+        parent::definition_after_data();
+        $data = $this->_customdata['data'];
+        $mform = $this->_form;
+        $handler  = \tool_certify\customfield\fields_handler::create();
+        $handler->instance_form_definition_after_data($mform, $data->id);
     }
 
     public function validation($data, $files) {
@@ -99,6 +114,9 @@ final class certification_update extends \local_openlms\dialog_form {
                 $errors['contextid'] = get_string('error');
             }
         }
+        // Add the custom fields validation.
+        $handler = \tool_certify\customfield\fields_handler::create();
+        $errors  = array_merge($errors, $handler->instance_form_validation($data, $files));
 
         return $errors;
     }

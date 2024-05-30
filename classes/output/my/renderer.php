@@ -72,7 +72,7 @@ EOT;
     }
 
     public function render_user_assignment(stdClass $certification, stdClass $assignment): string {
-        global $DB;
+        global $DB, $PAGE;
 
         $result = '';
 
@@ -94,6 +94,9 @@ EOT;
             $result .= '<dt class="col-3">' . get_string('certifieduntiltemporary', 'tool_certify') . ':</dt><dd class="col-9">'
                 . userdate($assignment->timecertifieduntil) . '</dd>';
         }
+        $customfieldoutput = $PAGE->get_renderer('tool_certify', 'customfield');
+        $result .= $customfieldoutput->render_customfields($certification->id);
+
         $result .= '</dl>';
 
         return $result;

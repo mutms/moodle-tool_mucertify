@@ -153,6 +153,11 @@ final class certification {
 
         $certification = self::make_snapshot($data->id, 'add');
 
+        // Save custom fields if there are any of them in the form.
+        $handler = \tool_certify\customfield\fields_handler::create();
+        $data->id = $certification->id;
+        $handler->instance_form_save($data);
+
         $trans->allow_commit();
 
         $event = \tool_certify\event\certification_created::create_from_certification($certification);
@@ -241,6 +246,10 @@ final class certification {
         $certification = self::update_certification_image($data);
 
         $certification = self::make_snapshot($certification->id, 'update_general');
+
+        // Save custom fields if there are any of them in the form.
+        $handler = \tool_certify\customfield\fields_handler::create();
+        $handler->instance_form_save($data);
 
         $trans->allow_commit();
 
@@ -583,6 +592,9 @@ final class certification {
         $DB->delete_records('tool_certify_certifications', ['id' => $certification->id]);
 
         self::make_snapshot($certification->id, 'delete');
+
+        $handler = \tool_certify\customfield\fields_handler::create();
+        $handler->delete_instance($certification->id);
 
         $trans->allow_commit();
 

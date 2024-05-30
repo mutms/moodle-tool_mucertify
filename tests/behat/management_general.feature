@@ -13,11 +13,15 @@ Feature: General certification management tests
       | username | firstname | lastname | email                |
       | manager1 | Manager   | 1        | manager1@example.com |
       | manager2 | Manager   | 2        | manager2@example.com |
+      | manager3 | Manager   | 3        | manager3@example.com |
       | viewer1  | Viewer    | 1        | viewer1@example.com  |
+      | editor1  | Editor    | 1        | editor1@example.com  |
     And the following "roles" exist:
       | name                  | shortname |
       | Certification viewer  | pviewer   |
       | Certification manager | pmanager  |
+      | Certification editor  | ceditor   |
+      | Custom fields manager | cfmanager |
     And the following "permission overrides" exist:
       | capability                   | permission | role     | contextlevel | reference |
       | tool/certify:view            | Allow      | pviewer  | System       |           |
@@ -25,12 +29,19 @@ Feature: General certification management tests
       | tool/certify:edit            | Allow      | pmanager | System       |           |
       | tool/certify:delete          | Allow      | pmanager | System       |           |
       | tool/certify:assign          | Allow      | pmanager | System       |           |
+      | tool/certify:edit            | Allow      | ceditor  | System       |           |
+      | tool/certify:view            | Allow      | ceditor  | System       |           |
+      | tool/certify:admin           | Allow      | ceditor  | System       |           |
+      | moodle/site:configview       | Allow      | cfmanager| System       |           |
+      | tool/certify:configurecustomfields    | Allow      | cfmanager| System       |           |
     And the following "role assigns" exist:
       | user      | role          | contextlevel | reference |
       | manager1  | pmanager      | System       |           |
       | manager2  | pmanager      | Category     | CAT2      |
       | manager2  | pmanager      | Category     | CAT3      |
+      | manager3  | cfmanager     | System       |           |
       | viewer1   | pviewer       | System       |           |
+      | editor1   | ceditor       | System       |           |
 
   @javascript
   Scenario: Manager may create a new certification with required settings
@@ -134,3 +145,28 @@ Feature: General certification management tests
     And I should see "No" in the "Archived:" definition list item
     And I should see "Mathematics" in the "Tags:" definition list item
     And I should see "Algebra" in the "Tags:" definition list item
+
+  @javascript
+  Scenario: Set up and edit custom fields of certifications
+    Given I log in as "manager3"
+    And I navigate to "Certifications > Certification custom fields" in site administration
+    And I press "Add a new category"
+    And I click on "Add a new custom field" "link"
+    And I click on "Short text" "link"
+    And I set the following fields to these values:
+      | Name                                     | Test field |
+      | Short name                               | testfield  |
+      | Users with view certification capability | 1          |
+    And I click on "Save changes" "button" in the "Adding a new Short text" "dialogue"
+    Then the following should exist in the "generaltable" table:
+      | Custom field | Short name | Type       |
+      | Test field   | testfield  | Short text |
+    When I log in as "editor1"
+    And I am on all certifications management page
+    And I press "Add certification"
+    And I expand all fieldsets
+    And I set the following fields to these values:
+      | Certification name | Certification 002 |
+      | ID number          | CT02              |
+      | Test field         | Test value        |
+    And I press dialog form button "Add certification"

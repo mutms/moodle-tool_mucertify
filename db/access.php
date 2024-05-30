@@ -92,6 +92,14 @@ $capabilities = [
         'archetypes' => [
         ],
     ],
+    'tool/certify:configurecustomfields' => [
+        'riskbitmask' => RISK_CONFIG | RISK_DATALOSS,
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+            'manager' => CAP_ALLOW,
+        ],
+    ],
 ];
 
 // Compatibility hacks for vanilla Moodle.

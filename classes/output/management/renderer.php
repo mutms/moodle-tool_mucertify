@@ -34,7 +34,7 @@ use stdClass, moodle_url, tabobject, html_writer;
  */
 class renderer extends \plugin_renderer_base {
     public function render_certification_general(stdClass $certification): string {
-        global $CFG;
+        global $CFG, $PAGE;
 
         $context = \context::instance_by_id($certification->contextid);
 
@@ -68,7 +68,9 @@ class renderer extends \plugin_renderer_base {
         }
         $result .= '<dt class="col-3">' . get_string('description') . ':</dt><dd class="col-9">' . $description . '</dd>';
         $result .= '<dt class="col-3">' . get_string('archived', 'tool_certify') . ':</dt><dd class="col-9">'
-            . ($certification->archived ? get_string('yes') : get_string('no')) . '<br />';
+            . ($certification->archived ? get_string('yes') : get_string('no')) . '</dd>';
+        $customfieldoutput = $PAGE->get_renderer('tool_certify', 'customfield');
+        $result .= $customfieldoutput->render_customfields($certification->id);
         $result .= '</dl>';
 
         return $result;

@@ -57,6 +57,11 @@ if (enrol_is_enabled('programs')) {
             new lang_string('source_ecommerce_allownew_desc', 'tool_certify'), 0));
     }
 
+    $ADMIN->add('certifications', new admin_externalpage('certification_customfield',
+        new lang_string('customfields', 'tool_certify'),
+        new moodle_url("/admin/tool/certify/customfield.php"),
+        'tool/certify:configurecustomfields'));
+
 }
 
 // Do not use enrol plugin settings, create a top level management section.

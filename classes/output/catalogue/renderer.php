@@ -28,7 +28,7 @@ use stdClass;
  */
 class renderer extends \plugin_renderer_base {
     public function render_certification(\stdClass $certification): string {
-        global $CFG, $DB;
+        global $CFG, $DB, $PAGE;
 
         $context = \context::instance_by_id($certification->contextid);
         $fullname = format_string($certification->fullname);
@@ -70,6 +70,8 @@ EOT;
         $result .= '<dl class="row">';
         $result .= '<dt class="col-3">' . get_string('certificationstatus', 'tool_certify') . ':</dt><dd class="col-9">'
             . get_string('errornoassignment', 'tool_certify') . '</dd>';
+        $customfieldoutput = $PAGE->get_renderer('tool_certify', 'customfield');
+        $result .= $customfieldoutput->render_customfields($certification->id);
         $result .= '</dl>';
 
         $actions = [];

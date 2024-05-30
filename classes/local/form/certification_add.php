@@ -53,9 +53,21 @@ final class certification_add extends \local_openlms\dialog_form {
         $mform->addElement('editor', 'description_editor', get_string('description'), ['rows' => 5], $editoroptions);
         $mform->setType('description_editor', PARAM_RAW);
 
-        $this->add_action_buttons(true, get_string('addcertification', 'tool_certify'));
+        // Add custom fields to the form.
+        $handler = \tool_certify\customfield\fields_handler::create();
+        $handler->instance_form_definition($mform);
 
+        $this->add_action_buttons(true, get_string('addcertification', 'tool_certify'));
+        // Prepare custom fields data.
+        $handler->instance_form_before_set_data($data);
         $this->set_data($data);
+    }
+
+    public function definition_after_data() {
+        parent::definition_after_data();
+        $mform = $this->_form;
+        $handler  = \tool_certify\customfield\fields_handler::create();
+        $handler->instance_form_definition_after_data($mform, 0);
     }
 
     public function validation($data, $files) {
@@ -86,6 +98,9 @@ final class certification_add extends \local_openlms\dialog_form {
             // There is a problem in category caching it seems.
             $errors['contextid'] = get_string('error');
         }
+        // Add the custom fields validation.
+        $handler = \tool_certify\customfield\fields_handler::create();
+        $errors  = array_merge($errors, $handler->instance_form_validation($data, $files));
 
         return $errors;
     }
