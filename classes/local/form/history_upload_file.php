@@ -16,24 +16,23 @@
 
 namespace tool_certify\local\form;
 
-use tool_certify\local\source\manual;
+use tool_certify\local\util;
 
 /**
- * Assign users via file upload.
+ * Import certification history via file upload.
  *
  * @package    tool_certify
  * @copyright  2024 Open LMS (https://www.openlms.net/)
  * @author     Farhan Karmali
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-final class source_manual_upload_file extends \local_openlms\dialog_form {
+final class history_upload_file extends \local_openlms\dialog_form {
     protected function definition() {
         global $CFG;
         require_once($CFG->dirroot . '/lib/csvlib.class.php');
 
         $mform = $this->_form;
         $certification = $this->_customdata['certification'];
-        $source = $this->_customdata['source'];
         $context = $this->_customdata['context'];
 
         $mform->addElement('filepicker', 'csvfile', get_string('upload_csvfile', 'tool_certify'));
@@ -53,9 +52,9 @@ final class source_manual_upload_file extends \local_openlms\dialog_form {
         $mform->addElement('select', 'encoding', get_string('encoding', 'tool_uploaduser'), $choices);
         $mform->setDefault('encoding', 'UTF-8');
 
-        $mform->addElement('hidden', 'sourceid');
-        $mform->setType('sourceid', PARAM_INT);
-        $mform->setDefault('sourceid', $source->id);
+        $mform->addElement('hidden', 'certificationid');
+        $mform->setType('certificationid', PARAM_INT);
+        $mform->setDefault('certificationid', $certification->id);
 
         $this->add_action_buttons(true, get_string('continue'));
     }
@@ -121,7 +120,7 @@ final class source_manual_upload_file extends \local_openlms\dialog_form {
 
         $cir->cleanup(true);
 
-        \tool_certify\local\util::store_uploaded_data($data['csvfile'], $filedata);
+        util::store_uploaded_data($data['csvfile'], $filedata);
 
         return $errors;
     }

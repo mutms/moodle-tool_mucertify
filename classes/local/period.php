@@ -208,7 +208,7 @@ final class period {
      * Add period.
      *
      * @param stdClass $data
-     * @return stdClass assignment record
+     * @return stdClass period record
      */
     public static function add(stdClass $data): stdClass {
         global $DB;
@@ -229,6 +229,7 @@ final class period {
             $user = $DB->get_record('user', ['id' => $data->userid, 'deleted' => 0], '*', MUST_EXIST);
             $assignment = $DB->get_record('tool_certify_assignments', ['certificationid' => $certification->id, 'userid' => $user->id]);
             if (!$assignment) {
+                // This should not happen with current UI.
                 $assignment = null;
             }
             $userid = $user->id;
@@ -271,7 +272,7 @@ final class period {
                 ['certificationid' => $certification->id, 'userid' => $user->id, 'timerevoked' => null])
             ) {
                 $record->first = 1;
-                $record->recertifiable = 1; // Ignore if it is actually enabled in settings, they might enable it later.
+                $record->recertifiable = 1; // Ignored if recertification disabled in settings, they might enable it later.
             } else if ($DB->record_exists('tool_certify_periods',
                 ['certificationid' => $certification->id, 'userid' => $user->id, 'recertifiable' => 1])
             ) {
@@ -300,7 +301,13 @@ final class period {
             throw new \invalid_parameter_exception('timefrom required');
         }
 
-        $record->evidencejson = \tool_certify\local\util::json_encode([]);
+        $evidence = [];
+        if (isset($record->timecertified) || isset($record->timerevoked)) {
+            if (isset($data->evidencedetails) && trim($data->evidencedetails) !== '') {
+                $evidence['details'] = $data->evidencedetails;
+            }
+        }
+        $record->evidencejson = \tool_certify\local\util::json_encode((object)$evidence);
 
         $trans = $DB->start_delegated_transaction();
 
@@ -369,6 +376,9 @@ final class period {
 
         if (isset($dateoverrides['timecertified'])) {
             $data->timecertified = $dateoverrides['timecertified'];
+            if (isset($dateoverrides['evidencedetails'])) {
+                $data->evidencedetails = $dateoverrides['evidencedetails'];
+            }
         }
 
         return self::add($data);
@@ -417,6 +427,20 @@ final class period {
         if ($record->timecertified && !$record->timefrom) {
             throw new \invalid_parameter_exception('timefrom required');
         }
+
+        if (!isset($record->timecertified) && !isset($record->timerevoked)) {
+            $evidence = [];
+        } else {
+            $evidence = (array)json_decode($record->evidencejson);
+            if (property_exists($data, 'evidencedetails')) {
+                if ($data->evidencedetails === null || trim ($data->evidencedetails) === '') {
+                    unset($evidence['details']);
+                } else {
+                    $evidence['details'] = $data->evidencedetails;
+                }
+            }
+        }
+        $record->evidencejson = \tool_certify\local\util::json_encode((object)$evidence);
 
         $trans = $DB->start_delegated_transaction();
 
@@ -820,5 +844,128 @@ final class period {
             }
             $trans->allow_commit();
         }
+    }
+
+    /**
+     * Process certification history upload.
+     *
+     * @param stdClass $data
+     * @param array $filedata
+     * @return array processing stats
+     */
+    public static function process_history_upload(stdClass $data, array $filedata): array {
+        global $DB;
+
+        $certification = $DB->get_record('tool_certify_certifications', ['id' => $data->certificationid, 'archived' => 0], '*', MUST_EXIST);
+        $source = $DB->get_record('tool_certify_sources', ['certificationid' => $certification->id, 'type' => 'manual']);
+
+        if (!in_array($data->usermapping, ['username', 'idnumber', 'email'], true)) {
+            throw new \invalid_parameter_exception('invalid usermapping');
+        }
+        $userfield = $data->usermapping;
+        $evidencedefault = $data->evidencedefault ?? '';
+
+        $assign = $data->assign || 0;
+        $skipassigned = $data->skipassigned || 0;
+
+        if ($data->hasheaders) {
+            unset($filedata[0]);
+        }
+
+        $result = [
+            'assigned' => 0,
+            'periods' => 0,
+            'skipped' => 0,
+            'errors' => 0,
+        ];
+        foreach ($filedata as $row) {
+            $users = $DB->get_records('user', [$userfield => $row[$data->usercolumn], 'deleted' => 0, 'confirmed' => 1]);
+            if (count($users) !== 1) {
+                $result['errors']++;
+                continue;
+            }
+            $user = reset($users);
+            if (isguestuser($user)) {
+                $result['errors']++;
+                continue;
+            }
+            $timefrom = $row[$data->timefromcolumn];
+            $timeuntil = $row[$data->timeuntilcolumn];
+            $timecertified = $row[$data->timecertifiedcolumn];
+            if (!$timefrom || !$timeuntil || !$timecertified) {
+                $result['errors']++;
+                continue;
+            }
+            $timefrom = strtotime($timefrom);
+            $timeuntil = strtotime($timeuntil);
+            $timecertified = strtotime($timecertified);
+            if ($timefrom > time() || $timecertified > time()) {
+                $result['errors']++;
+                continue;
+            }
+            if (!$timefrom || !$timeuntil || !$timecertified) {
+                $result['errors']++;
+                continue;
+            }
+            if ($timefrom >= $timeuntil || $timeuntil <= $timecertified) {
+                $result['errors']++;
+                continue;
+            }
+
+            if ($DB->record_exists('tool_certify_periods', [
+                'certificationid' => $certification->id, 'userid' => $user->id, 'timerevoked' => null,
+                'timefrom' => $timefrom, 'timeuntil' => $timeuntil,
+            ])) {
+                // Ignore duplicates.
+                $result['skipped']++;
+                continue;
+            }
+
+            $prevertrecertification = false;
+            $assignment = $DB->get_record('tool_certify_assignments', ['certificationid' => $certification->id, 'userid' => $user->id]);
+            if ($assignment) {
+                if ($assign && $skipassigned) {
+                    $result['skipped']++;
+                    continue;
+                }
+            } else {
+                if (!$assign) {
+                    $result['skipped']++;
+                    continue;
+                }
+                if (!$source) {
+                    $result['skipped']++;
+                    continue;
+                }
+                \tool_certify\local\source\manual::assign_users($certification->id, $source->id, [$user->id], ['noperiod' => 1]);
+                $result['assigned']++;
+                // New periods are created as non-recertifiable.
+                $prevertrecertification = true;
+            }
+            $evidence = '';
+            if ($data->evidencecolumn !== '' && isset($row[$data->evidencecolumn])) {
+                $evidence = $row[$data->evidencecolumn];
+            }
+            if (trim($evidence) === '') {
+                $evidence = $evidencedefault;
+            }
+
+            $period = self::add((object)[
+                'certificationid' => $certification->id,
+                'userid' => $user->id,
+                'programid' => null,
+                'timecertified' => $timecertified,
+                'timewindowstart' => $timefrom,
+                'timefrom' => $timefrom,
+                'timeuntil' => $timeuntil,
+                'evidencedetails' => $evidence,
+            ]);
+            $result['periods']++;
+            if ($prevertrecertification) {
+                period::update_recertifiable($period, true);
+            }
+        }
+
+        return $result;
     }
 }

@@ -20,13 +20,3 @@
 .certifications .certificationbox.even {
     background-color: rgba(0, 0, 0, 0.03);
 }
-
-#page-tool-certify-management-certification_users .asssignment-filtering .simplesearchform,
-#page-admin-tool-certify-management-certification_users .asssignment-filtering .simplesearchform {
-    float: left;
-}
-
-#page-tool-certify-management-certification_users .asssignment-filtering .singleselect,
-#page-admin-tool-certify-management-certification_users .asssignment-filtering .singleselect {
-    float: right;
-}

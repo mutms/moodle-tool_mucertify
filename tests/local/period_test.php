@@ -288,6 +288,7 @@ final class period_test extends \advanced_testcase {
             'assignmentid' => $assignment->id,
             'programid' => $program1->id,
             'timewindowstart' => (string)($now - 10),
+            'evidencedetails' => 'should be ignored',
         ];
         $period1 = period::add((object)$data);
         $this->assertSame($certification->id, $period1->certificationid);
@@ -301,7 +302,7 @@ final class period_test extends \advanced_testcase {
         $this->assertSame(null, $period1->timefrom);
         $this->assertSame(null, $period1->timeuntil);
         $this->assertSame(null, $period1->timerevoked);
-        $this->assertSame('[]', $period1->evidencejson);
+        $this->assertSame('{}', $period1->evidencejson);
         $this->assertSame('1', $period1->first);
         $this->assertSame('1', $period1->recertifiable);
 
@@ -313,6 +314,7 @@ final class period_test extends \advanced_testcase {
             'timewindowdue' => (string)($now + 2000),
             'timewindowend' => (string)($now + 3000),
             'timecertified' => (string)$now,
+            'evidencedetails' => 'done elsewhere',
             'timefrom' => (string)($now + 1000),
             'timeuntil' => (string)($now + 5000),
         ];
@@ -329,7 +331,7 @@ final class period_test extends \advanced_testcase {
         $this->assertSame($data['timefrom'], $period2->timefrom);
         $this->assertSame($data['timeuntil'], $period2->timeuntil);
         $this->assertSame(null, $period2->timerevoked);
-        $this->assertSame('[]', $period2->evidencejson);
+        $this->assertSame(json_encode(['details' => $data['evidencedetails']]), $period2->evidencejson);
         $this->assertSame('0', $period2->first);
         $this->assertSame('1', $period2->recertifiable);
         $this->assertSame('1', $period1->first);
@@ -354,7 +356,7 @@ final class period_test extends \advanced_testcase {
         $this->assertSame(null, $period3->timefrom);
         $this->assertSame(null, $period3->timeuntil);
         $this->assertSame(null, $period3->timerevoked);
-        $this->assertSame('[]', $period3->evidencejson);
+        $this->assertSame('{}', $period3->evidencejson);
         $this->assertSame('1', $period3->first);
         $this->assertSame('0', $period3->recertifiable);
         $this->assertSame('0', $period2->first);
@@ -368,6 +370,7 @@ final class period_test extends \advanced_testcase {
             'programid' => $program1->id,
             'timewindowstart' => (string)($now + 90000),
             'timerevoked' => (string)$now,
+            'evidencedetails' => 'bad luck',
         ];
         $period4 = period::add((object)$data);
         $period3 = $DB->get_record('tool_certify_periods', ['id' => $period3->id], '*', MUST_EXIST);
@@ -384,7 +387,7 @@ final class period_test extends \advanced_testcase {
         $this->assertSame(null, $period4->timefrom);
         $this->assertSame(null, $period4->timeuntil);
         $this->assertSame($data['timerevoked'], $period4->timerevoked);
-        $this->assertSame('[]', $period4->evidencejson);
+        $this->assertSame(json_encode(['details' => $data['evidencedetails']]), $period4->evidencejson);
         $this->assertSame('0', $period4->first);
         $this->assertSame('0', $period4->recertifiable);
         $this->assertSame('1', $period3->first);
@@ -412,7 +415,7 @@ final class period_test extends \advanced_testcase {
         $this->assertSame(null, $period5->timefrom);
         $this->assertSame(null, $period5->timeuntil);
         $this->assertSame(null, $period5->timerevoked);
-        $this->assertSame('[]', $period5->evidencejson);
+        $this->assertSame('{}', $period5->evidencejson);
         $this->assertSame('1', $period5->first);
         $this->assertSame('1', $period5->recertifiable);
 
@@ -495,6 +498,61 @@ final class period_test extends \advanced_testcase {
             $this->assertInstanceOf(\invalid_parameter_exception::class, $ex);
             $this->assertSame('Invalid parameter value detected (timefrom required)', $ex->getMessage());
         }
+
+        // Import of historic periods.
+        $user3 = $this->getDataGenerator()->create_user();
+        manual::assign_users($certification->id, $source->id, [$user3->id], ['noperiod' => true]);
+        $assignment = $DB->get_record('tool_certify_assignments',
+            ['userid' => $user3->id, 'certificationid' => $certification->id], '*', MUST_EXIST);
+        $data = [
+            'certificationid' => $certification->id,
+            'userid' => $user3->id,
+            'programid' => null,
+            'timecertified' => (string)(new \DateTime('2019-01-01'))->getTimestamp(),
+            'timewindowstart' => (string)(new \DateTime('2019-01-01'))->getTimestamp(),
+            'timefrom' => (string)(new \DateTime('2019-01-01'))->getTimestamp(),
+            'timeuntil' => (string)(new \DateTime('2019-3-31'))->getTimestamp(),
+        ];
+        $period31 = period::add((object)$data);
+        $this->assertSame($certification->id, $period31->certificationid);
+        $this->assertSame($user3->id, $period31->userid);
+        $this->assertSame(null, $period31->programid);
+        $this->assertSame($data['timewindowstart'], $period31->timewindowstart);
+        $this->assertSame(null, $period31->timewindowdue);
+        $this->assertSame(null, $period31->timewindowend);
+        $this->assertSame(null, $period31->allocationid);
+        $this->assertSame($data['timecertified'], $period31->timecertified);
+        $this->assertSame($data['timefrom'], $period31->timefrom);
+        $this->assertSame($data['timeuntil'], $period31->timeuntil);
+        $this->assertSame(null, $period31->timerevoked);
+        $this->assertSame('{}', $period31->evidencejson);
+        $this->assertSame('1', $period31->first);
+        $this->assertSame('1', $period31->recertifiable);
+
+        $data = [
+            'certificationid' => $certification->id,
+            'userid' => $user3->id,
+            'programid' => null,
+            'timecertified' => (string)(new \DateTime('2019-03-31'))->getTimestamp(),
+            'timewindowstart' => (string)(new \DateTime('2019-03-31'))->getTimestamp(),
+            'timefrom' => (string)(new \DateTime('2019-03-31'))->getTimestamp(),
+            'timeuntil' => (string)(new \DateTime('2019-05-31'))->getTimestamp(),
+        ];
+        $period31 = period::add((object)$data);
+        $this->assertSame($certification->id, $period31->certificationid);
+        $this->assertSame($user3->id, $period31->userid);
+        $this->assertSame(null, $period31->programid);
+        $this->assertSame($data['timewindowstart'], $period31->timewindowstart);
+        $this->assertSame(null, $period31->timewindowdue);
+        $this->assertSame(null, $period31->timewindowend);
+        $this->assertSame(null, $period31->allocationid);
+        $this->assertSame($data['timecertified'], $period31->timecertified);
+        $this->assertSame($data['timefrom'], $period31->timefrom);
+        $this->assertSame($data['timeuntil'], $period31->timeuntil);
+        $this->assertSame(null, $period31->timerevoked);
+        $this->assertSame('{}', $period31->evidencejson);
+        $this->assertSame('0', $period31->first);
+        $this->assertSame('1', $period31->recertifiable);
     }
 
     public function test_add_first() {
@@ -535,7 +593,7 @@ final class period_test extends \advanced_testcase {
         $this->assertSame(null, $period1->timefrom);
         $this->assertSame(null, $period1->timeuntil);
         $this->assertSame(null, $period1->timerevoked);
-        $this->assertSame('[]', $period1->evidencejson);
+        $this->assertSame('{}', $period1->evidencejson);
         $this->assertSame('1', $period1->first);
         $this->assertSame('1', $period1->recertifiable);
 
@@ -561,7 +619,7 @@ final class period_test extends \advanced_testcase {
         $this->assertSame(null, $period1->timefrom);
         $this->assertSame(null, $period1->timeuntil);
         $this->assertSame(null, $period1->timerevoked);
-        $this->assertSame('[]', $period1->evidencejson);
+        $this->assertSame('{}', $period1->evidencejson);
         $this->assertSame('1', $period1->first);
         $this->assertSame('1', $period1->recertifiable);
 
@@ -574,6 +632,7 @@ final class period_test extends \advanced_testcase {
             'timefrom' => (string)($now + 1000),
             'timeuntil' => (string)($now + 5000),
             'timecertified' => (string)($now - 1),
+            'evidencedetails' => 'not ignored',
             // The rest is ignored.
             'timerevoked' => (string)$now,
             'programid' => $program2->id,
@@ -590,7 +649,7 @@ final class period_test extends \advanced_testcase {
         $this->assertSame($dateoverrides['timefrom'], $period1->timefrom);
         $this->assertSame($dateoverrides['timeuntil'], $period1->timeuntil);
         $this->assertSame(null, $period1->timerevoked);
-        $this->assertSame('[]', $period1->evidencejson);
+        $this->assertSame(json_encode(['details' => $dateoverrides['evidencedetails']]), $period1->evidencejson);
         $this->assertSame('1', $period1->first);
         $this->assertSame('1', $period1->recertifiable);
     }
@@ -640,6 +699,7 @@ final class period_test extends \advanced_testcase {
             'timeuntil' => (string)($now + 5000),
             'timecertified' => (string)$now,
             'timerevoked' => (string)$now,
+            'evidencedetails' => 'bad',
         ];
         $period1 = period::override_dates((object)$dateoverrides);
         $period2 = $DB->get_record('tool_certify_periods', ['id' => $period2->id], '*', MUST_EXIST);
@@ -651,17 +711,39 @@ final class period_test extends \advanced_testcase {
         $this->assertSame($dateoverrides['timefrom'], $period1->timefrom);
         $this->assertSame($dateoverrides['timeuntil'], $period1->timeuntil);
         $this->assertSame($dateoverrides['timerevoked'], $period1->timerevoked);
-        $this->assertSame('[]', $period1->evidencejson);
+        $this->assertSame(json_encode(['details' => $dateoverrides['evidencedetails']]), $period1->evidencejson);
         $this->assertSame('0', $period1->first);
         $this->assertSame('0', $period1->recertifiable);
         $this->assertSame('1', $period2->first);
         $this->assertSame('1', $period2->recertifiable);
 
-        $dateoverrides = [
+        $dateoverrides2 = [
             'id' => $period1->id,
             'timerevoked' => null,
         ];
+        $period1 = period::override_dates((object)$dateoverrides2);
+        $this->assertSame($dateoverrides['timewindowstart'], $period1->timewindowstart);
+        $this->assertSame($dateoverrides['timewindowdue'], $period1->timewindowdue);
+        $this->assertSame($dateoverrides['timewindowend'], $period1->timewindowend);
+        $this->assertSame(null, $period1->allocationid);
+        $this->assertSame($dateoverrides['timecertified'], $period1->timecertified);
+        $this->assertSame($dateoverrides['timefrom'], $period1->timefrom);
+        $this->assertSame($dateoverrides['timeuntil'], $period1->timeuntil);
+        $this->assertSame(null, $period1->timerevoked);
+        $this->assertSame(json_encode(['details' => $dateoverrides['evidencedetails']]), $period1->evidencejson);
+        $period2 = $DB->get_record('tool_certify_periods', ['id' => $period2->id], '*', MUST_EXIST);
+        $this->assertSame('0', $period1->first);
+        $this->assertSame('1', $period1->recertifiable);
+        $this->assertSame('1', $period2->first);
+        $this->assertSame('0', $period2->recertifiable);
+
+        $dateoverrides = [
+            'id' => $period1->id,
+            'timecertified' => null,
+            'evidencedetails' => 'ignored',
+        ];
         $period1 = period::override_dates((object)$dateoverrides);
+        $this->assertSame('{}', $period1->evidencejson);
         $period2 = $DB->get_record('tool_certify_periods', ['id' => $period2->id], '*', MUST_EXIST);
         $this->assertSame('0', $period1->first);
         $this->assertSame('1', $period1->recertifiable);
@@ -723,6 +805,7 @@ final class period_test extends \advanced_testcase {
                 'id' => $period1->id,
                 'timefrom' => 0,
                 'timeuntil' => (string)($now + 2000),
+                'timecertified' => (string)$now,
             ];
             $period1 = period::override_dates((object)$dateoverrides);
             $this->fail('Exception expected');
@@ -1413,5 +1496,318 @@ final class period_test extends \advanced_testcase {
         $assignment2 = $DB->get_record('tool_certify_assignments',
             ['userid' => $user2->id, 'certificationid' => $certification1->id], '*', MUST_EXIST);
         $this->assertSame(null, $assignment2->timecertifieduntil);
+    }
+
+    public function test_process_history_upload(): void {
+        global $DB;
+        /** @var \tool_certify_generator $generator */
+        $generator = $this->getDataGenerator()->get_plugin_generator('tool_certify');
+        /** @var \enrol_programs_generator $programgenerator */
+        $programgenerator = $this->getDataGenerator()->get_plugin_generator('enrol_programs');
+        /** @var \mod_forum_generator $forumgenerator */
+
+        $now = time();
+
+        $user1 = $this->getDataGenerator()->create_user(
+            ['email' => 'user1@example.com', 'username' => 'user1', 'idnumber' => 'iduser1']);
+        $user2 = $this->getDataGenerator()->create_user(
+            ['email' => 'user2@example.com', 'username' => 'user2', 'idnumber' => 'iduser2']);
+        $user3 = $this->getDataGenerator()->create_user(
+            ['email' => 'user3@example.com', 'username' => 'user3', 'idnumber' => 'iduser3']);
+        $user4 = $this->getDataGenerator()->create_user(
+            ['email' => 'user4@example.com', 'username' => 'user4']);
+        $user5 = $this->getDataGenerator()->create_user(
+            ['email' => 'user5@example.com', 'username' => 'user5']);
+        $user5x = $this->getDataGenerator()->create_user(
+            ['email' => 'user5@example.com', 'username' => 'user5x']); // Duplicate email test.
+
+        $program1 = $programgenerator->create_program(['sources' => 'certify']);
+        $program2 = $programgenerator->create_program(['sources' => 'certify']);
+
+        $data = [
+            'sources' => ['manual' => []],
+            'programid1' => $program1->id,
+            'valid1' => certification::SINCE_CERTIFIED,
+            'expiration1' => ['since' => certification::SINCE_WINDOWSTART, 'delay' => 'P90D'],
+            'recertify' => null,
+        ];
+        $certification1 = $generator->create_certification($data);
+        $source1 = $DB->get_record('tool_certify_sources',
+            ['type' => 'manual', 'certificationid' => $certification1->id], '*', MUST_EXIST);
+
+        $data = [
+            'sources' => ['manual' => []],
+            'programid1' => $program1->id,
+            'valid1' => certification::SINCE_CERTIFIED,
+            'expiration1' => ['since' => certification::SINCE_WINDOWSTART, 'delay' => 'P90D'],
+            'programid2' => $program2->id,
+            'valid2' => certification::SINCE_CERTIFIED,
+            'expiration2' => ['since' => certification::SINCE_WINDOWSTART, 'delay' => 'P90D'],
+            'recertify' => DAYSECS,
+        ];
+        $certification2 = $generator->create_certification($data);
+        $source2 = $DB->get_record('tool_certify_sources',
+            ['type' => 'manual', 'certificationid' => $certification2->id], '*', MUST_EXIST);
+
+        manual::assign_users($certification1->id, $source1->id, [$user1->id]);
+        $period1x0 = $DB->get_record('tool_certify_periods', ['userid' => $user1->id, 'certificationid' => $certification1->id]);
+        manual::assign_users($certification1->id, $source1->id, [$user2->id], ['noperiod' => true]);
+        manual::assign_users($certification1->id, $source1->id, [$user5->id], ['noperiod' => true]);
+
+        // Only assigned users tests.
+
+        $formdata = (object)[
+            'certificationid' => $certification1->id,
+            'usercolumn' => '0',
+            'usermapping' => 'username',
+            'hasheaders' => '1',
+            'assign' => '0',
+            'skipassigned' => '0',
+            'timefromcolumn' => '1',
+            'timeuntilcolumn' => '2',
+            'timecertifiedcolumn' => '3',
+            'evidencecolumn' => '4',
+            'evidencedefault' => 'history upload',
+        ];
+        $filedata = [
+            ['username', 'from', 'until', 'certified', 'evidence'],
+            ['user1', '2020-01-01', '2020-03-31', '2020-01-01', 'ext program X passed'],
+            ['user1', '2020-01-04', '2020-06-30', '2020-03-30', ''], // Use default evidence text.
+            ['user2', '2021-01-01', '2021-03-31', '2021-01-02', 'ext program Y passed'],
+            ['user3', '2022-01-01', '2022-03-31', '2022-01-01', 'ext program X passed'], // Not assigned skipped.
+            ['userz', '2020-01-01', '2020-03-31', '2020-01-01', 'ext program X passed'], // Unknown user error.
+        ];
+        $result = period::process_history_upload($formdata, $filedata);
+        $this->assertSame(['assigned' => 0, 'periods' => 3, 'skipped' => 1, 'errors' => 1], $result);
+        $this->assertCount(3, $DB->get_records('tool_certify_periods', ['userid' => $user1->id, 'certificationid' => $certification1->id]));
+        $this->assertCount(1, $DB->get_records('tool_certify_periods', ['userid' => $user2->id, 'certificationid' => $certification1->id]));
+        $this->assertCount(0, $DB->get_records('tool_certify_periods', ['userid' => $user3->id, 'certificationid' => $certification1->id]));
+        $period2x1 = $DB->get_record('tool_certify_periods', ['userid' => $user2->id, 'certificationid' => $certification1->id]);
+        $this->assertSame($certification1->id, $period2x1->certificationid);
+        $this->assertSame($user2->id, $period2x1->userid);
+        $this->assertSame(null, $period2x1->programid);
+        $this->assertSame($period2x1->timefrom, $period2x1->timewindowstart);
+        $this->assertSame(null, $period2x1->timewindowdue);
+        $this->assertSame(null, $period2x1->timewindowend);
+        $this->assertSame(null, $period2x1->allocationid);
+        $this->assertSame((string)strtotime('2021-01-02'), $period2x1->timecertified);
+        $this->assertSame((string)strtotime('2021-01-01'), $period2x1->timefrom);
+        $this->assertSame((string)strtotime('2021-03-31'), $period2x1->timeuntil);
+        $this->assertSame(null, $period2x1->timerevoked);
+        $this->assertSame('{"details":"ext program Y passed"}', $period2x1->evidencejson);
+        $this->assertSame('1', $period2x1->first);
+        $this->assertSame('1', $period2x1->recertifiable);
+        $periods = $DB->get_records('tool_certify_periods', ['userid' => $user1->id, 'certificationid' => $certification1->id], 'timewindowstart ASC');
+        list($period1x1, $period1x2, $period1x3) = array_values($periods);
+        $this->assertSame($certification1->id, $period1x1->certificationid);
+        $this->assertSame($user1->id, $period1x1->userid);
+        $this->assertSame(null, $period1x1->programid);
+        $this->assertSame($period1x1->timefrom, $period1x1->timewindowstart);
+        $this->assertSame(null, $period1x1->timewindowdue);
+        $this->assertSame(null, $period1x1->timewindowend);
+        $this->assertSame(null, $period1x1->allocationid);
+        $this->assertSame((string)strtotime('2020-01-01'), $period1x1->timecertified);
+        $this->assertSame((string)strtotime('2020-01-01'), $period1x1->timefrom);
+        $this->assertSame((string)strtotime('2020-03-31'), $period1x1->timeuntil);
+        $this->assertSame(null, $period1x1->timerevoked);
+        $this->assertSame('{"details":"ext program X passed"}', $period1x1->evidencejson);
+        $this->assertSame('1', $period1x1->first);
+        $this->assertSame('0', $period1x1->recertifiable);
+        $this->assertSame($certification1->id, $period1x2->certificationid);
+        $this->assertSame($user1->id, $period1x2->userid);
+        $this->assertSame(null, $period1x2->programid);
+        $this->assertSame($period1x2->timefrom, $period1x2->timewindowstart);
+        $this->assertSame(null, $period1x2->timewindowdue);
+        $this->assertSame(null, $period1x2->timewindowend);
+        $this->assertSame(null, $period1x2->allocationid);
+        $this->assertSame((string)strtotime('2020-03-30'), $period1x2->timecertified);
+        $this->assertSame((string)strtotime('2020-01-04'), $period1x2->timefrom);
+        $this->assertSame((string)strtotime('2020-06-30'), $period1x2->timeuntil);
+        $this->assertSame(null, $period1x2->timerevoked);
+        $this->assertSame('{"details":"history upload"}', $period1x2->evidencejson);
+        $this->assertSame('0', $period1x2->first);
+        $this->assertSame('0', $period1x2->recertifiable);
+        $period1x0->first = '0';
+        $this->assertSame((array)$period1x0, (array)$period1x3);
+
+        // Skip duplicate data.
+        $filedata = [
+            ['username', 'from', 'until', 'certified', 'evidence'],
+            ['user1', '2020-01-01', '2020-03-31', '2020-01-01', 'ext program X passed'],
+            ['user1', '2020-01-04', '2020-06-30', '2020-03-30', ''], // Use default evidence text.
+            ['user2', '2021-01-01', '2021-03-31', '2021-01-02', 'ext program Y passed'],
+        ];
+        $result = period::process_history_upload($formdata, $filedata);
+        $this->assertSame(['assigned' => 0, 'periods' => 0, 'skipped' => 3, 'errors' => 0], $result);
+
+        // Errors for invalid data.
+        $filedata = [
+            ['username', 'from', 'until', 'certified', 'evidence'],
+            ['user2', 'xyz', 'zyq', 'xyz', 'ext program X passed'], // Invalid date format.
+            ['user2', '2032-01-01', '2032-03-31', '2032-01-01', 'ext program X passed'], // Future date error.
+            ['user2', '2019-01-01', '2019-03-31', '', 'ext program X passed'], // No certification date error.
+            ['user2', '', '2019-03-31', '2019-01-01', 'ext program X passed'], // No start date error.
+            ['user2', '2019-01-01', '', '2019-01-01', 'ext program X passed'], // No end date error.
+        ];
+        $result = period::process_history_upload($formdata, $filedata);
+        $this->assertSame(['assigned' => 0, 'periods' => 0, 'skipped' => 0, 'errors' => 5], $result);
+
+        // Duplicate emails.
+        $formdata = (object)[
+            'certificationid' => $certification1->id,
+            'usercolumn' => '0',
+            'usermapping' => 'email',
+            'hasheaders' => '0',
+            'assign' => '0',
+            'skipassigned' => '0',
+            'timefromcolumn' => '1',
+            'timeuntilcolumn' => '2',
+            'timecertifiedcolumn' => '1',
+            'evidencecolumn' => '',
+            'evidencedefault' => 'history upload',
+        ];
+        $filedata = [
+            ['user2@example.com', '2022-01-01', '2022-03-31'],
+            ['user5@example.com', '2022-01-01', '2022-03-31'],
+        ];
+        $result = period::process_history_upload($formdata, $filedata);
+        $this->assertSame(['assigned' => 0, 'periods' => 1, 'skipped' => 0, 'errors' => 1], $result);
+        $this->assertCount(3, $DB->get_records('tool_certify_periods', ['userid' => $user1->id, 'certificationid' => $certification1->id]));
+        $this->assertCount(2, $DB->get_records('tool_certify_periods', ['userid' => $user2->id, 'certificationid' => $certification1->id]));
+        $this->assertCount(0, $DB->get_records('tool_certify_periods', ['userid' => $user5->id, 'certificationid' => $certification1->id]));
+        $periods = $DB->get_records('tool_certify_periods', ['userid' => $user2->id, 'certificationid' => $certification1->id], 'timewindowstart ASC');
+        list($period2x1, $period2x2) = array_values($periods);
+        $this->assertSame($certification1->id, $period2x2->certificationid);
+        $this->assertSame($user2->id, $period2x2->userid);
+        $this->assertSame(null, $period2x2->programid);
+        $this->assertSame($period2x2->timefrom, $period2x2->timewindowstart);
+        $this->assertSame(null, $period2x2->timewindowdue);
+        $this->assertSame(null, $period2x2->timewindowend);
+        $this->assertSame(null, $period2x2->allocationid);
+        $this->assertSame((string)strtotime('2022-01-01'), $period2x2->timecertified);
+        $this->assertSame((string)strtotime('2022-01-01'), $period2x2->timefrom);
+        $this->assertSame((string)strtotime('2022-03-31'), $period2x2->timeuntil);
+        $this->assertSame(null, $period2x2->timerevoked);
+        $this->assertSame('{"details":"history upload"}', $period2x2->evidencejson);
+        $this->assertSame('0', $period2x2->first);
+        $this->assertSame('1', $period2x2->recertifiable);
+
+        // ID number mapping.
+        $formdata = (object)[
+            'certificationid' => $certification1->id,
+            'usercolumn' => '0',
+            'usermapping' => 'idnumber',
+            'hasheaders' => '0',
+            'assign' => '0',
+            'skipassigned' => '0',
+            'timefromcolumn' => '1',
+            'timeuntilcolumn' => '2',
+            'timecertifiedcolumn' => '1',
+            'evidencecolumn' => '',
+            'evidencedefault' => 'history upload',
+        ];
+        $filedata = [
+            ['iduser2', '2023-01-01', '2023-03-31'],
+            ['iduserz', '2023-01-01', '2023-03-31'],
+        ];
+        $result = period::process_history_upload($formdata, $filedata);
+        $this->assertSame(['assigned' => 0, 'periods' => 1, 'skipped' => 0, 'errors' => 1], $result);
+        $this->assertCount(3, $DB->get_records('tool_certify_periods', ['userid' => $user1->id, 'certificationid' => $certification1->id]));
+        $this->assertCount(3, $DB->get_records('tool_certify_periods', ['userid' => $user2->id, 'certificationid' => $certification1->id]));
+        $this->assertCount(0, $DB->get_records('tool_certify_periods', ['userid' => $user5->id, 'certificationid' => $certification1->id]));
+        $periods = $DB->get_records('tool_certify_periods', ['userid' => $user2->id, 'certificationid' => $certification1->id], 'timewindowstart ASC');
+        list($period2x1, $period2x2, $period2x3) = array_values($periods);
+        $this->assertSame($certification1->id, $period2x3->certificationid);
+        $this->assertSame($user2->id, $period2x3->userid);
+        $this->assertSame(null, $period2x3->programid);
+        $this->assertSame($period2x3->timefrom, $period2x3->timewindowstart);
+        $this->assertSame(null, $period2x3->timewindowdue);
+        $this->assertSame(null, $period2x3->timewindowend);
+        $this->assertSame(null, $period2x3->allocationid);
+        $this->assertSame((string)strtotime('2023-01-01'), $period2x3->timecertified);
+        $this->assertSame((string)strtotime('2023-01-01'), $period2x3->timefrom);
+        $this->assertSame((string)strtotime('2023-03-31'), $period2x3->timeuntil);
+        $this->assertSame(null, $period2x3->timerevoked);
+        $this->assertSame('{"details":"history upload"}', $period2x3->evidencejson);
+        $this->assertSame('0', $period2x3->first);
+        $this->assertSame('1', $period2x3->recertifiable);
+
+        // Assign new.
+        $formdata = (object)[
+            'certificationid' => $certification1->id,
+            'usercolumn' => '0',
+            'usermapping' => 'username',
+            'hasheaders' => '0',
+            'assign' => '1',
+            'skipassigned' => '0',
+            'timefromcolumn' => '1',
+            'timeuntilcolumn' => '2',
+            'timecertifiedcolumn' => '1',
+            'evidencecolumn' => '',
+            'evidencedefault' => 'history upload',
+        ];
+        $filedata = [
+            ['user2', '2019-01-01', '2019-03-31'],
+            ['user3', '2019-01-01', '2019-03-31'],
+        ];
+        $result = period::process_history_upload($formdata, $filedata);
+        $this->assertSame(['assigned' => 1, 'periods' => 2, 'skipped' => 0, 'errors' => 0], $result);
+        $this->assertCount(4, $DB->get_records('tool_certify_periods', ['userid' => $user2->id, 'certificationid' => $certification1->id]));
+        $this->assertCount(1, $DB->get_records('tool_certify_periods', ['userid' => $user3->id, 'certificationid' => $certification1->id]));
+        $periods = $DB->get_records('tool_certify_periods', ['userid' => $user3->id, 'certificationid' => $certification1->id], 'timewindowstart ASC');
+        list($period3x1) = array_values($periods);
+        $this->assertSame($certification1->id, $period3x1->certificationid);
+        $this->assertSame($user3->id, $period3x1->userid);
+        $this->assertSame(null, $period3x1->programid);
+        $this->assertSame($period3x1->timefrom, $period3x1->timewindowstart);
+        $this->assertSame(null, $period3x1->timewindowdue);
+        $this->assertSame(null, $period3x1->timewindowend);
+        $this->assertSame(null, $period3x1->allocationid);
+        $this->assertSame((string)strtotime('2019-01-01'), $period3x1->timecertified);
+        $this->assertSame((string)strtotime('2019-01-01'), $period3x1->timefrom);
+        $this->assertSame((string)strtotime('2019-03-31'), $period3x1->timeuntil);
+        $this->assertSame(null, $period3x1->timerevoked);
+        $this->assertSame('{"details":"history upload"}', $period3x1->evidencejson);
+        $this->assertSame('1', $period3x1->first);
+        $this->assertSame('0', $period3x1->recertifiable);
+
+        // Assign new and skip existing.
+        $formdata = (object)[
+            'certificationid' => $certification1->id,
+            'usercolumn' => '0',
+            'usermapping' => 'username',
+            'hasheaders' => '0',
+            'assign' => '1',
+            'skipassigned' => '1',
+            'timefromcolumn' => '1',
+            'timeuntilcolumn' => '2',
+            'timecertifiedcolumn' => '1',
+            'evidencecolumn' => '',
+            'evidencedefault' => 'history upload',
+        ];
+        $filedata = [
+            ['user2', '2019-01-01', '2019-03-31'],
+            ['user4', '2019-01-01', '2019-03-31'],
+        ];
+        $result = period::process_history_upload($formdata, $filedata);
+        $this->assertSame(['assigned' => 1, 'periods' => 1, 'skipped' => 1, 'errors' => 0], $result);
+        $this->assertCount(4, $DB->get_records('tool_certify_periods', ['userid' => $user2->id, 'certificationid' => $certification1->id]));
+        $this->assertCount(1, $DB->get_records('tool_certify_periods', ['userid' => $user4->id, 'certificationid' => $certification1->id]));
+        $periods = $DB->get_records('tool_certify_periods', ['userid' => $user4->id, 'certificationid' => $certification1->id], 'timewindowstart ASC');
+        list($period4x1) = array_values($periods);
+        $this->assertSame($certification1->id, $period4x1->certificationid);
+        $this->assertSame($user4->id, $period4x1->userid);
+        $this->assertSame(null, $period4x1->programid);
+        $this->assertSame($period4x1->timefrom, $period4x1->timewindowstart);
+        $this->assertSame(null, $period4x1->timewindowdue);
+        $this->assertSame(null, $period4x1->timewindowend);
+        $this->assertSame(null, $period4x1->allocationid);
+        $this->assertSame((string)strtotime('2019-01-01'), $period4x1->timecertified);
+        $this->assertSame((string)strtotime('2019-01-01'), $period4x1->timefrom);
+        $this->assertSame((string)strtotime('2019-03-31'), $period4x1->timeuntil);
+        $this->assertSame(null, $period4x1->timerevoked);
+        $this->assertSame('{"details":"history upload"}', $period4x1->evidencejson);
+        $this->assertSame('1', $period4x1->first);
+        $this->assertSame('0', $period4x1->recertifiable);
     }
 }

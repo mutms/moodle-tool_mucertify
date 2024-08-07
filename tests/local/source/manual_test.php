@@ -227,6 +227,8 @@ final class manual_test extends \advanced_testcase {
 
         $user1 = $this->getDataGenerator()->create_user();
         $user2 = $this->getDataGenerator()->create_user();
+        $user3 = $this->getDataGenerator()->create_user();
+        $user4 = $this->getDataGenerator()->create_user();
 
         $data = [
             'sources' => ['manual' => []],
@@ -320,6 +322,40 @@ final class manual_test extends \advanced_testcase {
         $this->assertTimeCurrent($assignment->timecreated);
         $period = $DB->get_record('tool_certify_periods', ['userid' => $user2->id, 'certificationid' => $certification->id]);
         $this->assertFalse($period);
+
+        $data = [
+            'sources' => ['manual' => []],
+            'programid1' => $program1->id,
+        ];
+        $certification = $generator->create_certification($data);
+        $source = $DB->get_record('tool_certify_sources',
+            ['type' => 'manual', 'certificationid' => $certification->id], '*', MUST_EXIST);
+
+        $this->setCurrentTimeStart();
+        manual::assign_users($certification->id, $source->id, [$user3->id], [
+            'noperiod' => 1,
+        ]);
+        $assignment = $DB->get_record('tool_certify_assignments', ['userid' => $user3->id, 'certificationid' => $certification->id], '*', MUST_EXIST);
+        $this->assertSame($source->id, $assignment->sourceid);
+        $this->assertSame('[]', $assignment->sourcedatajson);
+        $this->assertSame('0', $assignment->archived);
+        $this->assertSame(null, $assignment->timecertifieduntil);
+        $this->assertSame('[]', $assignment->evidencejson);
+        $this->assertTimeCurrent($assignment->timecreated);
+        $this->assertCount(0, $DB->get_records('tool_certify_periods', ['userid' => $user3->id]));
+
+        $this->setCurrentTimeStart();
+        manual::assign_users($certification->id, $source->id, [$user4->id], [
+            'noperiod' => 0,
+        ]);
+        $assignment = $DB->get_record('tool_certify_assignments', ['userid' => $user4->id, 'certificationid' => $certification->id], '*', MUST_EXIST);
+        $this->assertSame($source->id, $assignment->sourceid);
+        $this->assertSame('[]', $assignment->sourcedatajson);
+        $this->assertSame('0', $assignment->archived);
+        $this->assertSame(null, $assignment->timecertifieduntil);
+        $this->assertSame('[]', $assignment->evidencejson);
+        $this->assertTimeCurrent($assignment->timecreated);
+        $this->assertCount(1, $DB->get_records('tool_certify_periods', ['userid' => $user4->id]));
     }
 
     public function test_unassign_user() {

@@ -515,6 +515,14 @@ class renderer extends \plugin_renderer_base {
             }
         }
 
+        if ($period->evidencejson) {
+            $jsondata = (object)json_decode($period->evidencejson);
+            if (isset($jsondata->details)) {
+                $result .= '<dt class="col-3">' . get_string('evidence_details', 'tool_certify') . ':</dt><dd class="col-9">'
+                    . format_text($jsondata->details, FORMAT_PLAIN, ['para' => false]) . '</dd>';
+            }
+        }
+
         $result .= '<dt class="col-3">' . get_string('periodstatus', 'tool_certify') . ':</dt><dd class="col-9">'
             . period::get_status_html($certification, $assignment, $period) . '</dd>';
 

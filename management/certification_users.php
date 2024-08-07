@@ -78,6 +78,14 @@ echo $OUTPUT->header();
 
 echo $managementoutput->render_management_certification_tabs($certification, 'users');
 
+$extramenu = new \tool_certify\hook\extra_menu\management_certification_users($certification);
+if (!$certification->archived && has_capability('tool/certify:admin', $context)) {
+    $url = new \moodle_url('/admin/tool/certify/management/history_upload.php', ['certificationid' => $certification->id]);
+    $link = new \local_openlms\output\dialog_form\link($url, get_string('history_upload', 'tool_certify'));
+    $extramenu->add_dialog_form($link);
+}
+\core\hook\manager::get_instance()->dispatch($extramenu);
+
 echo '<div class="assignment-filtering">';
 // Add search form.
 $data = [
@@ -91,7 +99,7 @@ $data = [
         (object)['name' => 'dir', 'value' => $dir],
         (object)['name' => 'status', 'value' => $status],
     ],
-    'extraclasses' => 'mb-3'
+    'extraclasses' => 'mb-3 float-left'
 ];
 echo $OUTPUT->render_from_template('core/search_input', $data);
 $changestatus = new moodle_url($currenturl);
@@ -103,7 +111,13 @@ $statusoptions = [
 if (!isset($statusoptions[$status])) {
     $status = 0;
 }
+echo '&nbsp';
 echo $OUTPUT->single_select($currenturl, 'status', $statusoptions, $status, []);
+if ($extramenu->has_items()) {
+    echo '<div class="float-right">';
+    echo $OUTPUT->render($extramenu->get_dropdown());
+    echo '</div>';
+}
 echo '</div>';
 echo '<div class="clearfix"></div>';
 
@@ -174,10 +188,13 @@ $sql = "SELECT a.*, s.type AS sourcetype, $userfields,
                (SELECT MIN(p1.timefrom)
                   FROM {tool_certify_periods} p1
                  WHERE p1.certificationid = a.certificationid AND p1.userid = a.userid AND p1.timerevoked IS NULL AND p1.timecertified IS NOT NULL) AS timefrom,
-               (SELECT MIN(p2.timeuntil)
+               (SELECT MAX(p2.timeuntil)
                   FROM {tool_certify_periods} p2
-                 WHERE p2.certificationid = a.certificationid  AND p2.userid = a.userid AND p2.timerevoked IS NULL AND p2.timecertified IS NOT NULL
-                       AND p2.timefrom <= $now AND (p2.timeuntil IS NULL OR p2.timeuntil > $now)) AS timeuntil
+                 WHERE p2.certificationid = a.certificationid AND p2.userid = a.userid AND p2.timerevoked IS NULL AND p2.timecertified IS NOT NULL) AS timeuntil,
+               (SELECT MIN(p3.timefrom)
+                  FROM {tool_certify_periods} p3
+                 WHERE p3.certificationid = a.certificationid AND p3.userid = a.userid AND p3.timerevoked IS NULL AND p3.timecertified IS NOT NULL
+                       AND p3.timeuntil IS NULL) AS timeuntilforeversince    
           FROM {tool_certify_assignments} a
           JOIN {tool_certify_certifications} c ON c.id = a.certificationid
      LEFT JOIN {tool_certify_sources} s ON s.id = a.sourceid
@@ -218,12 +235,14 @@ foreach ($assignments as $assignment) {
     } else {
         $row[] = '';
     }
-    if (!$assignment->timeuntil) {
-        $row[] = '';
+    if ($assignment->timeuntilforeversince) {
+        $row[] = get_string('never', 'tool_certify');
     } else if ($assignment->timecertifieduntil && $assignment->timeuntil < $assignment->timecertifieduntil) {
         $row[] = userdate($assignment->timecertifieduntil, $dateformat);
-    } else {
+    } else if ($assignment->timeuntil) {
         $row[] = userdate($assignment->timeuntil, $dateformat);
+    } else {
+        $row[] = '';
     }
 
     $row[] = \tool_certify\local\assignment::get_status_html($certification, $assignment);

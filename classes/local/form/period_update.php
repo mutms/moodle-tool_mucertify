@@ -59,6 +59,16 @@ final class period_update extends \local_openlms\dialog_form {
         $mform->addElement('date_time_selector', 'timerevoked', get_string('revokeddate', 'tool_certify'), ['optional' => true]);
         $mform->setDefault('timerevoked', $period->timerevoked);
 
+        $mform->addElement('textarea', 'evidencedetails', get_string('evidence_details' , 'tool_certify'));
+        $mform->addHelpButton('evidencedetails', 'evidence_details' , 'tool_certify');
+        $mform->setType('evidencedetails', PARAM_RAW); // Plain text only.
+        if ($period->evidencejson) {
+            $jsondata = (object)json_decode($period->evidencejson);
+            if (isset($jsondata->details)) {
+                $mform->setDefault('evidencedetails', $jsondata->details);
+            }
+        }
+
         $mform->addElement('hidden', 'id');
         $mform->setType('id', PARAM_INT);
         $mform->setDefault('id', $period->id);

@@ -27,13 +27,13 @@ defined('MOODLE_INTERNAL') || die();
 
 /** @var stdClass $plugin */
 
-$plugin->version   = 2024080300;
+$plugin->version   = 2024081700;
 $plugin->requires  = 2023100902.00; // 4.3.2
 $plugin->component = 'tool_certify';
 $plugin->release   = 'v3.2.0';
 $plugin->supported = [403, 403];
 
 $plugin->dependencies = [
-    'local_openlms' => 2024031200,
+    'local_openlms' => 2024071401,
     'enrol_programs' => 2024080300,
 ];

@@ -218,13 +218,13 @@ abstract class base {
     }
 
     /**
-     * assign user to certification.
+     * Assign user to certification.
      *
      * @param stdClass $certification
      * @param stdClass $source
      * @param int $userid
      * @param array $sourcedata
-     * @param array $dateoverrides
+     * @param array $dateoverrides if 'noperiod' non-empty then period is not created
      * @return stdClass user assignment record
      */
     final protected static function assign_user(stdClass $certification, stdClass $source, int $userid, array $sourcedata, array $dateoverrides = []): stdClass {
@@ -256,7 +256,9 @@ abstract class base {
         $record->id = $DB->insert_record('tool_certify_assignments', $record);
         $assignment = $DB->get_record('tool_certify_assignments', ['id' => $record->id], '*', MUST_EXIST);
 
-        \tool_certify\local\period::add_first($assignment, $dateoverrides);
+        if (empty($dateoverrides['noperiod'])) {
+            \tool_certify\local\period::add_first($assignment, $dateoverrides);
+        }
 
         assignment::make_snapshot($assignment->certificationid, $assignment->userid, 'assignment');
 
