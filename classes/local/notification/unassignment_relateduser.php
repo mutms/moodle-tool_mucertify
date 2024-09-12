@@ -19,14 +19,14 @@ namespace tool_certify\local\notification;
 use stdClass;
 
 /**
- * Certification unassignment notification.
+ * Certification unassignment_relateduser notification.
  *
  * @package    tool_certify
- * @copyright  2023 Open LMS (https://www.openlms.net/)
+ * @copyright  2024 Open LMS (https://www.openlms.net/)
  * @author     Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-final class unassignment extends base {
+final class unassignment_relateduser extends base {
     /**
      * Send notifications.
      *
@@ -66,6 +66,10 @@ final class unassignment extends base {
      * @return void
      */
     public static function notify_now(stdClass $user, stdClass $certification, stdClass $source, stdClass $assignment): void {
-        self::notify_assigned_user($certification, $source, $assignment, null, $user);
+        $relateduser = self::get_relateduser($assignment->userid);
+        if (!$relateduser) {
+            return;
+        }
+        self::notify_related_user($certification, $source, $assignment, null, $user, $relateduser, false);
     }
 }

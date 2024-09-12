@@ -41,6 +41,17 @@ if (enrol_is_enabled('programs')) {
         ['moodle/site:config', 'tool/certify:admin']);
     $ADMIN->add('certifications', $settings);
 
+    if (!during_initial_install() && get_config('profilefield_relateduser', 'version')) {
+        $optionsfunction = function() {
+            global $DB;
+            $fields = $DB->get_records_menu('user_info_field', ['datatype' => 'relateduser'], 'name ASC', 'id, name');
+            return ['' => get_string('notset', 'tool_certify')] + $fields;
+        };
+        $settings->add(new admin_setting_configselect('tool_certify/notification_relateduserfield',
+            new lang_string('notification_relateduserfield', 'tool_certify'),
+            new lang_string('notification_relateduserfield_desc', 'tool_certify'), '', $optionsfunction));
+    }
+
     $settings->add(new admin_setting_configcheckbox('tool_certify/source_approval_allownew',
         new lang_string('source_approval_allownew', 'tool_certify'),
         new lang_string('source_approval_allownew_desc', 'tool_certify'), 1));

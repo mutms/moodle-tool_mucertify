@@ -113,8 +113,11 @@ $string['management'] = 'Certification management';
 $string['messageprovider:approval_request_notification'] = 'Certification approval request notification';
 $string['messageprovider:approval_reject_notification'] = 'Certification request rejection notification';
 $string['messageprovider:assignment_notification'] = 'Certification assignment notification';
+$string['messageprovider:assignment_relateduser_notification'] = 'Certification assignment notification - related user';
 $string['messageprovider:unassignment_notification'] = 'Certification un-assignment notification';
+$string['messageprovider:unassignment_relateduser_notification'] = 'Certification un-assignment notification - related user';
 $string['messageprovider:valid_notification'] = 'Certification validity notification';
+$string['messageprovider:valid_relateduser_notification'] = 'Certification validity notification - related user';
 $string['mycertifications'] = 'My certifications';
 $string['never'] = 'Never';
 $string['notallocated'] = 'Not allocated';
@@ -125,6 +128,14 @@ $string['notification_assignment_body'] = 'Hello {$a->user_fullname},
 you have been assigned to certification "{$a->certification_fullname}".';
 $string['notification_assignment_description'] = 'Notification sent to users when they are assigned to certification.';
 $string['notification_assignment_subject'] = 'Certification assignment notification';
+$string['notification_assignment_relateduser'] = 'User assigned - related user';
+$string['notification_assignment_relateduser_body'] = 'Hello {$a->relateduser_fullname},
+
+user {$a->user_fullname} has been assigned to certification "{$a->certification_fullname}".';
+$string['notification_assignment_relateduser_description'] = 'Notification sent to related users of users when they are assigned to certification.';
+$string['notification_assignment_relateduser_subject'] = 'User {$a->user_fullname} was assigned to certification';
+$string['notification_relateduserfield'] = 'Notification related user field';
+$string['notification_relateduserfield_desc'] = 'Select related users profile field to be used for notification of related users.';
 $string['notification_valid'] = 'Valid certification';
 $string['notification_valid_body'] = 'Hello {$a->user_fullname},
 
@@ -136,12 +147,29 @@ your certification "{$a->certification_fullname}" is now valid:
 ';
 $string['notification_valid_description'] = 'Notification sent to users when their certification becomes valid.';
 $string['notification_valid_subject'] = 'Valid certification notification';
-$string['notification_unassignment'] = 'User unassigned';
+$string['notification_valid_relateduser'] = 'Valid certification - related user';
+$string['notification_valid_relateduser_body'] = 'Hello {$a->relateduser_fullname},
+
+certification "{$a->certification_fullname}" of user {$a->user_fullname} is now valid:
+
+* valid from: {$a->period_fromdate}
+* expires on: {$a->period_untildate}
+* recertification opens on: {$a->period_recertificationdate}
+';
+$string['notification_valid_relateduser_description'] = 'Notification sent to related users of users when their certification becomes valid.';
+$string['notification_valid_relateduser_subject'] = 'User {$a->user_fullname} has valid certification';
+$string['notification_unassignment'] = 'User un-assigned';
 $string['notification_unassignment_body'] = 'Hello {$a->user_fullname},
 
 you have been un-assigned from certification "{$a->certification_fullname}".';
 $string['notification_unassignment_description'] = 'Notification sent to users when they are un-assigned from certification.';
 $string['notification_unassignment_subject'] = 'Certification un-assignment notification';
+$string['notification_unassignment_relateduser'] = 'User un-assigned - related user';
+$string['notification_unassignment_relateduser_body'] = 'Hello {$a->relateduser_fullname},
+
+user {$a->user_fullname} has been un-assigned from certification "{$a->certification_fullname}".';
+$string['notification_unassignment_relateduser_description'] = 'Notification sent to related users of users when they are un-assigned from certification.';
+$string['notification_unassignment_relateduser_subject'] = 'User {$a->user_fullname} was un-assigned from certification';
 $string['notificationdates'] = 'Notifications';
 $string['notset'] = 'Not set';
 $string['period'] = 'Certification period';

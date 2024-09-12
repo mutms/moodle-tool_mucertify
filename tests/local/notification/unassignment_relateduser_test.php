@@ -21,13 +21,13 @@ namespace tool_certify\local\notification;
  *
  * @group      openlms
  * @package    tool_certify
- * @copyright  2023 Open LMS (https://www.openlms.net/)
+ * @copyright  2024 Open LMS (https://www.openlms.net/)
  * @author     Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
- * @covers \tool_certify\local\notification\unassignment
+ * @covers \tool_certify\local\notification\unassignment_relateduser
  */
-final class unassignment_test extends \advanced_testcase {
+final class unassignment_relateduser_test extends \advanced_testcase {
     public function setUp(): void {
         $this->resetAfterTest();
     }
@@ -38,6 +38,16 @@ final class unassignment_test extends \advanced_testcase {
         $generator = $this->getDataGenerator()->get_plugin_generator('tool_certify');
         /** @var \enrol_programs_generator $programgenerator */
         $programgenerator = $this->getDataGenerator()->get_plugin_generator('enrol_programs');
+        /** @var \profilefield_relateduser_generator $relatedgenerator */
+        $relatedgenerator = $this->getDataGenerator()->get_plugin_generator('profilefield_relateduser');
+
+        $categoryid = $relatedgenerator->add_profile_category();
+        $profilefieldid = $relatedgenerator->add_profile_field($categoryid, 'relateduser');
+        $profilefieldid2 = $relatedgenerator->add_profile_field($categoryid, 'relateduser');
+
+        $related1 = $this->getDataGenerator()->create_user();
+        $related2 = $this->getDataGenerator()->create_user();
+        $related3 = $this->getDataGenerator()->create_user();
 
         $syscontext = \context_system::instance();
         $user1 = $this->getDataGenerator()->create_user();
@@ -51,6 +61,10 @@ final class unassignment_test extends \advanced_testcase {
         ]);
         $source = $DB->get_record('tool_certify_sources',
             ['type' => 'manual', 'certificationid' => $certification->id], '*', MUST_EXIST);
+
+        $relatedgenerator->add_user_info_data($user1->id, $profilefieldid, $related1->id);
+        $relatedgenerator->add_user_info_data($user2->id, $profilefieldid, $related2->id);
+        $relatedgenerator->add_user_info_data($user3->id, $profilefieldid, $related3->id);
 
         \tool_certify\local\source\manual::assign_users($certification->id, $source->id, [$user1->id, $user2->id, $user3->id], []);
         $assignment1 = $DB->get_record('tool_certify_assignments',
@@ -70,7 +84,9 @@ final class unassignment_test extends \advanced_testcase {
         $sink->close();
         $this->assertCount(0, $messages);
 
-        $notification = $generator->create_certifiction_notification(['certificationid' => $certification->id, 'notificationtype' => 'unassignment']);
+        set_config('notification_relateduserfield', $profilefieldid, 'tool_certify');
+
+        $notification = $generator->create_certifiction_notification(['certificationid' => $certification->id, 'notificationtype' => 'unassignment_relateduser']);
 
         $sink = $this->redirectMessages();
         \tool_certify\local\source\manual::unassign_user($certification, $source, $assignment2);
@@ -78,11 +94,11 @@ final class unassignment_test extends \advanced_testcase {
         $sink->close();
         $this->assertCount(1, $messages);
         $message = reset($messages);
-        $this->assertSame($user2->id, $message->useridto);
-        $this->assertSame('Certification un-assignment notification', $message->subject);
-        $this->assertStringContainsString('you have been un-assigned from certification', $message->fullmessage);
+        $this->assertSame($related2->id, $message->useridto);
+        $this->assertSame('User ' . fullname($user2) . ' was un-assigned from certification', $message->subject);
+        $this->assertStringContainsString(fullname($user2) . ' has been un-assigned from certification', $message->fullmessage);
         $this->assertSame('tool_certify', $message->component);
-        $this->assertSame('unassignment_notification', $message->eventtype);
+        $this->assertSame('unassignment_relateduser_notification', $message->eventtype);
         $this->assertSame("$CFG->wwwroot/admin/tool/certify/catalogue/certification.php?id=$certification->id", $message->contexturl);
         $this->assertSame('1', $message->notification);
 
@@ -92,11 +108,11 @@ final class unassignment_test extends \advanced_testcase {
         $sink->close();
         $this->assertCount(1, $messages);
         $message = reset($messages);
-        $this->assertSame($user3->id, $message->useridto);
-        $this->assertSame('Certification un-assignment notification', $message->subject);
-        $this->assertStringContainsString('you have been un-assigned from certification', $message->fullmessage);
+        $this->assertSame($related3->id, $message->useridto);
+        $this->assertSame('User ' . fullname($user3) . ' was un-assigned from certification', $message->subject);
+        $this->assertStringContainsString(fullname($user3) . ' has been un-assigned from certification', $message->fullmessage);
         $this->assertSame('tool_certify', $message->component);
-        $this->assertSame('unassignment_notification', $message->eventtype);
+        $this->assertSame('unassignment_relateduser_notification', $message->eventtype);
         $this->assertSame("$CFG->wwwroot/admin/tool/certify/catalogue/certification.php?id=$certification->id", $message->contexturl);
         $this->assertSame('1', $message->notification);
 

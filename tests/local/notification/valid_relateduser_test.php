@@ -26,13 +26,13 @@ use tool_certify\local\source\manual;
  *
  * @group      openlms
  * @package    tool_certify
- * @copyright  2023 Open LMS (https://www.openlms.net/)
+ * @copyright  2024 Open LMS (https://www.openlms.net/)
  * @author     Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
- * @covers \tool_certify\local\notification\valid
+ * @covers \tool_certify\local\notification\valid_relateduser
  */
-final class valid_test extends \advanced_testcase {
+final class valid_relateduser_test extends \advanced_testcase {
     public function setUp(): void {
         $this->resetAfterTest();
     }
@@ -43,6 +43,15 @@ final class valid_test extends \advanced_testcase {
         $generator = $this->getDataGenerator()->get_plugin_generator('tool_certify');
         /** @var \enrol_programs_generator $programgenerator */
         $programgenerator = $this->getDataGenerator()->get_plugin_generator('enrol_programs');
+        /** @var \profilefield_relateduser_generator $relatedgenerator */
+        $relatedgenerator = $this->getDataGenerator()->get_plugin_generator('profilefield_relateduser');
+
+        $categoryid = $relatedgenerator->add_profile_category();
+        $profilefieldid = $relatedgenerator->add_profile_field($categoryid, 'relateduser');
+        $profilefieldid2 = $relatedgenerator->add_profile_field($categoryid, 'relateduser');
+
+        $related1 = $this->getDataGenerator()->create_user();
+        $related2 = $this->getDataGenerator()->create_user();
 
         $syscontext = \context_system::instance();
         $user1 = $this->getDataGenerator()->create_user();
@@ -56,9 +65,14 @@ final class valid_test extends \advanced_testcase {
         $source = $DB->get_record('tool_certify_sources',
             ['type' => 'manual', 'certificationid' => $certification->id], '*', MUST_EXIST);
 
+        $relatedgenerator->add_user_info_data($user1->id, $profilefieldid, $related1->id);
+        $relatedgenerator->add_user_info_data($user2->id, $profilefieldid, $related2->id);
+
         \tool_certify\local\source\manual::assign_users($certification->id, $source->id, [$user1->id], []);
 
-        $notification = $generator->create_certifiction_notification(['certificationid' => $certification->id, 'notificationtype' => 'valid']);
+        set_config('notification_relateduserfield', $profilefieldid, 'tool_certify');
+
+        $notification = $generator->create_certifiction_notification(['certificationid' => $certification->id, 'notificationtype' => 'valid_relateduser']);
 
         $now = time();
         $period = $DB->get_record('tool_certify_periods',
@@ -73,20 +87,20 @@ final class valid_test extends \advanced_testcase {
         $period1x1 = period::override_dates((object)$dateoverrides);
 
         $sink = $this->redirectMessages();
-        valid::notify_users(null, null);
+        valid_relateduser::notify_users(null, null);
         $messages = $sink->get_messages();
         $sink->close();
         $this->assertCount(1, $messages);
         $message = reset($messages);
         $assignment = $DB->get_record('tool_certify_assignments',
             ['userid' => $user1->id, 'certificationid' => $certification->id], '*', MUST_EXIST);
-        $this->assertSame('Valid certification notification', $message->subject);
+        $this->assertSame('User ' . fullname($user1) . ' has valid certification', $message->subject);
         $this->assertStringContainsString('is now valid', $message->fullmessage);
         $this->assertSame('tool_certify', $message->component);
-        $this->assertSame('valid_notification', $message->eventtype);
-        $this->assertSame("$CFG->wwwroot/admin/tool/certify/my/certification.php?id=$certification->id", $message->contexturl);
+        $this->assertSame('valid_relateduser_notification', $message->eventtype);
+        $this->assertSame("$CFG->wwwroot/admin/tool/certify/catalogue/certification.php?id=$certification->id", $message->contexturl);
         $this->assertSame('1', $message->notification);
-        $this->assertSame($user1->id, $message->useridto);
+        $this->assertSame($related1->id, $message->useridto);
     }
 
     public function test_notify_users() {
@@ -102,6 +116,19 @@ final class valid_test extends \advanced_testcase {
         $programgenerator = $this->getDataGenerator()->get_plugin_generator('enrol_programs');
         /** @var \tool_certificate_generator $certificategenerator */
         $certificategenerator = $this->getDataGenerator()->get_plugin_generator('tool_certificate');
+        /** @var \profilefield_relateduser_generator $relatedgenerator */
+        $relatedgenerator = $this->getDataGenerator()->get_plugin_generator('profilefield_relateduser');
+
+        $categoryid = $relatedgenerator->add_profile_category();
+        $profilefieldid = $relatedgenerator->add_profile_field($categoryid, 'relateduser');
+        $profilefieldid2 = $relatedgenerator->add_profile_field($categoryid, 'relateduser');
+
+        $related1 = $this->getDataGenerator()->create_user();
+        $related2 = $this->getDataGenerator()->create_user();
+        $related3 = $this->getDataGenerator()->create_user();
+        $related4 = $this->getDataGenerator()->create_user();
+        $related5 = $this->getDataGenerator()->create_user();
+        $related6 = $this->getDataGenerator()->create_user();
 
         $now = time();
 
@@ -113,6 +140,13 @@ final class valid_test extends \advanced_testcase {
         $user4 = $this->getDataGenerator()->create_user();
         $user5 = $this->getDataGenerator()->create_user();
         $user6 = $this->getDataGenerator()->create_user();
+
+        $relatedgenerator->add_user_info_data($user1->id, $profilefieldid, $related1->id);
+        $relatedgenerator->add_user_info_data($user2->id, $profilefieldid, $related2->id);
+        $relatedgenerator->add_user_info_data($user3->id, $profilefieldid, $related3->id);
+        $relatedgenerator->add_user_info_data($user4->id, $profilefieldid, $related4->id);
+        $relatedgenerator->add_user_info_data($user5->id, $profilefieldid, $related5->id);
+        $relatedgenerator->add_user_info_data($user6->id, $profilefieldid, $related6->id);
 
         $data = [
             'programid1' => $program1->id,
@@ -196,24 +230,26 @@ final class valid_test extends \advanced_testcase {
         $certification2 = certification::update_certification_general((object)['id' => $certification2->id, 'archived' => 1]);
 
         $sink = $this->redirectMessages();
-        valid::notify_users(null, null);
+        valid_relateduser::notify_users(null, null);
         $messages = $sink->get_messages();
         $sink->close();
         $this->assertCount(0, $messages);
 
-        $notification = $generator->create_certifiction_notification(['certificationid' => $certification1->id, 'notificationtype' => 'valid']);
-        $notification = $generator->create_certifiction_notification(['certificationid' => $certification2->id, 'notificationtype' => 'valid']);
+        set_config('notification_relateduserfield', $profilefieldid, 'tool_certify');
+
+        $notification = $generator->create_certifiction_notification(['certificationid' => $certification1->id, 'notificationtype' => 'valid_relateduser']);
+        $notification = $generator->create_certifiction_notification(['certificationid' => $certification2->id, 'notificationtype' => 'valid_relateduser']);
 
         $sink = $this->redirectMessages();
-        valid::notify_users(null, null);
+        valid_relateduser::notify_users(null, null);
         $messages = $sink->get_messages();
         $sink->close();
         $this->assertCount(2, $messages);
 
         $message = array_shift($messages);
-        $this->assertSame($user1->id, $message->useridto);
+        $this->assertSame($related1->id, $message->useridto);
 
         $message = array_shift($messages);
-        $this->assertSame($user2->id, $message->useridto);
+        $this->assertSame($related2->id, $message->useridto);
     }
 }

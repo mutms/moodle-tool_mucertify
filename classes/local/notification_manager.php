@@ -34,8 +34,11 @@ final class notification_manager extends \local_openlms\notification\manager {
         // Note: order here affects cron task execution.
         return [
             'assignment' => notification\assignment::class,
+            'assignment_relateduser' => notification\assignment_relateduser::class,
             'valid' => notification\valid::class,
+            'valid_relateduser' => notification\valid_relateduser::class,
             'unassignment' => notification\unassignment::class,
+            'unassignment_relateduser' => notification\unassignment_relateduser::class,
         ];
     }
 
@@ -48,6 +51,15 @@ final class notification_manager extends \local_openlms\notification\manager {
         global $DB;
 
         $types = self::get_all_types();
+
+        $fieldid = notification\base::get_relateduser_fieldid();
+        if (!$fieldid) {
+            foreach ($types as $k => $v) {
+                if (str_ends_with($k, '_relateduser')) {
+                    unset($types[$k]);
+                }
+            }
+        }
 
         $existing = $DB->get_records('local_openlms_notifications',
             ['component' => 'tool_certify', 'instanceid' => $instanceid]);
@@ -277,23 +289,23 @@ final class notification_manager extends \local_openlms\notification\manager {
     /**
      * Returns last notification time for given user in certification.
      *
-     * @param int $userid
+     * @param int $assigneduserid
      * @param int $certificationid
      * @param string $notificationtype
      * @return int|null
      */
-    public static function get_timenotified(int $userid, int $certificationid, string $notificationtype): ?int {
+    public static function get_timenotified(int $assigneduserid, int $certificationid, string $notificationtype): ?int {
         global $DB;
 
-        $params = ['certificationid' => $certificationid, 'userid' => $userid, 'type' => $notificationtype];
+        $params = ['certificationid' => $certificationid, 'assigneduserid' => $assigneduserid, 'type' => $notificationtype];
         $sql = "SELECT MAX(un.timenotified)
                   FROM {tool_certify_assignments} pa
                   JOIN {tool_certify_certifications} p ON p.id = pa.certificationid
                   JOIN {local_openlms_notifications} n
                        ON n.component = 'tool_certify' AND n.notificationtype = :type AND n.instanceid = p.id
                   JOIN {local_openlms_user_notified} un
-                       ON un.notificationid = n.id AND un.userid = pa.userid AND un.otherid1 = pa.id
-                 WHERE p.id = :certificationid AND pa.userid = :userid";
+                       ON un.notificationid = n.id AND un.otherid1 = pa.id
+                 WHERE p.id = :certificationid AND pa.userid = :assigneduserid";
         return $DB->get_field_sql($sql, $params);
     }
 }

@@ -49,15 +49,56 @@ abstract class base extends \local_openlms\notification\notificationtype {
     }
 
     /**
+     * Returns relateduser field id.
+     * @return int|null
+     */
+    public static function get_relateduser_fieldid(): ?int {
+        if (!get_config('profilefield_relateduser', 'version')) {
+            return null;
+        }
+        $fieldid = (int)get_config('tool_certify', 'notification_relateduserfield');
+        if ($fieldid > 0) {
+            return $fieldid;
+        }
+        return null;
+    }
+
+    /**
+     * Returns relateduser.
+     *
+     * @param int $userid
+     * @return stdClass|null
+     */
+    public static function get_relateduser(int $userid): ?stdClass {
+        global $DB;
+
+        $fieldid = self::get_relateduser_fieldid();
+        if (!$fieldid) {
+            return null;
+        }
+        $ruid = $DB->get_field('user_info_data', 'data', ['fieldid' => $fieldid, 'userid' => $userid]);
+        if (!$ruid) {
+            return null;
+        }
+        $relateduser = $DB->get_record('user', ['id' => $ruid, 'deleted' => 0, 'confirmed' => 1]);
+        if (!$relateduser) {
+            return null;
+        }
+        return $relateduser;
+    }
+
+    /**
      * Returns standard certification assignment placeholders.
      *
      * @param stdClass $certification
      * @param stdClass $source
      * @param stdClass $assignment
      * @param stdClass $user
+     * @param stdClass|null $relateduser
      * @return array
      */
-    public static function get_assignment_placeholders(stdClass $certification, stdClass $source, stdClass $assignment, stdClass $user): array {
+    public static function get_assignment_placeholders(stdClass $certification, stdClass $source, stdClass $assignment,
+                                                       stdClass $user, ?stdClass $relateduser = null): array {
         /** @var \tool_certify\local\source\base[] $sourceclasses */
         $sourceclasses = \tool_certify\local\assignment::get_source_classes();
         if (isset($sourceclasses[$source->type])) {
@@ -81,6 +122,18 @@ abstract class base extends \local_openlms\notification\notificationtype {
         $a['certification_sourcename'] = $sourcename;
         $a['certification_status'] = \tool_certify\local\assignment::get_status_html($certification, $assignment);
 
+        if ($relateduser) {
+            $context = \context::instance_by_id($certification->contextid);
+            $a['relateduser_fullname'] = s(fullname($relateduser));
+            $a['relateduser_firstname'] = s($relateduser->firstname);
+            $a['relateduser_lastname'] = s($relateduser->lastname);
+            if (has_capability('tool/certify:view', $context, $relateduser)) {
+                $a['certification_url'] = (new moodle_url('/admin/tool/certify/management/user_assignment.php', ['id' => $assignment->id]))->out(false);
+            } else {
+                $a['certification_url'] = (new moodle_url('/admin/tool/certify/catalogue/certification.php', ['id' => $certification->id]))->out(false);
+            }
+        }
+
         return $a;
     }
 
@@ -92,16 +145,18 @@ abstract class base extends \local_openlms\notification\notificationtype {
      * @param stdClass $assignment
      * @param stdClass $period
      * @param stdClass $user
+     * @param stdClass|null $relateduser
      * @return array
      */
-    public static function get_period_placeholders(stdClass $certification, stdClass $source, stdClass $assignment, stdClass $period, stdClass $user): array {
+    public static function get_period_placeholders(stdClass $certification, stdClass $source, stdClass $assignment, stdClass $period,
+                                                   stdClass $user, ?stdClass $relateduser = null): array {
         if ($period->certificationid != $assignment->certificationid || $period->userid != $assignment->userid) {
             throw new \coding_exception('invalid parameter mix');
         }
 
         $strnotset = get_string('notset', 'tool_certify');
 
-        $a = static::get_assignment_placeholders($certification, $source, $assignment, $user);
+        $a = static::get_assignment_placeholders($certification, $source, $assignment, $user, $relateduser);
 
         $a['period_status'] = \tool_certify\local\period::get_status_html($certification, $assignment, $period);
         $a['period_startdate'] = userdate($period->timewindowstart);
@@ -199,6 +254,86 @@ abstract class base extends \local_openlms\notification\notificationtype {
     }
 
     /**
+     * Send notification to assigned user.
+     *
+     * @param stdClass $certification
+     * @param stdClass $source
+     * @param stdClass $assignment
+     * @param ?stdClass $period
+     * @param stdClass $user assigned user
+     * @param stdClass $relateduser user related to assigned user
+     * @param bool $alowmultiple
+     * @return void
+     */
+    protected static function notify_related_user(stdClass $certification, stdClass $source, stdClass $assignment, ?stdClass $period,
+                                                  stdClass $user, stdClass $relateduser, bool $alowmultiple = false): void {
+        global $DB;
+
+        if ($certification->archived) {
+            // Never send notifications for archived certification.
+            return;
+        }
+
+        if ($assignment->archived
+            && static::get_notificationtype() !== 'unassignment'
+            && static::get_notificationtype() !== 'unassignment_relateduser'
+        ) {
+            // Notification for unassigned is different because we require archiving before unassignment.
+            return;
+        }
+
+        if ($user->deleted) {
+            // Do not skip suspended users here, the managers might want to know what is going on with suspended users.
+            return;
+        }
+
+        if (!$relateduser || $relateduser->suspended) {
+            return;
+        }
+
+        $notification = $DB->get_record('local_openlms_notifications', [
+            'instanceid' => $certification->id,
+            'component' => static::get_component(),
+            'notificationtype' => static::get_notificationtype(),
+        ]);
+        if (!$notification || !$notification->enabled) {
+            return;
+        }
+
+        try {
+            self::force_language($user->lang);
+
+            if ($period) {
+                $a = static::get_period_placeholders($certification, $source, $assignment, $period, $user, $relateduser);
+                $periodid = $period->id;
+            } else {
+                $a = static::get_assignment_placeholders($certification, $source, $assignment, $user, $relateduser);
+                $periodid = null;
+            }
+            $subject = static::get_subject($notification, $a);
+            $body = static::get_body($notification, $a);
+
+            $message = new \core\message\message();
+            $message->notification = '1';
+            $message->component = static::get_component();
+            $message->name = static::get_provider();
+            $message->userfrom = static::get_notifier($certification, $assignment);
+            $message->userto = $relateduser;
+            $message->subject = $subject;
+            $message->fullmessage = $body;
+            $message->fullmessageformat = FORMAT_HTML;
+            $message->fullmessagehtml = $body;
+            $message->smallmessage = $subject;
+            $message->contexturlname = $a['certification_fullname'];
+            $message->contexturl = $a['certification_url'] ?? null;
+
+            self::message_send($message, $notification->id, $relateduser->id, $assignment->id, $periodid, $alowmultiple);
+        } finally {
+            self::revert_language();
+        }
+    }
+
+    /**
      * Send notifications.
      *
      * @param stdClass|null $certification
@@ -226,7 +361,6 @@ abstract class base extends \local_openlms\notification\notificationtype {
         }
         $DB->delete_records('local_openlms_user_notified', [
             'notificationid' => $notification->id,
-            'userid' => $assignment->userid,
             'otherid1' => $assignment->id,
         ]);
     }
@@ -250,7 +384,6 @@ abstract class base extends \local_openlms\notification\notificationtype {
         }
         $DB->delete_records('local_openlms_user_notified', [
             'notificationid' => $notification->id,
-            'userid' => $period->userid,
             'otherid2' => $period->id,
         ]);
     }

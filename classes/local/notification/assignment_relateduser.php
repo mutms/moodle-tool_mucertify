@@ -19,14 +19,14 @@ namespace tool_certify\local\notification;
 use stdClass;
 
 /**
- * Certification unassignment notification.
+ * Certification assignment_relateduser notification.
  *
  * @package    tool_certify
- * @copyright  2023 Open LMS (https://www.openlms.net/)
+ * @copyright  2024 Open LMS (https://www.openlms.net/)
  * @author     Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-final class unassignment extends base {
+final class assignment_relateduser extends base {
     /**
      * Send notifications.
      *
@@ -35,29 +35,11 @@ final class unassignment extends base {
      * @return void
      */
     public static function notify_users(?stdClass $certification, ?stdClass $user): void {
-        // We notify during unassignment and then delete all notifications,
-        // this cannot be triggered from cron later.
+        // Nothing to do, we notify during assignment.
     }
 
     /**
-     * Returns certification unassignment placeholders.
-     *
-     * @param stdClass $certification
-     * @param stdClass $source
-     * @param stdClass $assignment
-     * @param stdClass $user
-     * @param stdClass|null $relateduser
-     * @return array
-     */
-    public static function get_assignment_placeholders(stdClass $certification, stdClass $source, stdClass $assignment,
-                                                       stdClass $user, ?stdClass $relateduser = null): array {
-        $a = parent::get_assignment_placeholders($certification, $source, $assignment, $user, $relateduser);
-        $a['certification_url'] = (new \moodle_url('/admin/tool/certify/catalogue/certification.php', ['id' => $certification->id]))->out(false);
-        return $a;
-    }
-
-    /**
-     * Notify users about unassignment.
+     * Send notifications related to assignment.
      *
      * @param stdClass $user
      * @param stdClass $certification
@@ -66,6 +48,11 @@ final class unassignment extends base {
      * @return void
      */
     public static function notify_now(stdClass $user, stdClass $certification, stdClass $source, stdClass $assignment): void {
-        self::notify_assigned_user($certification, $source, $assignment, null, $user);
+        $relateduser = self::get_relateduser($assignment->userid);
+        if (!$relateduser) {
+            return;
+        }
+
+        self::notify_related_user($certification, $source, $assignment, null, $user, $relateduser, false);
     }
 }

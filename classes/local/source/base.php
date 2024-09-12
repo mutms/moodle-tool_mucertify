@@ -268,6 +268,7 @@ abstract class base {
         $event->trigger();
 
         \tool_certify\local\notification\assignment::notify_now($user, $certification, $source, $assignment);
+        \tool_certify\local\notification\assignment_relateduser::notify_now($user, $certification, $source, $assignment);
 
         return $assignment;
     }
@@ -292,6 +293,7 @@ abstract class base {
 
         if ($user) {
             \tool_certify\local\notification\unassignment::notify_now($user, $certification, $source, $assignment);
+            \tool_certify\local\notification\unassignment_relateduser::notify_now($user, $certification, $source, $assignment);
         }
         \tool_certify\local\notification_manager::delete_assignment_notifications($assignment);
 
