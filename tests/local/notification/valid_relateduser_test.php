@@ -34,6 +34,10 @@ use tool_certify\local\source\manual;
  */
 final class valid_relateduser_test extends \advanced_testcase {
     public function setUp(): void {
+        if (!get_config('profilefield_relateduser', 'version')) {
+            $this->markTestSkipped('profilefield_relateduser not installed');
+        }
+
         $this->resetAfterTest();
     }
 
