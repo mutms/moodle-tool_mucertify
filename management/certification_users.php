@@ -84,7 +84,7 @@ if (!$certification->archived && has_capability('tool/certify:admin', $context))
     $link = new \local_openlms\output\dialog_form\link($url, get_string('history_upload', 'tool_certify'));
     $extramenu->add_dialog_form($link);
 }
-\core\hook\manager::get_instance()->dispatch($extramenu);
+\core\di::get(\core\hook\manager::class)->dispatch($extramenu);
 
 echo '<div class="assignment-filtering">';
 // Add search form.
