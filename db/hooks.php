@@ -26,6 +26,6 @@
 $callbacks = [
     [
         'hook' => \local_navmenu\hook\item_classes::class,
-        'callback' => \tool_certify\callback\local_navmenu::class . '::item_classes',
+        'callback' => [\tool_certify\callback\local_navmenu::class, 'item_classes'],
     ],
 ];
