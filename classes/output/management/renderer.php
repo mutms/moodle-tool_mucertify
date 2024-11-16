@@ -44,7 +44,7 @@ class renderer extends \plugin_renderer_base {
         if (!empty($presentation['image'])) {
             $imageurl = moodle_url::make_file_url("$CFG->wwwroot/pluginfile.php",
                 '/' . $context->id . '/tool_certify/image/' . $certification->id . '/'. $presentation['image'], false);
-            $result .= '<div class="float-right certificationimage">' . html_writer::img($imageurl, '') . '</div>';
+            $result .= '<div class="float-end certificationimage">' . html_writer::img($imageurl, '') . '</div>';
         }
         $result .= '<dl class="row">';
         $result .= '<dt class="col-3">' . get_string('fullname') . ':</dt><dd class="col-9">'

@@ -51,7 +51,7 @@ class renderer extends \plugin_renderer_base {
         if (!empty($presentation['image'])) {
             $imageurl = \moodle_url::make_file_url("$CFG->wwwroot/pluginfile.php",
                 '/' . $context->id . '/tool_certify/image/' . $certification->id . '/'. $presentation['image'], false);
-            $certificationimage = '<div class="float-right certificationimage">' . \html_writer::img($imageurl, '') . '</div>';
+            $certificationimage = '<div class="float-end certificationimage">' . \html_writer::img($imageurl, '') . '</div>';
         }
 
         $result = '';
@@ -174,7 +174,7 @@ EOT;
     public function render_block_footer(): string {
         $url = \tool_certify\local\catalogue::get_catalogue_url();
         if ($url) {
-            return '<div class="float-right">' . \html_writer::link($url, get_string('catalogue', 'tool_certify')) . '</div>';
+            return '<div class="float-end">' . \html_writer::link($url, get_string('catalogue', 'tool_certify')) . '</div>';
         }
         return '';
     }
