@@ -30,7 +30,7 @@ defined('MOODLE_INTERNAL') || die();
 $plugin->version   = 2024091900;
 $plugin->requires  = 2024091700.00; // 4.5.0
 $plugin->component = 'tool_certify';
-$plugin->release   = 'v4.0.0dev';
+$plugin->release   = 'v4.0.1';
 $plugin->supported = [405, 405];
 
 $plugin->dependencies = [
