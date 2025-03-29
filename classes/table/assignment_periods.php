@@ -1,37 +1,42 @@
 <?php
-// This file is part of Moodle - https://moodle.org/
+// This file is part of Certifications for Moodle™.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-namespace tool_certify\table;
+// phpcs:disable moodle.Files.BoilerplateComment.CommentEndedTooSoon
+
+namespace tool_mucertify\table;
 
 use stdClass;
 use moodle_url;
-use tool_certify\local\period;
+use tool_mucertify\local\period;
+
+defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->libdir . '/tablelib.php');
 
 /**
  * Periods for given assignment.
  *
- * @package    tool_certify
+ * @package    tool_mucertify
  * @copyright  2023 Open LMS (https://www.openlms.net/)
+ * @copyright  2025 Petr Skoda
  * @author     Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class assignment_periods extends \table_sql {
-
+    /** @var int per page */
     const DEFAULT_PERPAGE = 99;
 
     /** @var stdClass */
@@ -43,8 +48,15 @@ final class assignment_periods extends \table_sql {
     /** @var string */
     public $search = '';
 
+    /**
+     * Constructor.
+     *
+     * @param stdClass $certification
+     * @param stdClass $assignment
+     * @param moodle_url $url
+     */
     public function __construct(stdClass $certification, stdClass $assignment, moodle_url $url) {
-        parent::__construct('tool_certify_assignment_periods');
+        parent::__construct('tool_mucertify_assignment_periods');
 
         $this->assignment = $assignment;
         $this->certification = $certification;
@@ -78,27 +90,27 @@ final class assignment_periods extends \table_sql {
         }
         $columns[] = 'status';
         $headers = [
-            get_string('windowstartdate', 'tool_certify'),
-            get_string('windowduedate', 'tool_certify'),
-            get_string('windowenddate', 'tool_certify'),
-            get_string('program', 'enrol_programs'),
-            get_string('untildate', 'tool_certify'),
+            get_string('windowstartdate', 'tool_mucertify'),
+            get_string('windowduedate', 'tool_mucertify'),
+            get_string('windowenddate', 'tool_mucertify'),
+            get_string('program', 'tool_muprog'),
+            get_string('untildate', 'tool_mucertify'),
         ];
         if ($this->certification->recertify) {
-            $headers[] = get_string('recertify', 'tool_certify');
+            $headers[] = get_string('recertify', 'tool_mucertify');
         }
-        $headers[] = get_string('periodstatus', 'tool_certify');
+        $headers[] = get_string('periodstatus', 'tool_mucertify');
 
         $this->define_columns($columns);
         $this->define_headers($headers);
-        $this->set_attribute('id', 'tool_certify_assignment_periods_table');
+        $this->set_attribute('id', 'tool_mucertify_assignment_periods_table');
 
         $params = ['assignmentid' => $this->assignment->id];
 
         $sql = "SELECT p.*, pr.fullname AS programfullname, pr.contextid as programcontextid
-                  FROM {tool_certify_periods} p
-                  JOIN {tool_certify_assignments} a ON a.userid = p.userid AND a.certificationid = p.certificationid
-             LEFT JOIN {enrol_programs_programs} pr ON pr.id = p.programid
+                  FROM {tool_mucertify_period} p
+                  JOIN {tool_mucertify_assignment} a ON a.userid = p.userid AND a.certificationid = p.certificationid
+             LEFT JOIN {tool_muprog_program} pr ON pr.id = p.programid
                  WHERE a.id = :assignmentid";
 
         $this->set_sql("*", "($sql) xperiod", '1=1', $params);
@@ -115,17 +127,17 @@ final class assignment_periods extends \table_sql {
         if ($period->programfullname !== null) {
             $name = format_string($period->programfullname);
             $context = \context::instance_by_id($period->programcontextid, IGNORE_MISSING);
-            if ($context && has_capability('enrol/programs:view', $context)) {
-                if ($period->allocationid && $DB->record_exists('enrol_programs_allocations', ['id' => $period->allocationid])) {
-                    $url = new moodle_url('/enrol/programs/management/user_allocation.php', ['id' => $period->allocationid]);
+            if ($context && has_capability('tool/muprog:view', $context)) {
+                if ($period->allocationid && $DB->record_exists('tool_muprog_allocation', ['id' => $period->allocationid])) {
+                    $url = new moodle_url('/admin/tool/muprog/management/user_allocation.php', ['id' => $period->allocationid]);
                 } else {
-                    $url = new moodle_url('/enrol/programs/management/program.php', ['id' => $period->programid]);
+                    $url = new moodle_url('/admin/tool/muprog/management/program.php', ['id' => $period->programid]);
                 }
                 $name = \html_writer::link($url, $name);
             }
             return $name;
         }
-        return get_string('notset', 'tool_certify');
+        return get_string('notset', 'tool_mucertify');
     }
 
     /**
@@ -136,7 +148,7 @@ final class assignment_periods extends \table_sql {
      */
     public function col_timewindowstart(stdClass $period): string {
         $start = period::get_windowstart_html($this->certification, $this->assignment, $period, true);
-        $url = new moodle_url('/admin/tool/certify/management/period.php', ['id' => $period->id]);
+        $url = new moodle_url('/admin/tool/mucertify/management/period.php', ['id' => $period->id]);
         return \html_writer::link($url, $start);
     }
 
@@ -190,6 +202,9 @@ final class assignment_periods extends \table_sql {
         return period::get_recertify_html($this->certification, $this->assignment, $period, true);
     }
 
+    /**
+     * No results.
+     */
     public function print_nothing_to_display(): void {
         // Get rid of ugly H2 heading.
         echo '<em>' . get_string('nothingtodisplay') . '</em>';

@@ -1,4 +1,4 @@
-@tool @tool_certify @openlms
+@tool @tool_mucertify @muTMS
 Feature: Manual certification assignment tests
 
   Background:
@@ -14,12 +14,12 @@ Feature: Manual certification assignment tests
       | Cohort 1 | CH1      |
       | Cohort 2 | CH2      |
       | Cohort 3 | CH3      |
-    And the following "enrol_programs > programs" exist:
-      | fullname    | idnumber | category | public | sources  |
-      | Program 000 | PR0      |          | 0      | certify  |
-      | Program 001 | PR1      | Cat 1    | 0      | certify  |
-      | Program 002 | PR2      | Cat 2    | 0      | certify  |
-      | Program 003 | PR3      | Cat 3    | 0      | certify  |
+    And the following "tool_muprog > programs" exist:
+      | fullname    | idnumber | category | public | sources    |
+      | Program 000 | PR0      |          | 0      | mucertify  |
+      | Program 001 | PR1      | Cat 1    | 0      | mucertify  |
+      | Program 002 | PR2      | Cat 2    | 0      | mucertify  |
+      | Program 003 | PR3      | Cat 3    | 0      | mucertify  |
     And the following "users" exist:
       | username | firstname | lastname | email                | idnumber |
       | manager  | Site      | Manager  | manager@example.com  | m        |
@@ -42,13 +42,13 @@ Feature: Manual certification assignment tests
       | certification viewer  | pviewer   |
       | certification manager | pmanager  |
     And the following "permission overrides" exist:
-      | capability                   | permission | role     | contextlevel | reference |
-      | tool/certify:view            | Allow      | pviewer  | System       |           |
-      | tool/certify:view            | Allow      | pmanager | System       |           |
-      | tool/certify:edit            | Allow      | pmanager | System       |           |
-      | tool/certify:delete          | Allow      | pmanager | System       |           |
-      | tool/certify:assign          | Allow      | pmanager | System       |           |
-      | moodle/cohort:view           | Allow      | pmanager | System       |           |
+      | capability                     | permission | role     | contextlevel | reference |
+      | tool/mucertify:view            | Allow      | pviewer  | System       |           |
+      | tool/mucertify:view            | Allow      | pmanager | System       |           |
+      | tool/mucertify:edit            | Allow      | pmanager | System       |           |
+      | tool/mucertify:delete          | Allow      | pmanager | System       |           |
+      | tool/mucertify:assign          | Allow      | pmanager | System       |           |
+      | moodle/cohort:view             | Allow      | pmanager | System       |           |
     And the following "role assigns" exist:
       | user      | role          | contextlevel | reference |
       | manager   | manager       | System       |           |
@@ -56,7 +56,7 @@ Feature: Manual certification assignment tests
       | manager2  | pmanager      | Category     | CAT2      |
       | manager2  | pmanager      | Category     | CAT3      |
       | viewer1   | pviewer       | System       |           |
-    And the following "tool_certify > certifications" exist:
+    And the following "tool_mucertify > certifications" exist:
       | fullname          | idnumber | category | program1 |
       | Certification 000 | CT0      |          | PR0      |
       | Certification 001 | CT1      | Cat 1    | PR1      |
@@ -66,22 +66,22 @@ Feature: Manual certification assignment tests
   @javascript
   Scenario: Manager may assign users manually to certification
     Given I log in as "manager1"
-    And I am on all certifications management page
+    And I am on the "tool_mucertify > All certifications management" page
     And I follow "Certification 000"
-    And I click on "Assignment settings" "link" in the "#region-main" "css_element"
+    And I click on "Assignment settings" "link" in the ".secondary-navigation" "css_element"
     And I click on "Update Manual assignment" "link"
     And I set the following fields to these values:
       | Active | Yes |
     And I press dialog form button "Update"
-    And I should see "Active" in the "Manual assignment:" definition list item
-    And I click on "Users" "link" in the "#region-main" "css_element"
+    And I should see "Active" in the "Manual assignment" definition list item
+    And I click on "Users" "link" in the ".secondary-navigation" "css_element"
 
     When I press "Assign users"
     And I set the following fields to these values:
       | Users | Student 1, Student 5 |
     And I press dialog form button "Assign users"
-    Then "Student 1" row "Source" column of "certification_assignments" table should contain "Manual assignment"
-    And "Student 5" row "Source" column of "certification_assignments" table should contain "Manual assignment"
+    Then "Student 1" row "Source" column of "reportbuilder-table" table should contain "Manual assignment"
+    And "Student 5" row "Source" column of "reportbuilder-table" table should contain "Manual assignment"
     And I should not see "Student 2"
     And I should not see "Student 3"
     And I should not see "Student 4"
@@ -90,105 +90,105 @@ Feature: Manual certification assignment tests
     And I set the following fields to these values:
       | Cohort | Cohort 2 |
     And I press dialog form button "Assign users"
-    Then "Student 1" row "Source" column of "certification_assignments" table should contain "Manual assignment"
-    And "Student 2" row "Source" column of "certification_assignments" table should contain "Manual assignment"
-    And "Student 5" row "Source" column of "certification_assignments" table should contain "Manual assignment"
+    Then "Student 1" row "Source" column of "reportbuilder-table" table should contain "Manual assignment"
+    And "Student 2" row "Source" column of "reportbuilder-table" table should contain "Manual assignment"
+    And "Student 5" row "Source" column of "reportbuilder-table" table should contain "Manual assignment"
     And I should not see "Student 3"
     And I should not see "Student 4"
 
+    And I click on "Actions" "link" in the "Student 2" "table_row"
     When I click on "Delete assignment" "link" in the "Student 2" "table_row"
     And I press dialog form button "Cancel"
-    Then "Student 2" row "Source" column of "certification_assignments" table should contain "Manual assignment"
+    Then "Student 2" row "Source" column of "reportbuilder-table" table should contain "Manual assignment"
 
+    And I click on "Actions" "link" in the "Student 2" "table_row"
     When I click on "Delete assignment" "link" in the "Student 2" "table_row"
     And I press dialog form button "Delete assignment"
     Then I should not see "Student 2"
 
-  @javascript @tool_olms_tenant
+  @javascript @tool_mutenancy
   Scenario: Tenant manager may assign users manually to certification
-    Given tenant support was activated
-    And the following "tool_olms_tenant > tenants" exist:
-      | name     | idnumber | category |
-      | Tenant 1 | TEN1     | CAT1     |
-      | Tenant 2 | TEN2     | CAT2     |
+    Given the following "tool_mutenancy > tenants" exist:
+      | name     | idnumber | category | assoccohort |
+      | Tenant 1 | ten1     | CAT1     | CH1         |
+      | Tenant 2 | ten2     | CAT2     |             |
     And the following "users" exist:
       | username | firstname | lastname | email                | tenant   |
-      | tu1      | Tenant 1  | Student  | tu1@example.com      | TEN1     |
-      | tu2      | Tenant 2  | Student  | tu2@example.com      | TEN2     |
+      | tu1      | Tenant 1  | Student  | tu1@example.com      | ten1     |
+      | tu2      | Tenant 2  | Student  | tu2@example.com      | ten2     |
     And I log in as "manager"
 
-    And I am on all certifications management page
+    And I am on the "tool_mucertify > All certifications management" page
     And I follow "Certification 000"
-    And I click on "Assignment settings" "link" in the "#region-main" "css_element"
+    And I click on "Assignment settings" "link" in the ".secondary-navigation" "css_element"
     And I click on "Update Manual assignment" "link"
     And I set the following fields to these values:
       | Active | Yes |
     And I press dialog form button "Update"
-    And I should see "Active" in the "Manual assignment:" definition list item
-    And I click on "Users" "link" in the "#region-main" "css_element"
+    And I should see "Active" in the "Manual assignment" definition list item
+    And I click on "Users" "link" in the ".secondary-navigation" "css_element"
     When I press "Assign users"
     And I set the following fields to these values:
       | Users | Student 1 |
     And I press dialog form button "Assign users"
-    Then "Student 1" row "Source" column of "certification_assignments" table should contain "Manual assignment"
+    Then "Student 1" row "Source" column of "reportbuilder-table" table should contain "Manual assignment"
 
-    And I am on all certifications management page
+    And I am on the "tool_mucertify > All certifications management" page
     And I follow "Certification 001"
-    And I click on "Assignment settings" "link" in the "#region-main" "css_element"
+    And I click on "Assignment settings" "link" in the ".secondary-navigation" "css_element"
     And I click on "Update Manual assignment" "link"
     And I set the following fields to these values:
       | Active | Yes |
     And I press dialog form button "Update"
-    And I should see "Active" in the "Manual assignment:" definition list item
-    And I click on "Users" "link" in the "#region-main" "css_element"
+    And I should see "Active" in the "Manual assignment" definition list item
+    And I click on "Users" "link" in the ".secondary-navigation" "css_element"
 
     When I press "Assign users"
     And I set the following fields to these values:
       | Users | Student 1 |
     And I press dialog form button "Assign users"
-    And "Student 1" row "Source" column of "certification_assignments" table should contain "Manual assignment"
-
-    And I click on "Select a tenant" "link"
+    And "Student 1" row "Source" column of "reportbuilder-table" table should contain "Manual assignment"
+    And I click on "Switch tenant" "link"
     And I set the following fields to these values:
       | Tenant      | Tenant 1         |
-    And I press dialog form button "Switch"
+    And I press dialog form button "Switch tenant"
 
-    And I am on all certifications management page
+    And I am on the "tool_mucertify > All certifications management" page
     And I follow "Certification 000"
-    And I click on "Users" "link" in the "#region-main" "css_element"
+    And I click on "Users" "link" in the ".secondary-navigation" "css_element"
 
     When I press "Assign users"
     And I set the following fields to these values:
       | Users | Tenant 1 Student |
     And I press dialog form button "Assign users"
-    Then "Tenant 1 Student" row "Source" column of "certification_assignments" table should contain "Manual assignment"
+    Then "Tenant 1 Student" row "Source" column of "reportbuilder-table" table should contain "Manual assignment"
 
-    And I am on all certifications management page
+    And I am on the "tool_mucertify > All certifications management" page
     And I follow "Certification 001"
-    And I click on "Users" "link" in the "#region-main" "css_element"
+    And I click on "Users" "link" in the ".secondary-navigation" "css_element"
 
     When I press "Assign users"
     And I set the following fields to these values:
       | Users | Tenant 1 Student |
     And I press dialog form button "Assign users"
-    Then "Tenant 1 Student" row "Source" column of "certification_assignments" table should contain "Manual assignment"
+    Then "Tenant 1 Student" row "Source" column of "reportbuilder-table" table should contain "Manual assignment"
 
   @javascript @_file_upload
   Scenario: Manager may assign users in bulk using csv to certification
     Given I log in as "manager1"
-    And I am on all certifications management page
+    And I am on the "tool_mucertify > All certifications management" page
     And I follow "Certification 000"
-    And I click on "Users" "link" in the "#region-main" "css_element"
+    And I click on "Users" "link" in the ".secondary-navigation" "css_element"
     Then I should not see "Upload assignments"
-    And I click on "Assignment settings" "link" in the "#region-main" "css_element"
+    And I click on "Assignment settings" "link" in the ".secondary-navigation" "css_element"
     And I click on "Update Manual assignment" "link"
     And I set the following fields to these values:
       | Active | Yes |
     And I press dialog form button "Update"
-    And I click on "Users" "link" in the "#region-main" "css_element"
+    And I click on "Users" "link" in the ".secondary-navigation" "css_element"
 
     When I click on "Upload assignments" "button"
-    And I upload "admin/tool/certify/tests/fixtures/assign.csv" file to "CSV file" filemanager
+    And I upload "admin/tool/mucertify/tests/fixtures/assign.csv" file to "CSV file" filemanager
     And I press dialog form button "Continue"
     And the following fields match these values:
       | User identification column | username |
@@ -199,7 +199,7 @@ Feature: Manual certification assignment tests
     And I should see "1 errors detected when assigning certification"
 
     When I click on "Upload assignments" "button"
-    And I upload "admin/tool/certify/tests/fixtures/assign.csv" file to "CSV file" filemanager
+    And I upload "admin/tool/mucertify/tests/fixtures/assign.csv" file to "CSV file" filemanager
     And I press dialog form button "Continue"
     And I set the following fields to these values:
       | User identification column | email         |
@@ -209,19 +209,19 @@ Feature: Manual certification assignment tests
     Then I should see "3 users were already assigned to certification"
     And I should see "2 errors detected when assigning certification"
 
-    Given I am on all certifications management page
+    Given I am on the "tool_mucertify > All certifications management" page
     And I follow "Certification 001"
-    And I click on "Users" "link" in the "#region-main" "css_element"
-    And I click on "Assignment settings" "link" in the "#region-main" "css_element"
+    And I click on "Users" "link" in the ".secondary-navigation" "css_element"
+    And I click on "Assignment settings" "link" in the ".secondary-navigation" "css_element"
     And I click on "Update Manual assignment" "link"
     And I set the following fields to these values:
       | Active | Yes |
     And I press dialog form button "Update"
-    And I click on "Users" "link" in the "#region-main" "css_element"
+    And I click on "Users" "link" in the ".secondary-navigation" "css_element"
 
     When I should see "Upload assignments"
     And I click on "Upload assignments" "button"
-    And I upload "admin/tool/certify/tests/fixtures/assign.csv" file to "CSV file" filemanager
+    And I upload "admin/tool/mucertify/tests/fixtures/assign.csv" file to "CSV file" filemanager
     And I press dialog form button "Continue"
     And I set the following fields to these values:
      | Window opening time column    | timewindowstart |
@@ -231,6 +231,6 @@ Feature: Manual certification assignment tests
     Then I should see "3 users were assigned to certification"
     And I should see "2 errors detected when assigning certification"
     And I click on "Student 1" "link"
-    And the following should exist in the "tool_certify_assignment_periods_table" table:
+    And the following should exist in the "tool_mucertify_assignment_periods_table" table:
       | Program     | Window opening  | Certification due | Window closing | Expiration  |
       | Program 001 | 11/10/24, 00:00	| 2/01/25, 00:00    | 2/07/25, 00:00 | Never       |

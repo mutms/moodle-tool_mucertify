@@ -1,4 +1,4 @@
-@tool @tool_certify @openlms
+@tool @tool_mucertify @muTMS
 Feature: Certifications navigation behat steps test
 
   Background:
@@ -22,13 +22,13 @@ Feature: Certifications navigation behat steps test
       | student1 | Student   | 1        | student1@example.com |
       | admin1   | Admin     | 1        | admin1@example.com   |
     And the following "roles" exist:
-      | name           | shortname |
+      | name                 | shortname |
       | Certification viewer | pviewer   |
       | Program admin        | cadmin    |
     And the following "permission overrides" exist:
       | capability                   | permission | role    | contextlevel | reference |
-      | tool/certify:view            | Allow      | pviewer | System       |           |
-      | tool/certify:admin           | Allow      | cadmin  | System       |           |
+      | tool/mucertify:view          | Allow      | pviewer | System       |           |
+      | tool/mucertify:admin         | Allow      | cadmin  | System       |           |
       | moodle/site:configview       | Allow      | cadmin  | System       |           |
     And the following "role assigns" exist:
       | user     | role          | contextlevel | reference |
@@ -37,8 +37,8 @@ Feature: Certifications navigation behat steps test
       | viewer1  | pviewer       | System       |           |
       | viewer2  | pviewer       | Category     | CAT1      |
       | admin1   | cadmin        | System       |           |
-    And the following "tool_certify > certifications" exist:
-      | fullname    | idnumber | category | public | archived |
+    And the following "tool_mucertify > certifications" exist:
+      | fullname          | idnumber | category | public | archived |
       | Certification 000 | PR0      |          | 0      | 0        |
       | Certification 001 | PR1      | Cat 1    | 1      | 0        |
       | Certification 002 | PR2      | Cat 2    | 0      | 0        |
@@ -47,23 +47,20 @@ Feature: Certifications navigation behat steps test
   Scenario: Admin navigates to certifications via behat step
     Given I log in as "admin"
 
-    When I am on all certifications management page
-    Then I should see "Certification management"
-    And I should see "Certification 000"
+    When I am on the "tool_mucertify > All certifications management" page
+    Then I should see "Certification 000"
     And I should see "Certification 001"
     And I should see "Certification 002"
-    And I should not see "Certification 003"
+    And I should see "Certification 003"
 
-    When I am on certifications management page in "system"
-    Then I should see "Certification management"
-    And I should see "Certification 000"
-    And I should not see "Certification 001"
-    And I should not see "Certification 002"
-    And I should not see "Certification 003"
+    When I am on the "System" "tool_mucertify > Certifications management" page
+    Then I should see "Certification 000"
+    And I should see "Certification 001"
+    And I should see "Certification 002"
+    And I should see "Certification 003"
 
-    When I am on certifications management page in "Cat 1"
-    Then I should see "Certification management"
-    And I should not see "Certification 000"
+    When I am on the "Cat 1" "tool_mucertify > Certifications management" page
+    Then I should not see "Certification 000"
     And I should see "Certification 001"
     And I should not see "Certification 002"
     And I should not see "Certification 003"
@@ -73,116 +70,63 @@ Feature: Certifications navigation behat steps test
     Given I log in as "admin"
 
     When I navigate to "Certifications > Certification management" in site administration
-    Then I should see "Certification management"
-    And I should see "Certification 000"
+    Then I should see "Certification 000"
     And I should see "Certification 001"
     And I should see "Certification 002"
-    And I should not see "Certification 003"
+    And I should see "Certification 003"
 
-    When I select "System (2)" from the "Select category" singleselect
-    Then I should see "Certification management"
-    And I should see "Certification 000"
+    When I click on "Filters" "button"
+    And I set the following fields in the "Exclude sub-categories" "core_reportbuilder > Filter" to these values:
+      | Exclude sub-categories operator | Yes |
+    And I click on "Apply" "button" in the "[data-region='report-filters']" "css_element"
+    And I click on "Filters" "button"
+    Then I should see "Certification 000"
     And I should not see "Certification 001"
     And I should not see "Certification 002"
-    And I should not see "Certification 003"
+    And I should see "Certification 003"
 
-    When I select "Cat 1 (1)" from the "Select category" singleselect
-    Then I should see "Certification management"
-    And I should not see "Certification 000"
-    And I should see "Certification 001"
-    And I should not see "Certification 002"
-    And I should not see "Certification 003"
-
-    When I select "All certifications (4)" from the "Select category" singleselect
-    Then I should see "Certification management"
-    And I should see "Certification 000"
+    When I click on "Filters" "button"
+    And I set the following fields in the "Exclude sub-categories" "core_reportbuilder > Filter" to these values:
+      | Exclude sub-categories operator | Is any value |
+    And I click on "Apply" "button" in the "[data-region='report-filters']" "css_element"
+    And I click on "Filters" "button"
+    Then I should see "Certification 000"
     And I should see "Certification 001"
     And I should see "Certification 002"
+    And I should see "Certification 003"
+
+    When I follow "Cat 1"
+    Then I should not see "Certification 000"
+    And I should see "Certification 001"
+    And I should not see "Certification 002"
     And I should not see "Certification 003"
 
   Scenario: Full manager navigates to certifications via behat step
     Given I log in as "manager1"
 
-    When I am on all certifications management page
-    Then I should see "Certification management"
-    And I should see "Certification 000"
+    When I am on the "tool_mucertify > All certifications management" page
+    Then I should see "Certification 000"
     And I should see "Certification 001"
     And I should see "Certification 002"
-    And I should not see "Certification 003"
+    And I should see "Certification 003"
 
-    When I am on certifications management page in "system"
-    Then I should see "Certification management"
-    And I should see "Certification 000"
-    And I should not see "Certification 001"
-    And I should not see "Certification 002"
-    And I should not see "Certification 003"
-
-    When I am on certifications management page in "Cat 1"
-    Then I should see "Certification management"
-    And I should not see "Certification 000"
-    And I should see "Certification 001"
-    And I should not see "Certification 002"
-    And I should not see "Certification 003"
-
-  @javascript
-  Scenario: Full manager navigates to certifications the normal way
-    Given I log in as "admin"
-
-    When I navigate to "Certifications > Certification management" in site administration
-    Then I should see "Certification management"
-    And I should see "Certification 000"
+    When I am on the "System" "tool_mucertify > Certifications management" page
+    Then I should see "Certification 000"
     And I should see "Certification 001"
     And I should see "Certification 002"
-    And I should not see "Certification 003"
-    And I should not see "Certification 003"
+    And I should see "Certification 003"
 
-    When I select "System (2)" from the "Select category" singleselect
-    Then I should see "Certification management"
-    And I should see "Certification 000"
-    And I should not see "Certification 001"
-    And I should not see "Certification 002"
-    And I should not see "Certification 003"
-    And I should not see "Certification 003"
-
-    When I select "Cat 1 (1)" from the "Select category" singleselect
-    Then I should see "Certification management"
-    And I should not see "Certification 000"
+    When I am on the "Cat 1" "tool_mucertify > Certifications management" page
+    Then I should not see "Certification 000"
     And I should see "Certification 001"
     And I should not see "Certification 002"
-    And I should not see "Certification 003"
-    And I should not see "Certification 003"
-
-    When I select "All certifications (4)" from the "Select category" singleselect
-    Then I should see "Certification management"
-    And I should see "Certification 000"
-    And I should see "Certification 001"
-    And I should see "Certification 002"
-    And I should not see "Certification 003"
     And I should not see "Certification 003"
 
   Scenario: Category manager navigates to certifications via behat step
     Given I log in as "manager2"
 
-    When I am on certifications management page in "Cat 1"
-    Then I should see "Certification management"
-    And I should not see "Certification 000"
-    And I should see "Certification 001"
-    And I should not see "Certification 002"
-    And I should not see "Certification 003"
-
-  @javascript
-  Scenario: Category manager navigates to certifications the normal way
-    Given I skip tests if "local_navmenu" is not installed
-    And the following "local_navmenu > items" exist:
-      | itemtype                      |
-      | tool_certify_catalogue        |
-      | tool_certify_mycertifications |
-    And I log in as "manager2"
-
-    When I select "Certification catalogue" from primary navigation
-    And I follow "Certification management"
-    Then I should see "Certification management"
-    And I should not see "Certification 000"
+    When I am on the "Cat 1" "tool_mucertify > Certifications management" page
+    Then I should not see "Certification 000"
     And I should see "Certification 001"
     And I should not see "Certification 002"
     And I should not see "Certification 003"
@@ -190,89 +134,29 @@ Feature: Certifications navigation behat steps test
   Scenario: Full viewer navigates to certifications via behat step
     Given I log in as "viewer1"
 
-    When I am on all certifications management page
-    Then I should see "Certification management"
-    And I should see "Certification 000"
+    When I am on the "tool_mucertify > All certifications management" page
+    Then I should see "Certification 000"
     And I should see "Certification 001"
     And I should see "Certification 002"
-    And I should not see "Certification 003"
+    And I should see "Certification 003"
 
-    When I am on certifications management page in "system"
-    Then I should see "Certification management"
-    And I should see "Certification 000"
-    And I should not see "Certification 001"
-    And I should not see "Certification 002"
-    And I should not see "Certification 003"
-
-    When I am on certifications management page in "Cat 1"
-    Then I should see "Certification management"
-    And I should not see "Certification 000"
-    And I should see "Certification 001"
-    And I should not see "Certification 002"
-    And I should not see "Certification 003"
-
-  @javascript
-  Scenario: Full viewer navigates to certifications the normal way
-    Given I skip tests if "local_navmenu" is not installed
-    And the following "local_navmenu > items" exist:
-      | itemtype                      |
-      | tool_certify_catalogue        |
-      | tool_certify_mycertifications |
-    And I log in as "viewer1"
-
-    When I select "Certification catalogue" from primary navigation
-    And I follow "Certification management"
-    Then I should see "Certification management"
-    And I should see "Certification 000"
+    When I am on the "System" "tool_mucertify > Certifications management" page
+    Then I should see "Certification 000"
     And I should see "Certification 001"
     And I should see "Certification 002"
-    And I should not see "Certification 003"
+    And I should see "Certification 003"
 
-    When I select "System (2)" from the "Select category" singleselect
-    Then I should see "Certification management"
-    And I should see "Certification 000"
-    And I should not see "Certification 001"
-    And I should not see "Certification 002"
-    And I should not see "Certification 003"
-
-    When I select "Cat 1 (1)" from the "Select category" singleselect
-    Then I should see "Certification management"
-    And I should not see "Certification 000"
+    When I am on the "Cat 1" "tool_mucertify > Certifications management" page
+    Then I should not see "Certification 000"
     And I should see "Certification 001"
     And I should not see "Certification 002"
-    And I should not see "Certification 003"
-
-    When I select "All certifications (4)" from the "Select category" singleselect
-    Then I should see "Certification management"
-    And I should see "Certification 000"
-    And I should see "Certification 001"
-    And I should see "Certification 002"
-    And I should not see "Certification 003"
     And I should not see "Certification 003"
 
   Scenario: Category viewer navigates to certifications via behat step
     Given I log in as "viewer2"
 
-    When I am on certifications management page in "Cat 1"
-    Then I should see "Certification management"
-    And I should not see "Certification 000"
-    And I should see "Certification 001"
-    And I should not see "Certification 002"
-    And I should not see "Certification 003"
-
-  @javascript
-  Scenario: Category viewer navigates to certifications the normal way
-    Given I skip tests if "local_navmenu" is not installed
-    And the following "local_navmenu > items" exist:
-      | itemtype                      |
-      | tool_certify_catalogue        |
-      | tool_certify_mycertifications |
-    And I log in as "manager2"
-
-    When I select "Certification catalogue" from primary navigation
-    And I follow "Certification management"
-    Then I should see "Certification management"
-    And I should not see "Certification 000"
+    When I am on the "Cat 1" "tool_mucertify > Certifications management" page
+    Then I should not see "Certification 000"
     And I should see "Certification 001"
     And I should not see "Certification 002"
     And I should not see "Certification 003"
@@ -280,23 +164,7 @@ Feature: Certifications navigation behat steps test
   Scenario: Student navigates to Certification catalogue via behat step
     Given I log in as "student1"
 
-    When I am on Certification catalogue page
-    Then I should see "Certification catalogue"
-    And I should see "Certification 001"
-    And I should not see "Certification 000"
-    And I should not see "Certification 002"
-    And I should not see "Certification 003"
-
-  @javascript
-  Scenario: Student navigates to Certification catalogue the normal way
-    Given I skip tests if "local_navmenu" is not installed
-    And the following "local_navmenu > items" exist:
-      | itemtype                      |
-      | tool_certify_catalogue        |
-      | tool_certify_mycertifications |
-    And I log in as "student1"
-
-    When I select "Certification catalogue" from primary navigation
+    When I am on the "tool_mucertify > Certification catalogue" page
     Then I should see "Certification catalogue"
     And I should see "Certification 001"
     And I should not see "Certification 000"
@@ -306,20 +174,7 @@ Feature: Certifications navigation behat steps test
   Scenario: Student navigates to My certifications via behat step
     Given I log in as "student1"
 
-    When I am on My certifications page
-    Then I should see "My certifications"
-    And I should see "No assigned certifications found."
-
-  @javascript
-  Scenario: Student navigates to My certifications the normal way
-    Given I skip tests if "local_navmenu" is not installed
-    And the following "local_navmenu > items" exist:
-      | itemtype                      |
-      | tool_certify_catalogue        |
-      | tool_certify_mycertifications |
-    And I log in as "student1"
-
-    When I select "My certifications" from primary navigation
+    When I am on the "tool_mucertify > My certifications" page
     Then I should see "My certifications"
     And I should see "No assigned certifications found."
 
@@ -329,28 +184,23 @@ Feature: Certifications navigation behat steps test
       | capability                    | permission | role         | contextlevel | reference |
       | moodle/site:config            | Allow      | manager      | System       |           |
 
-    When I log in as "admin1"
-    And I navigate to "Certifications > Certification settings" in site administration
-    Then I should see "Allow cohort allocation"
-    And I log out
-
     When I log in as "manager1"
     And I navigate to "Certifications > Certification settings" in site administration
     Then I should see "Allow cohort allocation"
     And I log out
 
     When I log in as "admin"
-    And I am on all certifications management page
+    And I am on the "tool_mucertify > All certifications management" page
     And I follow "Certification 000"
-    And I click on "Assignment settings" "link" in the "#region-main" "css_element"
-    Then I should see "Requests with approval:"
+    And I click on "Assignment settings" "link" in the ".secondary-navigation" "css_element"
+    Then I should see "Requests with approval"
     Then I navigate to "Certifications > Certification settings" in site administration
     Then I should see "Allow cohort allocation"
     And I set the following fields to these values:
       | Allow approvals              |  0  |
     And I press "Save changes"
-    Then I am on all certifications management page
+    Then I am on the "tool_mucertify > All certifications management" page
     And I follow "Certification 000"
-    And I click on "Assignment settings" "link" in the "#region-main" "css_element"
-    Then I should not see "Requests with approval:"
+    And I click on "Assignment settings" "link" in the ".secondary-navigation" "css_element"
+    Then I should not see "Requests with approval"
     And I log out

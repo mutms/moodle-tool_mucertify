@@ -1,4 +1,4 @@
-@tool @tool_certify @openlms @tool_certificate
+@tool @tool_mucertify @muTMS @tool_certificate
 Feature: Issuing of certificates for certification completion
 
   Background:
@@ -15,26 +15,26 @@ Feature: Issuing of certificates for certification completion
       | Certification viewer  | pviewer   |
       | Certification manager | pmanager  |
     And the following "permission overrides" exist:
-      | capability                   | permission | role     | contextlevel | reference |
-      | tool/certify:view            | Allow      | pviewer  | System       |           |
-      | tool/certify:view            | Allow      | pmanager | System       |           |
-      | tool/certify:edit            | Allow      | pmanager | System       |           |
-      | tool/certify:delete          | Allow      | pmanager | System       |           |
-      | tool/certify:assign          | Allow      | pmanager | System       |           |
-      | tool/certify:admin           | Allow      | pmanager | System       |           |
-      | tool/certificate:manage      | Allow      | pmanager | System       |           |
-      | moodle/site:configview       | Allow      | pmanager | System       |           |
-      | tool/certificate:issue       | Allow      | pmanager | System       |           |
+      | capability                     | permission | role     | contextlevel | reference |
+      | tool/mucertify:view            | Allow      | pviewer  | System       |           |
+      | tool/mucertify:view            | Allow      | pmanager | System       |           |
+      | tool/mucertify:edit            | Allow      | pmanager | System       |           |
+      | tool/mucertify:delete          | Allow      | pmanager | System       |           |
+      | tool/mucertify:assign          | Allow      | pmanager | System       |           |
+      | tool/mucertify:admin           | Allow      | pmanager | System       |           |
+      | tool/certificate:manage        | Allow      | pmanager | System       |           |
+      | moodle/site:configview         | Allow      | pmanager | System       |           |
+      | tool/certificate:issue         | Allow      | pmanager | System       |           |
       | tool/certificate:viewallcertificates | Allow| pmanager | System       |           |
     And the following "role assigns" exist:
       | user      | role          | contextlevel | reference |
       | manager1  | pmanager      | System       |           |
       | viewer1   | pviewer       | System       |           |
-    And the following "enrol_programs > programs" exist:
+    And the following "tool_muprog > programs" exist:
       | fullname    | idnumber | category | sources |
-      | Program 000 | PR0      |          | certify |
-      | Program 001 | PR1      |          | certify |
-    And the following "tool_certify > certifications" exist:
+      | Program 000 | PR0      |          | mucertify |
+      | Program 001 | PR1      |          | mucertify |
+    And the following "tool_mucertify > certifications" exist:
       | fullname          | idnumber | category | program1 | sources |
       | Certification 000 | CT0      |          | PR0      | manual  |
       | Certification 001 | CT1      |          | PR1      | manual  |
@@ -50,9 +50,9 @@ Feature: Issuing of certificates for certification completion
     And I follow "New certificate template"
     And I set the field "Name" to "Certificate 2"
     And I click on "Save" "button" in the ".modal.show .modal-footer" "css_element"
-    And I am on all certifications management page
+    And I am on the "tool_mucertify > All certifications management" page
     And I follow "Certification 000"
-    And I click on "Period settings" "link" in the "#region-main" "css_element"
+    And I click on "Period settings" "link" in the ".secondary-navigation" "css_element"
 
     When I click on "Update certificate template" "link"
     And the following fields match these values:
@@ -60,7 +60,7 @@ Feature: Issuing of certificates for certification completion
     And I set the following fields to these values:
       | Certificate template | Certificate 1 |
     And I press dialog form button "Update certificate template"
-    Then I should see "Certificate 1" in the "Certificate template:" definition list item
+    Then I should see "Certificate 1" in the "Certificate template" definition list item
 
     When I click on "Update certificate template" "link"
     And the following fields match these values:
@@ -68,7 +68,7 @@ Feature: Issuing of certificates for certification completion
     And I set the following fields to these values:
       | Certificate template | Certificate 2 |
     And I press dialog form button "Update certificate template"
-    Then I should see "Certificate 2" in the "Certificate template:" definition list item
+    Then I should see "Certificate 2" in the "Certificate template" definition list item
 
     When I click on "Update certificate template" "link"
     And the following fields match these values:
@@ -76,13 +76,13 @@ Feature: Issuing of certificates for certification completion
     And I set the following fields to these values:
       | Certificate template | Certificate 1 |
     And I press dialog form button "Update certificate template"
-    Then I should see "Certificate 1" in the "Certificate template:" definition list item
+    Then I should see "Certificate 1" in the "Certificate template" definition list item
 
     When I click on "Update certificate template" "link"
     And I set the following fields to these values:
       | Certificate template | Not set       |
     And I press dialog form button "Update certificate template"
-    Then I should see "Not set" in the "Certificate template:" definition list item
+    Then I should see "Not set" in the "Certificate template" definition list item
 
   @javascript
   Scenario: User is issued a certification certificate
@@ -91,17 +91,17 @@ Feature: Issuing of certificates for certification completion
     And I follow "New certificate template"
     And I set the field "Name" to "Certificate 1"
     And I click on "Save" "button" in the ".modal.show .modal-footer" "css_element"
-    And I am on all certifications management page
+    And I am on the "tool_mucertify > All certifications management" page
     And I follow "Certification 000"
-    And I click on "Period settings" "link" in the "#region-main" "css_element"
+    And I click on "Period settings" "link" in the ".secondary-navigation" "css_element"
 
     And I click on "Update certificate template" "link"
     And I set the following fields to these values:
       | Certificate template | Certificate 1 |
     And I press dialog form button "Update certificate template"
-    And I should see "Certificate 1" in the "Certificate template:" definition list item
+    And I should see "Certificate 1" in the "Certificate template" definition list item
 
-    And I click on "Users" "link" in the "#region-main" "css_element"
+    And I click on "Users" "link" in the ".secondary-navigation" "css_element"
     And I press "Assign users"
     And I set the following fields to these values:
       | Users                    | Student 1 |
@@ -129,11 +129,13 @@ Feature: Issuing of certificates for certification completion
       | timecertified[hour]    | 09        |
       | timecertified[minute]  | 00        |
     And I press dialog form button "Override period dates"
-    And I should see "Valid" in the "Certification status:" definition list item
+    And I should see "Valid" in the "Certification status" definition list item
 
     And I log out
 
-    When I run the "tool_certify\task\cron" task
+# TODO fix me
+#    When I run all adhoc tasks
+    When I run the "tool_mucertify\task\cron" task
     And I log in as "student1"
     And I follow "Profile" in the user menu
     And I click on "//a[contains(.,'My certificates') and contains(@href,'tool/certificate')]" "xpath_element"

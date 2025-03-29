@@ -1,28 +1,32 @@
 <?php
-// This file is part of Moodle - https://moodle.org/
+// This file is part of Certifications for Moodle™.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-namespace tool_certify\local\notification;
+// phpcs:disable moodle.Files.BoilerplateComment.CommentEndedTooSoon
+// phpcs:disable moodle.Files.LineLength.TooLong
+
+namespace tool_mucertify\local\notification;
 
 use stdClass;
 
 /**
  * Certification validity notification.
  *
- * @package    tool_certify
+ * @package    tool_mucertify
  * @copyright  2023 Open LMS (https://www.openlms.net/)
+ * @copyright  2025 Petr Skoda
  * @author     Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -42,17 +46,17 @@ final class valid extends base {
         $loadfunction = function(stdClass $period) use (&$certification, &$source, &$assignment, &$user): void {
             global $DB;
             if (!$assignment || $assignment->userid != $period->userid || $assignment->certificationid != $period->certificationid) {
-                $assignment = $DB->get_record('tool_certify_assignments',
+                $assignment = $DB->get_record('tool_mucertify_assignment',
                     ['userid' => $period->userid, 'certificationid' => $period->certificationid], '*', MUST_EXIST);
             }
             if (!$source || $source->id != $assignment->sourceid) {
-                $source = $DB->get_record('tool_certify_sources', ['id' => $assignment->sourceid], '*', MUST_EXIST);
+                $source = $DB->get_record('tool_mucertify_source', ['id' => $assignment->sourceid], '*', MUST_EXIST);
             }
             if (!$user || $user->id != $period->userid) {
                 $user = $DB->get_record('user', ['id' => $period->userid], '*', MUST_EXIST);
             }
             if (!$certification || $certification->id != $period->certificationid) {
-                $certification = $DB->get_record('tool_certify_certifications', ['id' => $period->certificationid], '*', MUST_EXIST);
+                $certification = $DB->get_record('tool_mucertify_certification', ['id' => $period->certificationid], '*', MUST_EXIST);
             }
         };
 
@@ -71,14 +75,14 @@ final class valid extends base {
         $params['now2'] = $params['now1'];
 
         $sql = "SELECT cp.*
-                  FROM {tool_certify_periods} cp
-                  JOIN {tool_certify_assignments} ca ON ca.userid = cp.userid AND ca.certificationid = cp.certificationid
+                  FROM {tool_mucertify_period} cp
+                  JOIN {tool_mucertify_assignment} ca ON ca.userid = cp.userid AND ca.certificationid = cp.certificationid
                   JOIN {user} u ON u.id = ca.userid AND u.deleted = 0 AND u.suspended = 0
-                  JOIN {tool_certify_sources} cs ON cs.id = ca.sourceid
-                  JOIN {tool_certify_certifications} c ON c.id = ca.certificationid
-                  JOIN {local_openlms_notifications} n
-                       ON n.component = 'tool_certify' AND n.notificationtype = 'valid' AND n.instanceid = c.id AND n.enabled = 1
-             LEFT JOIN {local_openlms_user_notified} un
+                  JOIN {tool_mucertify_source} cs ON cs.id = ca.sourceid
+                  JOIN {tool_mucertify_certification} c ON c.id = ca.certificationid
+                  JOIN {tool_mulib_notification} n
+                       ON n.component = 'tool_mucertify' AND n.notificationtype = 'valid' AND n.instanceid = c.id AND n.enabled = 1
+             LEFT JOIN {tool_mulib_notification_user} un
                        ON un.notificationid = n.id AND un.userid = ca.userid AND un.otherid1 = ca.id AND un.otherid2 = cp.id
                  WHERE un.id IS NULL AND c.archived = 0 AND ca.archived = 0
                        AND cp.timecertified IS NOT NULL AND cp.timerevoked IS NULL

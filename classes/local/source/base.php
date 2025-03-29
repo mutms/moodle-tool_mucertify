@@ -1,30 +1,35 @@
 <?php
-// This file is part of Moodle - https://moodle.org/
+// This file is part of Certifications for Moodle™.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-namespace tool_certify\local\source;
+// phpcs:disable moodle.Files.BoilerplateComment.CommentEndedTooSoon
+// phpcs:disable moodle.Files.LineLength.TooLong
 
-use tool_certify\local\assignment;
+namespace tool_mucertify\local\source;
+
+use tool_mucertify\local\assignment;
+use tool_mucertify\navigation\views\certification_secondary;
 
 use stdClass;
 
 /**
  * Certification source abstraction.
  *
- * @package    tool_certify
+ * @package    tool_mucertify
  * @copyright  2023 Open LMS (https://www.openlms.net/)
+ * @copyright  2025 Petr Skoda
  * @author     Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -47,7 +52,7 @@ abstract class base {
      */
     public static function get_name(): string {
         $type = static::get_type();
-        return get_string('source_' . $type, 'tool_certify');
+        return get_string('source_' . $type, 'tool_mucertify');
     }
 
     /**
@@ -61,7 +66,7 @@ abstract class base {
      */
     public static function is_new_allowed(stdClass $certification): bool {
         $type = static::get_type();
-        return (bool)get_config('tool_certify', 'source_' . $type . '_allownew');
+        return (bool)get_config('tool_mucertify', 'source_' . $type . '_allownew');
     }
 
     /**
@@ -92,13 +97,12 @@ abstract class base {
     }
 
     /**
-     * Return extra tab for managing the source data in certification.
+     * Return extra tab for managing the source data in program.
      *
+     * @param certification_secondary $secondary
      * @param stdClass $certification
-     * @return array
      */
-    public static function get_extra_management_tabs(stdClass $certification): array {
-        return [];
+    public static function add_certification_secondary_tabs(certification_secondary $secondary, stdClass $certification): void {
     }
 
     /**
@@ -166,8 +170,8 @@ abstract class base {
         $sourcetype = $data->type;
         $sourceclass = $sourceclasses[$sourcetype];
 
-        $certification = $DB->get_record('tool_certify_certifications', ['id' => $data->certificationid], '*', MUST_EXIST);
-        $source = $DB->get_record('tool_certify_sources', ['type' => $sourcetype, 'certificationid' => $certification->id]);
+        $certification = $DB->get_record('tool_mucertify_certification', ['id' => $data->certificationid], '*', MUST_EXIST);
+        $source = $DB->get_record('tool_mucertify_source', ['type' => $sourcetype, 'certificationid' => $certification->id]);
         if ($source) {
             $oldsource = clone($source);
         } else {
@@ -184,7 +188,7 @@ abstract class base {
                 $source->auxint1 = $data->auxint1 ?? null;
                 $source->auxint2 = $data->auxint2 ?? null;
                 $source->auxint3 = $data->auxint3 ?? null;
-                $DB->update_record('tool_certify_sources', $source);
+                $DB->update_record('tool_mucertify_source', $source);
             } else {
                 $source = new stdClass();
                 $source->certificationid = $data->certificationid;
@@ -193,26 +197,26 @@ abstract class base {
                 $source->auxint1 = $data->auxint1 ?? null;
                 $source->auxint2 = $data->auxint2 ?? null;
                 $source->auxint3 = $data->auxint3 ?? null;
-                $source->id = $DB->insert_record('tool_certify_sources', $source);
+                $source->id = $DB->insert_record('tool_mucertify_source', $source);
             }
-            $source = $DB->get_record('tool_certify_sources', ['id' => $source->id], '*', MUST_EXIST);
+            $source = $DB->get_record('tool_mucertify_source', ['id' => $source->id], '*', MUST_EXIST);
         } else {
             if ($source) {
-                if ($DB->record_exists('tool_certify_assignments', ['sourceid' => $source->id])) {
+                if ($DB->record_exists('tool_mucertify_assignment', ['sourceid' => $source->id])) {
                     throw new \coding_exception('Cannot delete source with assignments');
                 }
-                $DB->delete_records('tool_certify_requests', ['sourceid' => $source->id]);
-                $DB->delete_records('tool_certify_src_cohorts', ['sourceid' => $source->id]);
-                $DB->delete_records('tool_certify_sources', ['id' => $source->id]);
+                $DB->delete_records('tool_mucertify_request', ['sourceid' => $source->id]);
+                $DB->delete_records('tool_mucertify_src_cohort', ['sourceid' => $source->id]);
+                $DB->delete_records('tool_mucertify_source', ['id' => $source->id]);
                 $source = null;
             }
         }
         $sourceclass::after_update($oldsource, $data, $source);
 
-        \tool_certify\local\certification::make_snapshot($certification->id, 'update_source');
+        \tool_mucertify\local\certification::make_snapshot($certification->id, 'update_source');
 
         $sourceclass::fix_assignments($certification->id, null);
-        \enrol_programs\local\source\certify::sync_certifications($certification->id, null);
+        \tool_muprog\local\source\mucertify::sync_certifications($certification->id, null);
 
         return $source;
     }
@@ -242,33 +246,34 @@ abstract class base {
         $record->certificationid = $certification->id;
         $record->userid = $userid;
         $record->sourceid = $source->id;
-        $record->sourcedatajson = \tool_certify\local\util::json_encode($sourcedata);
+        $record->sourcedatajson = \tool_mucertify\local\util::json_encode($sourcedata);
         $record->archived = 0;
-        $record->timecertifieduntil = null;
-        if (isset($dateoverrides['timecertifieduntil']) && $dateoverrides['timecertifieduntil'] > 0) {
-            $record->timecertifieduntil = $dateoverrides['timecertifieduntil'];
+        $record->timecertifiedtemp = null;
+        if (isset($dateoverrides['timecertifiedtemp']) && $dateoverrides['timecertifiedtemp'] > 0) {
+            $record->timecertifiedtemp = $dateoverrides['timecertifiedtemp'];
         }
-        $record->evidencejson = \tool_certify\local\util::json_encode([]);
+        $record->evidencejson = \tool_mucertify\local\util::json_encode([]);
         $record->timecreated = $now;
 
         $trans = $DB->start_delegated_transaction();
 
-        $record->id = $DB->insert_record('tool_certify_assignments', $record);
-        $assignment = $DB->get_record('tool_certify_assignments', ['id' => $record->id], '*', MUST_EXIST);
+        $record->id = $DB->insert_record('tool_mucertify_assignment', $record);
+        $assignment = $DB->get_record('tool_mucertify_assignment', ['id' => $record->id], '*', MUST_EXIST);
 
         if (empty($dateoverrides['noperiod'])) {
-            \tool_certify\local\period::add_first($assignment, $dateoverrides);
+            \tool_mucertify\local\period::add_first($assignment, $dateoverrides);
         }
+
+        $assignment = assignment::fix_caches($assignment->id);
 
         assignment::make_snapshot($assignment->certificationid, $assignment->userid, 'assignment');
 
         $trans->allow_commit();
 
-        $event = \tool_certify\event\user_assigned::create_from_assignment($assignment, $certification);
+        $event = \tool_mucertify\event\user_assigned::create_from_assignment($assignment, $certification);
         $event->trigger();
 
-        \tool_certify\local\notification\assignment::notify_now($user, $certification, $source, $assignment);
-        \tool_certify\local\notification\assignment_relateduser::notify_now($user, $certification, $source, $assignment);
+        \tool_mucertify\local\notification\assignment::notify_now($user, $certification, $source, $assignment);
 
         return $assignment;
     }
@@ -292,25 +297,24 @@ abstract class base {
         $trans = $DB->start_delegated_transaction();
 
         if ($user) {
-            \tool_certify\local\notification\unassignment::notify_now($user, $certification, $source, $assignment);
-            \tool_certify\local\notification\unassignment_relateduser::notify_now($user, $certification, $source, $assignment);
+            \tool_mucertify\local\notification\unassignment::notify_now($user, $certification, $source, $assignment);
         }
-        \tool_certify\local\notification_manager::delete_assignment_notifications($assignment);
+        \tool_mucertify\local\notification_manager::delete_assignment_notifications($assignment);
 
-        $periods = $DB->get_records('tool_certify_periods', ['certificationid' => $assignment->certificationid, 'userid' => $assignment->userid]);
+        $periods = $DB->get_records('tool_mucertify_period', ['certificationid' => $assignment->certificationid, 'userid' => $assignment->userid]);
         foreach ($periods as $period) {
             if ($period->certificateissueid) {
-                \tool_certify\local\certificate::revoke($period->id);
+                \tool_mucertify\local\certificate::revoke($period->id);
             }
         }
 
-        $DB->delete_records('tool_certify_periods',
+        $DB->delete_records('tool_mucertify_period',
             ['certificationid' => $assignment->certificationid, 'userid' => $assignment->userid]);
-        $DB->delete_records('tool_certify_assignments', ['id' => $assignment->id]);
+        $DB->delete_records('tool_mucertify_assignment', ['id' => $assignment->id]);
 
         $trans->allow_commit();
 
-        $event = \tool_certify\event\user_unassigned::create_from_assignment($assignment, $certification);
+        $event = \tool_mucertify\event\user_unassigned::create_from_assignment($assignment, $certification);
         $event->trigger();
     }
 
@@ -332,7 +336,7 @@ abstract class base {
      */
     public static function encode_datajson(stdClass $formdata): string {
         // Override if necessary.
-        return \tool_certify\local\util::json_encode([]);
+        return \tool_mucertify\local\util::json_encode([]);
     }
 
     /**
@@ -354,7 +358,7 @@ abstract class base {
      */
     public static function get_edit_form_class(): string {
         $type = static::get_type();
-        $class = "tool_certify\\local\\form\source_{$type}_edit";
+        $class = "tool_mucertify\\local\\form\source_{$type}_edit";
         if (!class_exists($class)) {
             throw new \coding_exception('source edit class not found, either override get_edit_form_class or add class: ' . $class);
         }
@@ -380,7 +384,7 @@ abstract class base {
      * @return string
      */
     public static function render_status(stdClass $certification, ?stdClass $source): string {
-        global $PAGE;
+        global $OUTPUT;
 
         $type = static::get_type();
 
@@ -388,18 +392,15 @@ abstract class base {
             throw new \coding_exception('Invalid source type');
         }
 
-        /** @var \local_openlms\output\dialog_form\renderer $dialogformoutput */
-        $dialogformoutput = $PAGE->get_renderer('local_openlms', 'dialog_form');
-
         $result = static::render_status_details($certification, $source);
 
         $context = \context::instance_by_id($certification->contextid);
-        if (has_capability('tool/certify:edit', $context) && static::is_update_allowed($certification)) {
-            $label = get_string('updatesource', 'tool_certify', static::get_name());
-            $editurl = new \moodle_url('/admin/tool/certify/management/certification_source_edit.php', ['certificationid' => $certification->id, 'type' => $type]);
-            $editbutton = new \local_openlms\output\dialog_form\icon($editurl, 'i/settings', $label);
+        if (has_capability('tool/mucertify:edit', $context) && static::is_update_allowed($certification)) {
+            $label = get_string('updatesource', 'tool_mucertify', static::get_name());
+            $editurl = new \moodle_url('/admin/tool/mucertify/management/certification_source_edit.php', ['certificationid' => $certification->id, 'type' => $type]);
+            $editbutton = new \tool_mulib\output\dialog_form\icon($editurl, $label, 'i/settings');
             $editbutton->set_dialog_name(static::get_name());
-            $result .= ' ' . $dialogformoutput->render($editbutton);
+            $result .= ' ' . $OUTPUT->render($editbutton);
         }
 
         return $result;

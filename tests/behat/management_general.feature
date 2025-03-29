@@ -1,4 +1,4 @@
-@tool @tool_certify @openlms
+@tool @tool_mucertify @muTMS
 Feature: General certification management tests
 
   Background:
@@ -23,17 +23,17 @@ Feature: General certification management tests
       | Certification editor  | ceditor   |
       | Custom fields manager | cfmanager |
     And the following "permission overrides" exist:
-      | capability                   | permission | role     | contextlevel | reference |
-      | tool/certify:view            | Allow      | pviewer  | System       |           |
-      | tool/certify:view            | Allow      | pmanager | System       |           |
-      | tool/certify:edit            | Allow      | pmanager | System       |           |
-      | tool/certify:delete          | Allow      | pmanager | System       |           |
-      | tool/certify:assign          | Allow      | pmanager | System       |           |
-      | tool/certify:edit            | Allow      | ceditor  | System       |           |
-      | tool/certify:view            | Allow      | ceditor  | System       |           |
-      | tool/certify:admin           | Allow      | ceditor  | System       |           |
-      | moodle/site:configview       | Allow      | cfmanager| System       |           |
-      | tool/certify:configurecustomfields    | Allow      | cfmanager| System       |           |
+      | capability                           | permission | role     | contextlevel | reference |
+      | tool/mucertify:view                  | Allow      | pviewer  | System       |           |
+      | tool/mucertify:view                  | Allow      | pmanager | System       |           |
+      | tool/mucertify:edit                  | Allow      | pmanager | System       |           |
+      | tool/mucertify:delete                | Allow      | pmanager | System       |           |
+      | tool/mucertify:assign                | Allow      | pmanager | System       |           |
+      | tool/mucertify:edit                  | Allow      | ceditor  | System       |           |
+      | tool/mucertify:view                  | Allow      | ceditor  | System       |           |
+      | tool/mucertify:admin                 | Allow      | ceditor  | System       |           |
+      | moodle/site:configview               | Allow      | cfmanager| System       |           |
+      | tool/mucertify:configurecustomfields | Allow      | cfmanager| System       |           |
     And the following "role assigns" exist:
       | user      | role          | contextlevel | reference |
       | manager1  | pmanager      | System       |           |
@@ -46,105 +46,101 @@ Feature: General certification management tests
   @javascript
   Scenario: Manager may create a new certification with required settings
     Given I log in as "manager1"
-    And I am on all certifications management page
+    And I am on the "tool_mucertify > All certifications management" page
 
     When I press "Add certification"
-    And the following fields match these values:
+    And the following fields in the ".modal-dialog" "css_element" match these values:
       | Certification name |             |
-      | ID number          |             |
+      | Certification ID   |             |
       | Description        |             |
-    And I set the following fields to these values:
+    And I set the following fields in the ".modal-dialog" "css_element" to these values:
       | Certification name | Certification 001 |
-      | ID number          | CT01              |
+      | Certification ID   | CT01              |
     And I press dialog form button "Add certification"
-    Then I should see "Certification 001" in the "Full name:" definition list item
-    And I should see "CT01" in the "ID number:" definition list item
-    And I should see "System" in the "Category:" definition list item
-    And I should see "No" in the "Archived:" definition list item
-    And I am on all certifications management page
-    And "Certification 001" row "Category" column of "management_certifications" table should contain "System"
-    And "Certification 001" row "ID number" column of "management_certifications" table should contain "CT01"
-    And "Certification 001" row "Public" column of "management_certifications" table should contain "No"
+    Then I should see "Certification 001" in the "Certification name" definition list item
+    And I should see "CT01" in the "Certification ID" definition list item
+    And I should see "System" in the "Category" definition list item
+    And I should see "No" in the "Archived" definition list item
+    And I am on the "tool_mucertify > All certifications management" page
+    And "Certification 001" row "Category" column of "reportbuilder-table" table should contain "System"
+    And "Certification 001" row "Certification ID" column of "reportbuilder-table" table should contain "CT01"
+    And "Certification 001" row "Public" column of "reportbuilder-table" table should contain "No"
 
   @javascript @_file_upload
   Scenario: Manager may create a new certifications with all settings
     Given I log in as "manager1"
-    And I am on all certifications management page
+    And I am on the "tool_mucertify > All certifications management" page
 
     When I press "Add certification"
-    And the following fields match these values:
+    And the following fields in the ".modal-dialog" "css_element" match these values:
       | Certification name |             |
-      | ID number          |             |
+      | Certification ID   |             |
       | Description        |             |
-    And I set the following fields to these values:
+    And I set the following fields in the ".modal-dialog" "css_element" to these values:
       | Certification name | Certification 001 |
-      | ID number          | CT01        |
+      | Certification ID   | CT01        |
       | Description        | Nice desc   |
-    And I upload "admin/tool/certify/tests/fixtures/badge.png" file to "Certification image" filemanager
+    And I upload "admin/tool/mucertify/tests/fixtures/badge.png" file to "Certification image" filemanager
     And I set the field "Context" to "Cat 2"
     And I set the field "Tags" to "Mathematics, Algebra"
     And I press dialog form button "Add certification"
-    Then I should see "Certification 001" in the "Full name:" definition list item
-    And I should see "CT01" in the "ID number:" definition list item
-    And I should see "Cat 2" in the "Category:" definition list item
-    And I should see "No" in the "Archived:" definition list item
-    And I should see "Mathematics" in the "Tags:" definition list item
-    And I should see "Algebra" in the "Tags:" definition list item
-    And I am on certifications management page in "Cat 2"
-    And "CT01" row "Certification name" column of "management_certifications" table should contain "Certification 001"
-    And "CT01" row "Certification name" column of "management_certifications" table should contain "Mathematics"
-    And "CT01" row "Certification name" column of "management_certifications" table should contain "Algebra"
-    And "CT01" row "Description" column of "management_certifications" table should contain "Nice desc"
-    And "CT01" row "Public" column of "management_certifications" table should contain "No"
-    And "CT01" row "Assignments" column of "management_certifications" table should contain "0"
+    Then I should see "Certification 001" in the "Certification name" definition list item
+    And I should see "CT01" in the "Certification ID" definition list item
+    And I should see "Cat 2" in the "Category" definition list item
+    And I should see "No" in the "Archived" definition list item
+    And I should see "Mathematics" in the "Tags" definition list item
+    And I should see "Algebra" in the "Tags" definition list item
+    And I am on the "Cat 2" "tool_mucertify > Certifications management" page
+    And "CT01" row "Public" column of "reportbuilder-table" table should contain "No"
+    And "CT01" row "Assignments" column of "reportbuilder-table" table should contain "0"
 
   @javascript
   Scenario: Manager may update basic general settings of an existing certification
     Given I log in as "manager1"
-    And I am on all certifications management page
+    And I am on the "tool_mucertify > All certifications management" page
     And I press "Add certification"
-    And I set the following fields to these values:
+    And I set the following fields in the ".modal-dialog" "css_element" to these values:
       | Certification name | Certification 001 |
-      | ID number          | CT01              |
+      | Certification ID   | CT01              |
     And I press dialog form button "Add certification"
 
     When I press "Edit"
-    And I set the following fields to these values:
+    And I set the following fields in the ".modal-dialog" "css_element" to these values:
       | Certification name | Certification 002 |
-      | ID number          | CT02              |
+      | Certification ID   | CT02              |
     And I press dialog form button "Update certification"
-    Then I should see "Certification 002" in the "Full name:" definition list item
-    And I should see "CT02" in the "ID number:" definition list item
-    And I should see "System" in the "Category:" definition list item
-    And I should see "No" in the "Archived:" definition list item
+    Then I should see "Certification 002" in the "Certification name" definition list item
+    And I should see "CT02" in the "Certification ID" definition list item
+    And I should see "System" in the "Category" definition list item
+    And I should see "No" in the "Archived" definition list item
 
   @javascript @_file_upload
   Scenario: Manager may update all general settings of an existing certification
     Given I log in as "manager1"
-    And I am on all certifications management page
+    And I am on the "tool_mucertify > All certifications management" page
     And I press "Add certification"
-    And I set the following fields to these values:
+    And I set the following fields in the ".modal-dialog" "css_element" to these values:
       | Certification name | Certification 002 |
-      | ID number          | CT02              |
+      | Certification ID   | CT02              |
     And I set the field "Context" to "Cat 1"
     And I set the field "Tags" to "Logic"
     And I press dialog form button "Add certification"
 
     When I press "Edit"
-    And I set the following fields to these values:
+    And I set the following fields in the ".modal-dialog" "css_element" to these values:
       | Certification name | Certification 001 |
-      | ID number          | CT01              |
+      | Certification ID   | CT01              |
       | Description        | Nice desc         |
-    And I upload "admin/tool/certify/tests/fixtures/badge.png" file to "Certification image" filemanager
+    And I upload "admin/tool/mucertify/tests/fixtures/badge.png" file to "Certification image" filemanager
     And I set the field "Context" to "Cat 2"
     And I set the field "Tags" to "Mathematics, Algebra"
     And I press dialog form button "Update certification"
-    Then I should see "Certification 001" in the "Full name:" definition list item
-    And I should see "CT01" in the "ID number:" definition list item
-    And I should see "Cat 2" in the "Category:" definition list item
-    And I should see "No" in the "Archived:" definition list item
-    And I should see "Mathematics" in the "Tags:" definition list item
-    And I should see "Algebra" in the "Tags:" definition list item
+    Then I should see "Certification 001" in the "Certification name" definition list item
+    And I should see "CT01" in the "Certification ID" definition list item
+    And I should see "Cat 2" in the "Category" definition list item
+    And I should see "No" in the "Archived" definition list item
+    And I should see "Mathematics" in the "Tags" definition list item
+    And I should see "Algebra" in the "Tags" definition list item
 
   @javascript
   Scenario: Set up and edit custom fields of certifications
@@ -162,11 +158,10 @@ Feature: General certification management tests
       | Custom field | Short name | Type       |
       | Test field   | testfield  | Short text |
     When I log in as "editor1"
-    And I am on all certifications management page
+    And I am on the "tool_mucertify > All certifications management" page
     And I press "Add certification"
-    And I expand all fieldsets
-    And I set the following fields to these values:
+    And I set the following fields in the ".modal-dialog" "css_element" to these values:
       | Certification name | Certification 002 |
-      | ID number          | CT02              |
+      | Certification ID   | CT02              |
       | Test field         | Test value        |
     And I press dialog form button "Add certification"

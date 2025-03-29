@@ -1,24 +1,27 @@
 <?php
-// This file is part of Moodle - https://moodle.org/
+// This file is part of Certifications for Moodle™.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+// phpcs:disable moodle.Files.BoilerplateComment.CommentEndedTooSoon
 
 /**
  * Certification management interface.
  *
- * @package    tool_certify
+ * @package    tool_mucertify
  * @copyright  2023 Open LMS (https://www.openlms.net/)
+ * @copyright  2025 Petr Skoda
  * @author     Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -29,13 +32,13 @@
 /** @var stdClass $CFG */
 /** @var stdClass $COURSE */
 
-use tool_certify\local\management;
-use tool_certify\local\certification;
+use tool_mucertify\local\management;
+use tool_mucertify\local\certification;
 
-if (!empty($_SERVER['HTTP_X_LEGACY_DIALOG_FORM_REQUEST'])) {
+// phpcs:ignoreFile moodle.Files.MoodleInternal.MoodleInternalGlobalState
+if (!empty($_SERVER['HTTP_X_MULIB_DIALOG_FORM_REQUEST'])) {
     define('AJAX_SCRIPT', true);
 }
-
 require('../../../../config.php');
 require_once($CFG->dirroot . '/lib/formslib.php');
 
@@ -43,24 +46,24 @@ $id = required_param('id', PARAM_INT);
 
 require_login();
 
-$certification = $DB->get_record('tool_certify_certifications', ['id' => $id], '*', MUST_EXIST);
+$certification = $DB->get_record('tool_mucertify_certification', ['id' => $id], '*', MUST_EXIST);
 $context = context::instance_by_id($certification->contextid);
-require_capability('tool/certify:edit', $context);
+require_capability('tool/mucertify:edit', $context);
 
-$currenturl = new moodle_url('/admin/tool/certify/management/certification_update.php', ['id' => $certification->id]);
-management::setup_certification_page($currenturl, $context, $certification);
+$currenturl = new moodle_url('/admin/tool/mucertify/management/certification_update.php', ['id' => $certification->id]);
+management::setup_certification_page($currenturl, $context, $certification, 'certification_general');
 
 $editoroptions = certification::get_description_editor_options($context->id);
 $certification = file_prepare_standard_editor($certification, 'description', $editoroptions,
-    $context, 'tool_certify', 'description', $certification->id);
-$certification->tags = core_tag_tag::get_item_tags_array('tool_certify', 'certification', $certification->id);
+    $context, 'tool_mucertify', 'description', $certification->id);
+$certification->tags = core_tag_tag::get_item_tags_array('tool_mucertify', 'certification', $certification->id);
 
 $certification->image = file_get_submitted_draft_itemid('image');
-file_prepare_draft_area($certification->image, $context->id, 'tool_certify', 'image', $certification->id, ['subdirs' => 0]);
+file_prepare_draft_area($certification->image, $context->id, 'tool_mucertify', 'image', $certification->id, ['subdirs' => 0]);
 
-$form = new \tool_certify\local\form\certification_update(null, ['data' => $certification, 'editoroptions' => $editoroptions]);
+$form = new \tool_mucertify\local\form\certification_update(null, ['data' => $certification, 'editoroptions' => $editoroptions]);
 
-$returnurl = new moodle_url('/admin/tool/certify/management/certification.php', ['id' => $certification->id]);
+$returnurl = new moodle_url('/admin/tool/mucertify/management/certification.php', ['id' => $certification->id]);
 
 if ($form->is_cancelled()) {
     redirect($returnurl);
@@ -71,13 +74,8 @@ if ($data = $form->get_data()) {
     $form->redirect_submitted($returnurl);
 }
 
-/** @var \tool_certify\output\management\renderer $managementoutput */
-$managementoutput = $PAGE->get_renderer('tool_certify', 'management');
-
 echo $OUTPUT->header();
-echo $OUTPUT->heading(get_string('updatecertification', 'tool_certify'));
-
-echo $managementoutput->render_management_certification_tabs($certification, 'general');
+echo $OUTPUT->heading(get_string('updatecertification', 'tool_mucertify'));
 
 echo $form->render();
 

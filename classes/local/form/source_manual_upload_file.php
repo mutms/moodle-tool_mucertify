@@ -1,32 +1,36 @@
 <?php
-// This file is part of Moodle - https://moodle.org/
+// This file is part of Certifications for Moodle™.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-namespace tool_certify\local\form;
+// phpcs:disable moodle.Files.BoilerplateComment.CommentEndedTooSoon
+// phpcs:disable moodle.Files.LineLength.TooLong
 
-use tool_certify\local\source\manual;
+namespace tool_mucertify\local\form;
+
+use tool_mucertify\local\source\manual;
 
 /**
  * Assign users via file upload.
  *
- * @package    tool_certify
+ * @package    tool_mucertify
  * @copyright  2024 Open LMS (https://www.openlms.net/)
  * @author     Farhan Karmali
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-final class source_manual_upload_file extends \local_openlms\dialog_form {
+final class source_manual_upload_file extends \tool_mulib\local\dialog_form {
+    #[\Override]
     protected function definition() {
         global $CFG;
         require_once($CFG->dirroot . '/lib/csvlib.class.php');
@@ -36,7 +40,7 @@ final class source_manual_upload_file extends \local_openlms\dialog_form {
         $source = $this->_customdata['source'];
         $context = $this->_customdata['context'];
 
-        $mform->addElement('filepicker', 'csvfile', get_string('upload_csvfile', 'tool_certify'));
+        $mform->addElement('filepicker', 'csvfile', get_string('upload_csvfile', 'tool_mucertify'));
         $mform->addRule('csvfile', null, 'required');
 
         $choices = \csv_import_reader::get_delimiter_list();
@@ -60,6 +64,7 @@ final class source_manual_upload_file extends \local_openlms\dialog_form {
         $this->add_action_buttons(true, get_string('continue'));
     }
 
+    #[\Override]
     public function validation($data, $files) {
         global $USER;
         $errors = parent::validation($data, $files);
@@ -121,7 +126,7 @@ final class source_manual_upload_file extends \local_openlms\dialog_form {
 
         $cir->cleanup(true);
 
-        \tool_certify\local\util::store_uploaded_data($data['csvfile'], $filedata);
+        \tool_mucertify\local\util::store_uploaded_data($data['csvfile'], $filedata);
 
         return $errors;
     }

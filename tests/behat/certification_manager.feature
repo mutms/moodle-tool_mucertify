@@ -1,4 +1,4 @@
-@tool @tool_certify @openlms
+@tool @tool_mucertify @muTMS
 Feature: Certification completion by managers tests
 
   Background:
@@ -19,33 +19,33 @@ Feature: Certification completion by managers tests
       | student2 | Student   | 2        | student2@example.com |
       | student3 | Student   | 3        | student3@example.com |
     And the following "roles" exist:
-      | name            | shortname |
+      | name                  | shortname |
       | Certification viewer  | pviewer   |
       | Certification manager | pmanager  |
     And the following "permission overrides" exist:
-      | capability                   | permission | role     | contextlevel | reference |
-      | tool/certify:view            | Allow      | pviewer  | System       |           |
-      | tool/certify:view            | Allow      | pmanager | System       |           |
-      | tool/certify:edit            | Allow      | pmanager | System       |           |
-      | tool/certify:assign          | Allow      | pmanager | System       |           |
-      | tool/certify:delete          | Allow      | pmanager | System       |           |
-      | tool/certify:admin           | Allow      | pmanager | System       |           |
-      | enrol/programs:view          | Allow      | pmanager | System       |           |
-      | enrol/programs:edit          | Allow      | pmanager | System       |           |
-      | enrol/programs:admin         | Allow      | pmanager | System       |           |
+      | capability                     | permission | role     | contextlevel | reference |
+      | tool/mucertify:view            | Allow      | pviewer  | System       |           |
+      | tool/mucertify:view            | Allow      | pmanager | System       |           |
+      | tool/mucertify:edit            | Allow      | pmanager | System       |           |
+      | tool/mucertify:assign          | Allow      | pmanager | System       |           |
+      | tool/mucertify:delete          | Allow      | pmanager | System       |           |
+      | tool/mucertify:admin           | Allow      | pmanager | System       |           |
+      | tool/muprog:view               | Allow      | pmanager | System       |           |
+      | tool/muprog:edit               | Allow      | pmanager | System       |           |
+      | tool/muprog:admin              | Allow      | pmanager | System       |           |
     And the following "role assigns" exist:
       | user      | role          | contextlevel | reference |
       | manager1  | pmanager      | System       |           |
       | viewer1   | pviewer       | System       |           |
-    And the following "enrol_programs > programs" exist:
+    And the following "tool_muprog > programs" exist:
       | fullname    | idnumber | category | sources |
-      | Program 001 | PR1      |          | certify |
-      | Program 002 | PR2      |          | certify |
-    And the following "enrol_programs > program_items" exist:
+      | Program 001 | PR1      |          | mucertify |
+      | Program 002 | PR2      |          | mucertify |
+    And the following "tool_muprog > program_items" exist:
       | program     | parent     | course   | fullname   | sequencetype     | minprerequisites |
       | Program 001 |            | Course 1 |            |                  |                  |
       | Program 001 |            | Course 2 |            |                  |                  |
-    And the following "tool_certify > certifications" exist:
+    And the following "tool_mucertify > certifications" exist:
       | fullname          | idnumber | category | program1 | sources |
       | Certification 001 | CT1      |          | PR1      | manual  |
       | Certification 002 | CT2      |          | PR2      | manual  |
@@ -53,9 +53,9 @@ Feature: Certification completion by managers tests
   @javascript
   Scenario: Manager may mark the whole certification as complete
     Given I log in as "manager1"
-    And I am on all certifications management page
+    And I am on the "tool_mucertify > All certifications management" page
     And I follow "Certification 001"
-    And I click on "Users" "link" in the "#region-main" "css_element"
+    And I click on "Users" "link" in the ".secondary-navigation" "css_element"
     And I press "Assign users"
     And I set the following fields to these values:
       | Users                    | Student 1 |
@@ -83,14 +83,14 @@ Feature: Certification completion by managers tests
       | timecertified[hour]    | 09        |
       | timecertified[minute]  | 00        |
     And I press dialog form button "Override period dates"
-    Then I should see "Valid" in the "Certification status:" definition list item
+    Then I should see "Valid" in the "Certification status" definition list item
 
   @javascript
   Scenario: Manager may mark certification program as completed
     Given I log in as "manager1"
-    And I am on all certifications management page
+    And I am on the "tool_mucertify > All certifications management" page
     And I follow "Certification 001"
-    And I click on "Users" "link" in the "#region-main" "css_element"
+    And I click on "Users" "link" in the ".secondary-navigation" "css_element"
     And I press "Assign users"
     And I set the following fields to these values:
       | Users                    | Student 1 |
@@ -108,8 +108,8 @@ Feature: Certification completion by managers tests
     And I set the following fields to these values:
       | timecompleted[enabled] | 1    |
     And I press dialog form button "Update"
-    And I am on all certifications management page
+    And I am on the "tool_mucertify > All certifications management" page
     And I follow "Certification 001"
-    And I click on "Users" "link" in the "#region-main" "css_element"
+    And I click on "Users" "link" in the ".secondary-navigation" "css_element"
     And I follow "Student 1"
-    Then I should see "Valid" in the "Certification status:" definition list item
+    Then I should see "Valid" in the "Certification status" definition list item

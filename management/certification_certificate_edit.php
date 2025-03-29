@@ -1,26 +1,29 @@
 <?php
-// This file is part of Moodle - https://moodle.org/
+// This file is part of Certifications for Moodle™.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+// phpcs:disable moodle.Files.BoilerplateComment.CommentEndedTooSoon
 
 /**
  * Certification management interface - certificate editing.
  *
- * @package    tool_certify
+ * @package    tool_mucertify
  * @copyright  2022 Open LMS (https://www.openlms.net/)
+ * @copyright  2025 Petr Skoda
  * @author     Petr Skoda
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 /** @var moodle_database $DB */
@@ -29,13 +32,13 @@
 /** @var stdClass $CFG */
 /** @var stdClass $COURSE */
 
-use tool_certify\local\management;
-use tool_certify\local\certification;
+use tool_mucertify\local\management;
+use tool_mucertify\local\certification;
 
-if (!empty($_SERVER['HTTP_X_LEGACY_DIALOG_FORM_REQUEST'])) {
+// phpcs:ignoreFile moodle.Files.MoodleInternal.MoodleInternalGlobalState
+if (!empty($_SERVER['HTTP_X_MULIB_DIALOG_FORM_REQUEST'])) {
     define('AJAX_SCRIPT', true);
 }
-
 require('../../../../config.php');
 require_once($CFG->dirroot . '/lib/formslib.php');
 
@@ -43,21 +46,21 @@ $id = required_param('id', PARAM_INT);
 
 require_login();
 
-$certification = $DB->get_record('tool_certify_certifications', ['id' => $id], '*', MUST_EXIST);
+$certification = $DB->get_record('tool_mucertify_certification', ['id' => $id], '*', MUST_EXIST);
 $context = context::instance_by_id($certification->contextid);
-require_capability('tool/certify:edit', $context);
+require_capability('tool/mucertify:edit', $context);
 
-if (!\tool_certify\local\certificate::is_available()) {
-    redirect(new moodle_url('/admin/tool/certify/certification.php', ['id' => $certification->id]));
+if (!\tool_mucertify\local\certificate::is_available()) {
+    redirect(new moodle_url('/admin/tool/mucertify/certification.php', ['id' => $certification->id]));
 }
 
-$currenturl = new moodle_url('/admin/tool/certify/management/certification_certificate_edit.php', ['id' => $id]);
+$currenturl = new moodle_url('/admin/tool/mucertify/management/certification_certificate_edit.php', ['id' => $id]);
 
-management::setup_certification_page($currenturl, $context, $certification);
+management::setup_certification_page($currenturl, $context, $certification, 'certification_periods');
 
-$form = new \tool_certify\local\form\certification_certificate_edit(null, ['data' => $certification, 'context' => $context]);
+$form = new \tool_mucertify\local\form\certification_certificate_edit(null, ['data' => $certification, 'context' => $context]);
 
-$returnurl = new moodle_url('/admin/tool/certify/management/certification_settings.php', ['id' => $certification->id]);
+$returnurl = new moodle_url('/admin/tool/mucertify/management/certification_settings.php', ['id' => $certification->id]);
 
 if ($form->is_cancelled()) {
     redirect($returnurl);
@@ -68,12 +71,7 @@ if ($data = $form->get_data()) {
     $form->redirect_submitted($returnurl);
 }
 
-/** @var \tool_certify\output\management\renderer $managementoutput */
-$managementoutput = $PAGE->get_renderer('tool_certify', 'management');
-
 echo $OUTPUT->header();
-
-echo $managementoutput->render_management_certification_tabs($certification, 'certificate');
 
 echo $form->render();
 

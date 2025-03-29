@@ -1,24 +1,27 @@
 <?php
-// This file is part of Moodle - https://moodle.org/
+// This file is part of Certifications for Moodle™.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+// phpcs:disable moodle.Files.BoilerplateComment.CommentEndedTooSoon
 
 /**
  * certification management interface.
  *
- * @package    tool_certify
+ * @package    tool_mucertify
  * @copyright  2022 Open LMS (https://www.openlms.net/)
+ * @copyright  2025 Petr Skoda
  * @author     Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -29,13 +32,13 @@
 /** @var stdClass $CFG */
 /** @var stdClass $COURSE */
 
-use tool_certify\local\certification;
-use tool_certify\local\management;
+use tool_mucertify\local\certification;
+use tool_mucertify\local\management;
 
-if (!empty($_SERVER['HTTP_X_LEGACY_DIALOG_FORM_REQUEST'])) {
+// phpcs:ignoreFile moodle.Files.MoodleInternal.MoodleInternalGlobalState
+if (!empty($_SERVER['HTTP_X_MULIB_DIALOG_FORM_REQUEST'])) {
     define('AJAX_SCRIPT', true);
 }
-
 require('../../../../config.php');
 require_once($CFG->dirroot . '/lib/formslib.php');
 
@@ -43,14 +46,14 @@ $contextid = required_param('contextid', PARAM_INT);
 $context = context::instance_by_id($contextid);
 
 require_login();
-require_capability('tool/certify:edit', $context);
+require_capability('tool/mucertify:edit', $context);
 
 if ($context->contextlevel != CONTEXT_SYSTEM && $context->contextlevel != CONTEXT_COURSECAT) {
     throw new moodle_exception('invalidcontext');
 }
 
-$currenturl = new moodle_url('/admin/tool/certify/management/certification_add.php', ['contextid' => $context->id]);
-management::setup_index_page($currenturl, $context, $context->id);
+$currenturl = new moodle_url('/admin/tool/mucertify/management/certification_add.php', ['contextid' => $context->id]);
+management::setup_index_page($currenturl, $context);
 
 $certification = new stdClass();
 $certification->contextid = $context->id;
@@ -61,20 +64,20 @@ $certification->descriptionformat = FORMAT_HTML;
 
 $editoroptions = certification::get_description_editor_options($context->id);
 
-$form = new \tool_certify\local\form\certification_add(null, ['data' => $certification, 'editoroptions' => $editoroptions]);
+$form = new \tool_mucertify\local\form\certification_add(null, ['data' => $certification, 'editoroptions' => $editoroptions]);
 
 if ($form->is_cancelled()) {
-    redirect(new moodle_url('/admin/tool/certify/management/index.php', ['contextid' => $context->id]));
+    redirect(new moodle_url('/admin/tool/mucertify/management/index.php', ['contextid' => $context->id]));
 }
 
 if ($data = $form->get_data()) {
     $certification = certification::add_certification($data);
-    $returlurl = new moodle_url('/admin/tool/certify/management/certification.php', ['id' => $certification->id]);
+    $returlurl = new moodle_url('/admin/tool/mucertify/management/certification.php', ['id' => $certification->id]);
     $form->redirect_submitted($returlurl);
 }
 
 echo $OUTPUT->header();
-echo $OUTPUT->heading(get_string('addcertification', 'tool_certify'));
+echo $OUTPUT->heading(get_string('addcertification', 'tool_mucertify'));
 
 echo $form->render();
 

@@ -1,28 +1,32 @@
 <?php
-// This file is part of Moodle - https://moodle.org/
+// This file is part of Certifications for Moodle™.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-namespace tool_certify\local;
+// phpcs:disable moodle.Files.BoilerplateComment.CommentEndedTooSoon
+// phpcs:disable moodle.Files.LineLength.TooLong
+
+namespace tool_mucertify\local;
 
 /**
  * Certification certificates are awarded via tool_certificate.
  *
- * @package    tool_certify
+ * @package    tool_mucertify
  * @copyright  2023 Open LMS (https://www.openlms.net/)
+ * @copyright  2025 Petr Skoda
  * @author     Petr Skoda
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class certificate {
     /**
@@ -54,29 +58,29 @@ final class certificate {
             throw new \coding_exception('Certificates cannot be awarded from normal web pages');
         }
 
-        $period = $DB->get_record('tool_certify_periods', ['id' => $periodid]);
+        $period = $DB->get_record('tool_mucertify_period', ['id' => $periodid]);
         if (!$period || $period->certificateissueid) {
             return false;
         }
 
-        $lockfactory = \core\lock\lock_config::get_lock_factory('tool_certify_certificate_lock');
+        $lockfactory = \core\lock\lock_config::get_lock_factory('tool_mucertify_certificate_lock');
         $lock = $lockfactory->get_lock('period_' . $period->id, MINSECS);
         if (!$lock) {
             debugging('locktimeout when issuing certificate for period ' . $periodid, DEBUG_DEVELOPER);
             return false;
         }
 
-        $period = $DB->get_record('tool_certify_periods', ['id' => $periodid]);
+        $period = $DB->get_record('tool_mucertify_period', ['id' => $periodid]);
         if (!$period || $period->certificateissueid || !$period->timecertified || !$period->timefrom || $period->timerevoked) {
             $lock->release();
             return false;
         }
-        $assignment = $DB->get_record('tool_certify_assignments', ['certificationid' => $period->certificationid, 'userid' => $period->userid]);
+        $assignment = $DB->get_record('tool_mucertify_assignment', ['certificationid' => $period->certificationid, 'userid' => $period->userid]);
         if (!$assignment) {
             $lock->release();
             return false;
         }
-        $certification = $DB->get_record('tool_certify_certifications', ['id' => $period->certificationid]);
+        $certification = $DB->get_record('tool_mucertify_certification', ['id' => $period->certificationid]);
         if (!$certification || !$certification->templateid) {
             $lock->release();
             return false;
@@ -104,9 +108,9 @@ final class certificate {
             'certificationtimeuntil' => $period->timeuntil,
             'certificationfirst' => $period->first,
         ];
-        $issueid = $template->issue_certificate($user->id, $period->timeuntil, $issuedata, 'tool_certify');
+        $issueid = $template->issue_certificate($user->id, $period->timeuntil, $issuedata, 'tool_mucertify');
 
-        $DB->set_field('tool_certify_periods', 'certificateissueid', $issueid, ['id' => $period->id]);
+        $DB->set_field('tool_mucertify_period', 'certificateissueid', $issueid, ['id' => $period->id]);
 
         $lock->release();
 
@@ -122,12 +126,12 @@ final class certificate {
     public static function revoke(int $periodid): void {
         global $DB;
 
-        $period = $DB->get_record('tool_certify_periods', ['id' => $periodid]);
+        $period = $DB->get_record('tool_mucertify_period', ['id' => $periodid]);
         if (!$period->certificateissueid) {
             return;
         }
 
-        if (certificate::is_available()) {
+        if (self::is_available()) {
             $issue = $DB->get_record('tool_certificate_issues', ['id' => $period->certificateissueid]);
             if ($issue) {
                 $template = \tool_certificate\template::instance($issue->templateid);
@@ -135,7 +139,7 @@ final class certificate {
             }
         }
 
-        $DB->set_field('tool_certify_periods', 'certificateissueid', null, ['id' => $period->id]);
+        $DB->set_field('tool_mucertify_period', 'certificateissueid', null, ['id' => $period->id]);
     }
 
     /**
@@ -149,18 +153,18 @@ final class certificate {
 
         // Minor cleanup only, cron will remove any leftovers if templeteid changed in the past.
         $sql = "SELECT cp.id
-                  FROM {tool_certify_periods} cp
-                  JOIN {tool_certify_certifications} c ON c.id = cp.certificationid
+                  FROM {tool_mucertify_period} cp
+                  JOIN {tool_mucertify_certification} c ON c.id = cp.certificationid
              LEFT JOIN {tool_certificate_issues} i ON i.id = cp.certificateissueid
                  WHERE c.templateid = :templateid AND i.id IS NULL";
         $params = ['templateid' => $event->objectid];
         $periodids = $DB->get_fieldset_sql($sql, $params);
         foreach ($periodids as $periodid) {
-            $DB->set_field('tool_certify_periods', 'certificateissueid', null, ['id' => $periodid]);
+            $DB->set_field('tool_mucertify_period', 'certificateissueid', null, ['id' => $periodid]);
         }
 
         // Remove the setting value, if they add a new template it will rebuild all historic PDFs.
-        $DB->set_field('tool_certify_certifications', 'templateid', null, ['templateid' => $event->objectid]);
+        $DB->set_field('tool_mucertify_certification', 'templateid', null, ['templateid' => $event->objectid]);
     }
 
     /**
@@ -178,8 +182,8 @@ final class certificate {
         // Delete revoked, orphaned or invalid certificates.
         $sql = "SELECT i.id, i.templateid, cp.id AS cpid
                   FROM {tool_certificate_issues} i
-             LEFT JOIN {tool_certify_periods} cp ON cp.certificateissueid = i.id
-                 WHERE i.component = 'tool_certify'
+             LEFT JOIN {tool_mucertify_period} cp ON cp.certificateissueid = i.id
+                 WHERE i.component = 'tool_mucertify'
                        AND (cp.id IS NULL OR cp.timerevoked IS NOT NULL)
               ORDER BY i.id ASC";
         $issues = $DB->get_records_sql($sql, []);
@@ -187,32 +191,32 @@ final class certificate {
             $template = \tool_certificate\template::instance($issue->templateid);
             $template->revoke_issue($issue->id);
             if ($issue->cpid) {
-                $DB->set_field('tool_certify_periods', 'certificateissueid', null, ['id' => $issue->cpid]);
+                $DB->set_field('tool_mucertify_period', 'certificateissueid', null, ['id' => $issue->cpid]);
             }
         }
         unset($issues);
 
         // Remove references to invalid certificates.
         $sql = "SELECT cp.id
-                  FROM {tool_certify_periods} cp
-                  JOIN {tool_certify_certifications} c ON c.id = cp.certificationid
+                  FROM {tool_mucertify_period} cp
+                  JOIN {tool_mucertify_certification} c ON c.id = cp.certificationid
              LEFT JOIN {tool_certificate_issues} i ON i.id = cp.certificateissueid
                  WHERE i.id IS NULL";
         $periodids = $DB->get_fieldset_sql($sql, []);
         foreach ($periodids as $periodid) {
-            $DB->set_field('tool_certify_periods', 'certificateissueid', null, ['id' => $periodid]);
+            $DB->set_field('tool_mucertify_period', 'certificateissueid', null, ['id' => $periodid]);
         }
         unset($periodids);
 
         // Add certificates.
         $params = ['now' => time()];
         $sql = "SELECT cp.id
-                  FROM {tool_certify_certifications} c
-                  JOIN {tool_certify_assignments} ca ON ca.certificationid = c.id
-                  JOIN {tool_certify_periods} cp ON cp.certificationid = c.id AND cp.userid = ca.userid 
+                  FROM {tool_mucertify_certification} c
+                  JOIN {tool_mucertify_assignment} ca ON ca.certificationid = c.id
+                  JOIN {tool_mucertify_period} cp ON cp.certificationid = c.id AND cp.userid = ca.userid
                   JOIN {user} u ON u.id = cp.userid AND u.deleted = 0 and u.confirmed = 1
                   JOIN {tool_certificate_templates} t ON t.id = c.templateid
-                 WHERE cp.certificateissueid IS NULL 
+                 WHERE cp.certificateissueid IS NULL
                        AND c.archived = 0 AND ca.archived = 0
                        AND cp.timecertified IS NOT NULL AND cp.timerevoked IS NULL
               ORDER BY cp.id ASC";

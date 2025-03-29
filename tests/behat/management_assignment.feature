@@ -1,4 +1,4 @@
-@tool @tool_certify @openlms
+@tool @tool_mucertify @muTMS
 Feature: Certification assignment management tests
 
   Background:
@@ -15,14 +15,14 @@ Feature: Certification assignment management tests
       | manager2 | Manager   | 2        | manager2@example.com |
       | viewer1  | Viewer    | 1        | viewer1@example.com  |
     And the following "roles" exist:
-      | name            | shortname |
+      | name                  | shortname |
       | Certification viewer  | pviewer   |
       | Certification manager | pmanager  |
     And the following "permission overrides" exist:
-      | capability                   | permission | role     | contextlevel | reference |
-      | tool/certify:view            | Allow      | pviewer  | System       |           |
-      | tool/certify:view            | Allow      | pmanager | System       |           |
-      | tool/certify:edit            | Allow      | pmanager | System       |           |
+      | capability                     | permission | role     | contextlevel | reference |
+      | tool/mucertify:view            | Allow      | pviewer  | System       |           |
+      | tool/mucertify:view            | Allow      | pmanager | System       |           |
+      | tool/mucertify:edit            | Allow      | pmanager | System       |           |
     And the following "role assigns" exist:
       | user      | role          | contextlevel | reference |
       | manager1  | pmanager      | System       |           |
@@ -33,15 +33,15 @@ Feature: Certification assignment management tests
   @javascript
   Scenario: Manager creates certifications with expected default assignment settings
     Given I log in as "manager1"
-    And I am on all certifications management page
+    And I am on the "tool_mucertify > All certifications management" page
 
     And I press "Add certification"
-    And I set the following fields to these values:
+    And I set the following fields in the ".modal-dialog" "css_element" to these values:
       | Certification name | Certification 001 |
-      | ID number          | PR01        |
+      | Certification ID   | PR01              |
     And I press dialog form button "Add certification"
-    And I click on "Assignment settings" "link" in the "#region-main" "css_element"
-    And I should see "Inactive" in the "Manual assignment:" definition list item
-    And I should see "Inactive" in the "Self assignment:" definition list item
-    And I should see "Inactive" in the "Requests with approval:" definition list item
-    And I should see "Inactive" in the "Automatic cohort assignment:" definition list item
+    And I click on "Assignment settings" "link" in the ".secondary-navigation" "css_element"
+    And I should see "Inactive" in the "Manual assignment" definition list item
+    And I should see "Inactive" in the "Self assignment" definition list item
+    And I should see "Inactive" in the "Requests with approval" definition list item
+    And I should see "Inactive" in the "Automatic cohort assignment" definition list item

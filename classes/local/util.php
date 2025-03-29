@@ -1,37 +1,61 @@
 <?php
-// This file is part of Moodle - https://moodle.org/
+// This file is part of Certifications for Moodle™.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-namespace tool_certify\local;
+// phpcs:disable moodle.Files.BoilerplateComment.CommentEndedTooSoon
+// phpcs:disable moodle.Files.LineLength.TooLong
+
+namespace tool_mucertify\local;
 
 use stdClass;
 
 /**
  * Utility class for certifications.
  *
- * @package    tool_certify
+ * @package    tool_mucertify
  * @copyright  2023 Open LMS (https://www.openlms.net/)
+ * @copyright  2025 Petr Skoda
  * @author     Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class util {
+    /**
+     * Is multi-tenancy available?
+     *
+     * @return bool
+     */
+    public static function is_mutenancy_available(): bool {
+        return class_exists(\tool_mutenancy\local\tenancy::class);
+    }
+
+    /**
+     * Is multi-tenancy active?
+     *
+     * @return bool
+     */
+    public static function is_mutenancy_active(): bool {
+        if (!self::is_mutenancy_available()) {
+            return false;
+        }
+        return \tool_mutenancy\local\tenancy::is_active();
+    }
 
     /**
      * Encode JSON date in a consistent way.
      *
-     * @param $data
+     * @param mixed $data
      * @return string
      */
     public static function json_encode($data): string {
@@ -146,7 +170,7 @@ final class util {
      */
     public static function format_interval(?string $string): string {
         if (!$string) {
-            return get_string('notset', 'tool_certify');
+            return get_string('notset', 'tool_mucertify');
         }
 
         $interval = new \DateInterval($string);
@@ -201,7 +225,7 @@ final class util {
             return get_string('error');
         }
         if (!$duration) {
-            return get_string('notset', 'tool_certify');
+            return get_string('notset', 'tool_mucertify');
         }
         $days = intval($duration / DAYSECS);
         $duration = $duration - $days * DAYSECS;
@@ -263,12 +287,12 @@ final class util {
         $fs = get_file_storage();
         $context = \context_user::instance($USER->id);
 
-        $fs->delete_area_files($context->id, 'tool_certify', 'upload', $draftid);
+        $fs->delete_area_files($context->id, 'tool_mucertify', 'upload', $draftid);
 
         $content = json_encode($filedata, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
         $record = [
             'contextid' => $context->id,
-            'component' => 'tool_certify',
+            'component' => 'tool_mucertify',
             'filearea' => 'upload',
             'itemid' => $draftid,
             'filepath' => '/',
@@ -294,7 +318,7 @@ final class util {
         $fs = get_file_storage();
         $context = \context_user::instance($USER->id);
 
-        $file = $fs->get_file($context->id, 'tool_certify', 'upload', $draftid, '/', 'data.json');
+        $file = $fs->get_file($context->id, 'tool_mucertify', 'upload', $draftid, '/', 'data.json');
         if (!$file) {
             return null;
         }
@@ -317,11 +341,11 @@ final class util {
         $fs = get_file_storage();
         $sql = "SELECT contextid, itemid
                   FROM {files}
-                 WHERE component = 'tool_certify' AND filearea = 'upload' AND filepath = '/' AND filename = '.'
+                 WHERE component = 'tool_mucertify' AND filearea = 'upload' AND filepath = '/' AND filename = '.'
                        AND timecreated < :old";
-        $rs = $DB->get_recordset_sql($sql, ['old' => time() - 60*60*24*2]);
+        $rs = $DB->get_recordset_sql($sql, ['old' => time() - 60 * 60 * 24 * 2]);
         foreach ($rs as $dir) {
-            $fs->delete_area_files($dir->contextid, 'tool_certify', 'upload', $dir->itemid);
+            $fs->delete_area_files($dir->contextid, 'tool_mucertify', 'upload', $dir->itemid);
         }
         $rs->close();
     }

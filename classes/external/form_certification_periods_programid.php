@@ -1,20 +1,23 @@
 <?php
-// This file is part of Moodle - https://moodle.org/
+// This file is part of Certifications for Moodle™.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-namespace tool_certify\external;
+// phpcs:disable moodle.Files.BoilerplateComment.CommentEndedTooSoon
+// phpcs:disable moodle.Files.LineLength.TooLong
+
+namespace tool_mucertify\external;
 
 use core_external\external_function_parameters;
 use core_external\external_value;
@@ -22,12 +25,13 @@ use core_external\external_value;
 /**
  * Provides list of program candidates for certification.
  *
- * @package     tool_certify
+ * @package     tool_mucertify
  * @copyright   2023 Open LMS (https://www.openlms.net/)
  * @author      Petr Skoda
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-final class form_certification_periods_programid extends \local_openlms\external\form_autocomplete_field {
+final class form_certification_periods_programid extends \tool_mulib\external\form_autocomplete_field {
+    /** @var int max results */
     const MAX_RESULTS = 20;
 
     /**
@@ -66,17 +70,17 @@ final class form_certification_periods_programid extends \local_openlms\external
         $query = $parameters['query'];
         $certificationid = $parameters['certificationid'];
 
-        $certification = $DB->get_record('tool_certify_certifications', ['id' => $certificationid], '*', MUST_EXIST);
+        $certification = $DB->get_record('tool_mucertify_certification', ['id' => $certificationid], '*', MUST_EXIST);
 
         // Validate context.
         $context = \context::instance_by_id($certification->contextid);
         self::validate_context($context);
-        require_capability('tool/certify:edit', $context);
+        require_capability('tool/mucertify:edit', $context);
 
-        list($searchsql, $params) = \enrol_programs\local\management::get_program_search_query(null, $query, 'p');
+        list($searchsql, $params) = \tool_muprog\local\management::get_program_search_query(null, $query, 'p');
 
         $tenantselect = '';
-        if (\tool_certify\local\tenant::is_active()) {
+        if (\tool_mucertify\local\util::is_mutenancy_active()) {
             $certificationtenantid = $DB->get_field('context', 'tenantid', ['id' => $context->id]);
             if ($certificationtenantid) {
                 $tenantselect = "AND (ctx.tenantid = :tenantid OR ctx.tenantid IS NULL)";
@@ -86,9 +90,9 @@ final class form_certification_periods_programid extends \local_openlms\external
 
         $sqlquery = <<<SQL
             SELECT p.*
-              FROM {enrol_programs_programs} p
-              JOIN {enrol_programs_sources} s ON s.programid = p.id and s.type = 'certify'
-              JOIN {context} ctx ON ctx.id = p.contextid    
+              FROM {tool_muprog_program} p
+              JOIN {tool_muprog_source} s ON s.programid = p.id and s.type = 'mucertify'
+              JOIN {context} ctx ON ctx.id = p.contextid
              WHERE p.archived = 0 AND $searchsql
                    $tenantselect
           ORDER BY p.fullname ASC
@@ -102,12 +106,12 @@ SQL;
 
         foreach ($rs as $program) {
             $context = \context::instance_by_id($program->contextid);
-            if (!has_capability('enrol/programs:addtocertifications', $context)) {
+            if (!has_capability('tool/muprog:addtocertifications', $context)) {
                 continue;
             }
             $count++;
             if ($count > self::MAX_RESULTS) {
-                $notice = get_string('toomanyrecords', 'local_openlms', self::MAX_RESULTS);
+                $notice = get_string('toomanyrecords', 'tool_mulib', self::MAX_RESULTS);
                 break;
             }
 
@@ -138,7 +142,7 @@ SQL;
                 return '';
             }
 
-            $certification = $DB->get_record('tool_certify_certifications', ['id' => $arguments['certificationid']], '*', MUST_EXIST);
+            $certification = $DB->get_record('tool_mucertify_certification', ['id' => $arguments['certificationid']], '*', MUST_EXIST);
             $context = \context::instance_by_id($certification->contextid);
 
             $error = '';
@@ -146,7 +150,7 @@ SQL;
                 $error = ' (' . get_string('error') .')';
             }
 
-            $program = $DB->get_record('enrol_programs_programs', ['id' => $value]);
+            $program = $DB->get_record('tool_muprog_program', ['id' => $value]);
             if ($program) {
                 return format_string($program->fullname) . $error;
             } else {
@@ -159,7 +163,7 @@ SQL;
      * Is valid value?
      *
      * @param array $arguments
-     * @param $value
+     * @param mixed $value
      * @return string|null error message, NULL means value is ok
      */
     public static function validate_form_value(array $arguments, $value): ?string {
@@ -169,12 +173,12 @@ SQL;
             return null;
         }
 
-        $program = $DB->get_record('enrol_programs_programs', ['id' => $value]);
+        $program = $DB->get_record('tool_muprog_program', ['id' => $value]);
         if (!$program) {
             return get_string('error');
         }
 
-        $certification = $DB->get_record('tool_certify_certifications', ['id' => $arguments['certificationid']], '*', MUST_EXIST);
+        $certification = $DB->get_record('tool_mucertify_certification', ['id' => $arguments['certificationid']], '*', MUST_EXIST);
         if ($program->id == $certification->programid1 || $program->id == $certification->programid2) {
             // Current value is always ok.
             return null;

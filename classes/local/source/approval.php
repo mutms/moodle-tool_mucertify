@@ -1,29 +1,33 @@
 <?php
-// This file is part of Moodle - https://moodle.org/
+// This file is part of Certifications for Moodle™.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-namespace tool_certify\local\source;
+// phpcs:disable moodle.Files.BoilerplateComment.CommentEndedTooSoon
+// phpcs:disable moodle.Files.LineLength.TooLong
 
-use tool_certify\local\util;
+namespace tool_mucertify\local\source;
+
+use tool_mucertify\local\util;
 use stdClass;
 
 /**
  * Certification assignment with approval source.
  *
- * @package    tool_certify
+ * @package    tool_mucertify
  * @copyright  2023 Open LMS (https://www.openlms.net/)
+ * @copyright  2025 Petr Skoda
  * @author     Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -87,21 +91,20 @@ final class approval extends base {
             return false;
         }
 
-
-        if (!\tool_certify\local\catalogue::is_certification_visible($certification, $userid)) {
+        if (!\tool_mucertify\local\catalogue::is_certification_visible($certification, $userid)) {
             return false;
         }
 
-        if ($DB->record_exists('tool_certify_assignments', ['certificationid' => $certification->id, 'userid' => $userid])) {
+        if ($DB->record_exists('tool_mucertify_assignment', ['certificationid' => $certification->id, 'userid' => $userid])) {
             return false;
         }
 
-        $request = $DB->get_record('tool_certify_requests', ['sourceid' => $source->id, 'userid' => $userid]);
+        $request = $DB->get_record('tool_mucertify_request', ['sourceid' => $source->id, 'userid' => $userid]);
         if ($request) {
             if ($request->timerejected) {
-                $info = get_string('source_approval_requestrejected', 'tool_certify');
+                $info = get_string('source_approval_requestrejected', 'tool_mucertify');
             } else {
-                $info = get_string('source_approval_requestpending', 'tool_certify');
+                $info = get_string('source_approval_requestpending', 'tool_mucertify');
             }
             $failurereason = '<em><strong>' . $info . '</strong></em>';
             return false;
@@ -125,7 +128,7 @@ final class approval extends base {
      * @return string[]
      */
     public static function get_catalogue_actions(\stdClass $certification, \stdClass $source): array {
-        global $USER, $DB, $PAGE;
+        global $USER, $OUTPUT, $PAGE;
 
         $failurereason = null;
         if (!self::can_user_request($certification, $source, (int)$USER->id, $failurereason)) {
@@ -136,33 +139,27 @@ final class approval extends base {
             }
         }
 
-        $url = new \moodle_url('/admin/tool/certify/catalogue/source_approval_request.php', ['sourceid' => $source->id]);
-        $button = new \local_openlms\output\dialog_form\button($url, get_string('source_approval_makerequest', 'tool_certify'));
+        $url = new \moodle_url('/admin/tool/mucertify/catalogue/source_approval_request.php', ['sourceid' => $source->id]);
+        $button = new \tool_mulib\output\dialog_form\button($url, get_string('source_approval_makerequest', 'tool_mucertify'));
 
-        /** @var \local_openlms\output\dialog_form\renderer $dialogformoutput */
-        $dialogformoutput = $PAGE->get_renderer('local_openlms', 'dialog_form');
-        $button = $dialogformoutput->render($button);
+        $button = $OUTPUT->render($button);
 
         return [$button];
     }
 
     /**
-     * Return request approval tab link.
+     * Return extra tab for managing the source data in program.
      *
+     * @param \tool_mucertify\navigation\views\certification_secondary $secondary
      * @param stdClass $certification
-     * @return array
      */
-    public static function get_extra_management_tabs(stdClass $certification): array {
+    public static function add_certification_secondary_tabs(\tool_mucertify\navigation\views\certification_secondary $secondary, stdClass $certification): void {
         global $DB;
 
-        $tabs = [];
-
-        if ($DB->record_exists('tool_certify_sources', ['certificationid' => $certification->id, 'type' => 'approval'])) {
-            $url = new \moodle_url('/admin/tool/certify/management/source_approval_requests.php', ['id' => $certification->id]);
-            $tabs[] = new \tabobject('requests', $url, get_string('source_approval_requests', 'tool_certify'));
+        if ($DB->record_exists('tool_mucertify_source', ['certificationid' => $certification->id, 'type' => 'approval'])) {
+            $url = new \moodle_url('/admin/tool/mucertify/management/source_approval_requests.php', ['id' => $certification->id]);
+            $secondary->add(get_string('source_approval_requests', 'tool_mucertify'), $url, \navigation_node::TYPE_SETTING, null, 'certification_approval_requests');
         }
-
-        return $tabs;
     }
 
     /**
@@ -195,7 +192,7 @@ final class approval extends base {
         if (isset($formdata->approval_allowrequest)) {
             $data['allowrequest'] = (int)(bool)$formdata->approval_allowrequest;
         }
-        return \tool_certify\local\util::json_encode($data);
+        return \tool_mucertify\local\util::json_encode($data);
     }
 
     /**
@@ -212,17 +209,17 @@ final class approval extends base {
             return null;
         }
 
-        $certification = $DB->get_record('tool_certify_certifications', ['id' => $certificationid], '*', MUST_EXIST);
-        $source = $DB->get_record('tool_certify_sources',
+        $certification = $DB->get_record('tool_mucertify_certification', ['id' => $certificationid], '*', MUST_EXIST);
+        $source = $DB->get_record('tool_mucertify_source',
             ['id' => $sourceid, 'type' => static::get_type(), 'certificationid' => $certification->id], '*', MUST_EXIST);
 
         $user = $DB->get_record('user', ['id' => $USER->id, 'deleted' => 0], '*', MUST_EXIST);
-        if ($DB->record_exists('tool_certify_assignments', ['certificationid' => $certification->id, 'userid' => $user->id])) {
+        if ($DB->record_exists('tool_mucertify_assignment', ['certificationid' => $certification->id, 'userid' => $user->id])) {
             // One assignment per certification only.
             return null;
         }
 
-        if ($DB->record_exists('tool_certify_requests', ['sourceid' => $source->id, 'userid' => $user->id])) {
+        if ($DB->record_exists('tool_mucertify_request', ['sourceid' => $source->id, 'userid' => $user->id])) {
             // Cannot request repeatedly.
             return null;
         }
@@ -232,11 +229,11 @@ final class approval extends base {
         $record->userid = $user->id;
         $record->timerequested = time();
         $record->datajson = util::json_encode([]);
-        $record->id = $DB->insert_record('tool_certify_requests', $record);
+        $record->id = $DB->insert_record('tool_mucertify_request', $record);
 
         // Send notification.
         $context = \context::instance_by_id($certification->contextid);
-        $targets = get_users_by_capability($context, 'tool/certify:assign');
+        $targets = get_users_by_capability($context, 'tool/mucertify:assign');
         foreach ($targets as $target) {
             $oldforcelang = force_current_language($target->lang);
 
@@ -246,15 +243,15 @@ final class approval extends base {
             $a->user_lastname = s($user->lastname);
             $a->certification_fullname = format_string($certification->fullname);
             $a->certification_idnumber = s($certification->idnumber);
-            $a->certification_url = (new \moodle_url('/admin/tool/certify/catalogue/certification.php', ['id' => $certification->id]))->out(false);
-            $a->requests_url = (new \moodle_url('/admin/tool/certify/management/source_approval_requests.php', ['id' => $certification->id]))->out(false);
+            $a->certification_url = (new \moodle_url('/admin/tool/mucertify/catalogue/certification.php', ['id' => $certification->id]))->out(false);
+            $a->requests_url = (new \moodle_url('/admin/tool/mucertify/management/source_approval_requests.php', ['id' => $certification->id]))->out(false);
 
-            $subject = get_string('source_approval_notification_approval_request_subject', 'tool_certify', $a);
-            $body = get_string('source_approval_notification_approval_request_body', 'tool_certify', $a);
+            $subject = get_string('source_approval_notification_approval_request_subject', 'tool_mucertify', $a);
+            $body = get_string('source_approval_notification_approval_request_body', 'tool_mucertify', $a);
 
             $message = new \core\message\message();
             $message->notification = 1;
-            $message->component = 'tool_certify';
+            $message->component = 'tool_mucertify';
             $message->name = 'approval_request_notification';
             $message->userfrom = $user;
             $message->userto = $target;
@@ -270,7 +267,7 @@ final class approval extends base {
             force_current_language($oldforcelang);
         }
 
-        return $DB->get_record('tool_certify_requests', ['id' => $record->id], '*', MUST_EXIST);
+        return $DB->get_record('tool_mucertify_request', ['id' => $record->id], '*', MUST_EXIST);
     }
 
     /**
@@ -282,22 +279,22 @@ final class approval extends base {
     public static function approve_request(int $requestid): ?stdClass {
         global $DB;
 
-        $request = $DB->get_record('tool_certify_requests', ['id' => $requestid], '*', MUST_EXIST);
+        $request = $DB->get_record('tool_mucertify_request', ['id' => $requestid], '*', MUST_EXIST);
         $user = $DB->get_record('user', ['id' => $request->userid], '*', MUST_EXIST);
-        $source = $DB->get_record('tool_certify_sources', ['id' => $request->sourceid], '*', MUST_EXIST);
-        $certification = $DB->get_record('tool_certify_certifications', ['id' => $source->certificationid], '*', MUST_EXIST);
+        $source = $DB->get_record('tool_mucertify_source', ['id' => $request->sourceid], '*', MUST_EXIST);
+        $certification = $DB->get_record('tool_mucertify_certification', ['id' => $source->certificationid], '*', MUST_EXIST);
 
-        if ($DB->record_exists('tool_certify_assignments', ['certificationid' => $certification->id, 'userid' => $user->id])) {
+        if ($DB->record_exists('tool_mucertify_assignment', ['certificationid' => $certification->id, 'userid' => $user->id])) {
             return null;
         }
 
         $trans = $DB->start_delegated_transaction();
         $assignment = self::assign_user($certification, $source, $user->id, []);
-        $DB->delete_records('tool_certify_requests', ['id' => $request->id]);
+        $DB->delete_records('tool_mucertify_request', ['id' => $request->id]);
         $trans->allow_commit();
 
-        \enrol_programs\local\source\certify::sync_certifications($certification->id, $user->id);
-        \tool_certify\local\notification_manager::trigger_notifications($certification->id, $user->id);
+        \tool_muprog\local\source\mucertify::sync_certifications($certification->id, $user->id);
+        \tool_mucertify\local\notification_manager::trigger_notifications($certification->id, $user->id);
 
         return $assignment;
     }
@@ -333,16 +330,16 @@ final class approval extends base {
     public static function reject_request(int $requestid, string $reason): void {
         global $DB, $USER;
 
-        $request = $DB->get_record('tool_certify_requests', ['id' => $requestid], '*', MUST_EXIST);
+        $request = $DB->get_record('tool_mucertify_request', ['id' => $requestid], '*', MUST_EXIST);
         if ($request->timerejected) {
             return;
         }
         $request->timerejected = time();
         $request->rejectedby = $USER->id;
-        $DB->update_record('tool_certify_requests', $request);
+        $DB->update_record('tool_mucertify_request', $request);
 
-        $source = $DB->get_record('tool_certify_sources', ['id' => $request->sourceid], '*', MUST_EXIST);
-        $certification = $DB->get_record('tool_certify_certifications', ['id' => $source->certificationid], '*', MUST_EXIST);
+        $source = $DB->get_record('tool_mucertify_source', ['id' => $request->sourceid], '*', MUST_EXIST);
+        $certification = $DB->get_record('tool_mucertify_certification', ['id' => $source->certificationid], '*', MUST_EXIST);
         $user = $DB->get_record('user', ['id' => $request->userid], '*', MUST_EXIST);
 
         $oldforcelang = force_current_language($user->lang);
@@ -353,15 +350,15 @@ final class approval extends base {
         $a->user_lastname = s($user->lastname);
         $a->certification_fullname = format_string($certification->fullname);
         $a->certification_idnumber = s($certification->idnumber);
-        $a->certification_url = (new \moodle_url('/admin/tool/certify/catalogue/certification.php', ['id' => $certification->id]))->out(false);
+        $a->certification_url = (new \moodle_url('/admin/tool/mucertify/catalogue/certification.php', ['id' => $certification->id]))->out(false);
         $a->reason = $reason;
 
-        $subject = get_string('source_approval_notification_approval_reject_subject', 'tool_certify', $a);
-        $body = get_string('source_approval_notification_approval_reject_body', 'tool_certify', $a);
+        $subject = get_string('source_approval_notification_approval_reject_subject', 'tool_mucertify', $a);
+        $body = get_string('source_approval_notification_approval_reject_body', 'tool_mucertify', $a);
 
         $message = new \core\message\message();
         $message->notification = 1;
-        $message->component = 'tool_certify';
+        $message->component = 'tool_mucertify';
         $message->name = 'approval_reject_notification';
         $message->userfrom = $USER;
         $message->userto = $user;
@@ -386,12 +383,12 @@ final class approval extends base {
     public static function delete_request(int $requestid): void {
         global $DB;
 
-        $request = $DB->get_record('tool_certify_requests', ['id' => $requestid]);
+        $request = $DB->get_record('tool_mucertify_request', ['id' => $requestid]);
         if (!$request) {
             return;
         }
 
-        $DB->delete_records('tool_certify_requests', ['id' => $request->id]);
+        $DB->delete_records('tool_mucertify_request', ['id' => $request->id]);
     }
 
     /**
@@ -409,9 +406,9 @@ final class approval extends base {
         if ($source) {
             $data = (object)json_decode($source->datajson);
             if (!isset($data->allowrequest) || $data->allowrequest) {
-                $result .= '; ' . get_string('source_approval_requestallowed', 'tool_certify');
+                $result .= '; ' . get_string('source_approval_requestallowed', 'tool_mucertify');
             } else {
-                $result .= '; ' . get_string('source_approval_requestnotallowed', 'tool_certify');
+                $result .= '; ' . get_string('source_approval_requestnotallowed', 'tool_mucertify');
             }
         }
 

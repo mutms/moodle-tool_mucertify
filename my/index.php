@@ -1,26 +1,30 @@
 <?php
-// This file is part of Moodle - https://moodle.org/
+// This file is part of Certifications for Moodle™.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+// phpcs:disable moodle.Files.BoilerplateComment.CommentEndedTooSoon
+// phpcs:disable moodle.Files.LineLength.TooLong
 
 /**
  * My certifications.
  *
- * @package    tool_certify
+ * @package    tool_mucertify
  * @copyright  2022 Open LMS (https://www.openlms.net/)
+ * @copyright  2025 Petr Skoda
  * @author     Petr Skoda
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 /** @var moodle_database $DB */
@@ -39,11 +43,11 @@ require_login();
 $usercontext = context_user::instance($USER->id);
 $PAGE->set_context($usercontext);
 
-if (!enrol_is_enabled('programs')) {
+if (!enrol_is_enabled('muprog')) {
     redirect(new moodle_url('/'));
 }
 if (isguestuser()) {
-    redirect(new moodle_url('/admin/tool/certify/catalogue/index.php'));
+    redirect(new moodle_url('/admin/tool/mucertify/catalogue/index.php'));
 }
 
 $pageparams = [];
@@ -54,9 +58,9 @@ if ($dir !== 'ASC') {
     $pageparams['dir'] = $dir;
 }
 
-$currenturl = new moodle_url('/admin/tool/certify/my/index.php', $pageparams);
+$currenturl = new moodle_url('/admin/tool/mucertify/my/index.php', $pageparams);
 
-$title = get_string('mycertifications', 'tool_certify');
+$title = get_string('mycertifications', 'tool_mucertify');
 $PAGE->navigation->extend_for_user($USER);
 $PAGE->set_title($title);
 $PAGE->set_url($currenturl);
@@ -65,13 +69,13 @@ $PAGE->navbar->add(get_string('profile'), new moodle_url('/user/profile.php', ['
 $PAGE->navbar->add($title);
 
 $buttons = [];
-$manageurl = \tool_certify\local\management::get_management_url();
+$manageurl = \tool_mucertify\local\management::get_management_url();
 if ($manageurl) {
-    $buttons[] = html_writer::link($manageurl, get_string('management', 'tool_certify'), ['class' => 'btn btn-secondary']);
+    $buttons[] = html_writer::link($manageurl, get_string('management', 'tool_mucertify'), ['class' => 'btn btn-secondary']);
 }
-$catalogueurl = \tool_certify\local\catalogue::get_catalogue_url();
+$catalogueurl = \tool_mucertify\local\catalogue::get_catalogue_url();
 if ($catalogueurl) {
-    $buttons[] = html_writer::link($catalogueurl, get_string('catalogue', 'tool_certify'), ['class' => 'btn btn-secondary']);
+    $buttons[] = html_writer::link($catalogueurl, get_string('catalogue', 'tool_mucertify'), ['class' => 'btn btn-secondary']);
 }
 $buttons = implode('&nbsp;', $buttons);
 $PAGE->set_button($buttons . $PAGE->button);
@@ -90,8 +94,8 @@ if ($dir === 'ASC') {
 }
 
 $sql = "SELECT p.*
-          FROM {tool_certify_certifications} p
-          JOIN {tool_certify_assignments} pa ON pa.certificationid = p.id
+          FROM {tool_mucertify_certification} p
+          JOIN {tool_mucertify_assignment} pa ON pa.certificationid = p.id
          WHERE p.archived = 0 AND pa.archived = 0
                AND pa.userid = :userid
       ORDER BY $orderby";
@@ -99,26 +103,26 @@ $params = ['userid' => $USER->id];
 $certifications = $DB->get_records_sql($sql, $params);
 
 if (!$certifications) {
-    echo get_string('errornomycertifications', 'tool_certify');
+    echo get_string('errornomycertifications', 'tool_mucertify');
     echo $OUTPUT->footer();
     die;
 }
 
 $data = [];
 
-$certificationicon = $OUTPUT->pix_icon('certification', '', 'tool_certify');
+$certificationicon = $OUTPUT->pix_icon('certification', '', 'tool_mucertify');
 $dateformat = get_string('strftimedatetimeshort');
-$strnotset = get_string('notset', 'tool_certify');
+$strnotset = get_string('notset', 'tool_mucertify');
 
 foreach ($certifications as $certification) {
-    $assignment = $DB->get_record('tool_certify_assignments', ['certificationid' => $certification->id, 'userid' => $USER->id]);
+    $assignment = $DB->get_record('tool_mucertify_assignment', ['certificationid' => $certification->id, 'userid' => $USER->id]);
     $pcontext = context::instance_by_id($certification->contextid);
     $row = [];
     $fullname = $certificationicon . format_string($certification->fullname);
-    $detailurl = new moodle_url('/admin/tool/certify/my/certification.php', ['id' => $certification->id]);
+    $detailurl = new moodle_url('/admin/tool/mucertify/my/certification.php', ['id' => $certification->id]);
     $fullname = html_writer::link($detailurl, $fullname);
     if ($CFG->usetags) {
-        $tags = core_tag_tag::get_item_tags('tool_certify', 'certification', $certification->id);
+        $tags = core_tag_tag::get_item_tags('tool_mucertify', 'certification', $certification->id);
         if ($tags) {
             $fullname .= '<br />' . $OUTPUT->tag_list($tags, '', 'certification-tags');
         }
@@ -126,19 +130,19 @@ foreach ($certifications as $certification) {
 
     $row[] = $fullname;
     $row[] = s($certification->idnumber);
-    $description = file_rewrite_pluginfile_urls($certification->description, 'pluginfile.php', $pcontext->id, 'tool_certify', 'description', $certification->id);
+    $description = file_rewrite_pluginfile_urls($certification->description, 'pluginfile.php', $pcontext->id, 'tool_mucertify', 'description', $certification->id);
     $row[] = format_text($description, $certification->descriptionformat, ['context' => $pcontext]);
 
-    $row[] = \tool_certify\local\assignment::get_until_html($certification, $assignment);
+    $row[] = \tool_mucertify\local\assignment::get_until_html($certification, $assignment);
 
-    $row[] = \tool_certify\local\assignment::get_status_html($certification, $assignment);
+    $row[] = \tool_mucertify\local\assignment::get_status_html($certification, $assignment);
 
     $data[] = $row;
 }
 
 $columns = [];
 
-$column = get_string('certificationname', 'tool_certify');
+$column = get_string('certificationname', 'tool_mucertify');
 $columndir = ($dir === "ASC" ? "DESC" : "ASC");
 $columnicon = ($dir === "ASC" ? "sort_asc" : "sort_desc");
 $columnicon = $OUTPUT->pix_icon('t/' . $columnicon, get_string(strtolower($columndir)), 'core',
@@ -152,7 +156,7 @@ if ($sort === 'fullname') {
 }
 $columns[] = $column;
 
-$column = get_string('idnumber');
+$column = get_string('certificationidnumber', 'tool_mucertify');
 $columndir = ($dir === "ASC" ? "DESC" : "ASC");
 $columnicon = ($dir === "ASC" ? "sort_asc" : "sort_desc");
 $columnicon = $OUTPUT->pix_icon('t/' . $columnicon, get_string(strtolower($columndir)), 'core',
@@ -168,9 +172,9 @@ $columns[] = $column;
 
 $columns[] = get_string('description');
 
-$columns[] = get_string('untildate', 'tool_certify');
+$columns[] = get_string('untildate', 'tool_mucertify');
 
-$columns[] = get_string('certificationstatus', 'tool_certify');
+$columns[] = get_string('certificationstatus', 'tool_mucertify');
 
 $table = new html_table();
 $table->head = $columns;

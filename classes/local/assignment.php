@@ -1,28 +1,32 @@
 <?php
-// This file is part of Moodle - https://moodle.org/
+// This file is part of Certifications for Moodle™.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-namespace tool_certify\local;
+// phpcs:disable moodle.Files.BoilerplateComment.CommentEndedTooSoon
+// phpcs:disable moodle.Files.LineLength.TooLong
+
+namespace tool_mucertify\local;
 
 use stdClass;
 
 /**
  * Certification assignment helper.
  *
- * @package    tool_certify
+ * @package    tool_mucertify
  * @copyright  2023 Open LMS (https://www.openlms.net/)
+ * @copyright  2025 Petr Skoda
  * @author     Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -41,11 +45,18 @@ final class assignment {
             source\approval::get_type() => source\approval::class,
         ];
 
-        if (source\ecommerce::is_commerce_enabled()) {
-            $types[source\ecommerce::get_type()] = source\ecommerce::class;
-        }
-
         return $types;
+    }
+
+    /**
+     * Find assignment source class.
+     *
+     * @param string $type
+     * @return null|class-string<\tool_mucertify\local\source\base>
+     */
+    public static function get_source_classname(string $type): ?string {
+        $types = self::get_source_classes();
+        return $types[$type] ?? null;
     }
 
     /**
@@ -74,36 +85,38 @@ final class assignment {
     public static function update_user(stdClass $data): stdClass {
         global $DB;
 
-        $record = $DB->get_record('tool_certify_assignments', ['id' => $data->id], '*', MUST_EXIST);
+        $record = $DB->get_record('tool_mucertify_assignment', ['id' => $data->id], '*', MUST_EXIST);
 
         $trans = $DB->start_delegated_transaction();
 
-        if (property_exists($data, 'timecertifieduntil')) {
-            $record->timecertifieduntil = $data->timecertifieduntil;
-            if (!$record->timecertifieduntil) {
-                $record->timecertifieduntil = null;
+        if (property_exists($data, 'timecertifiedtemp')) {
+            $record->timecertifiedtemp = $data->timecertifiedtemp;
+            if (!$record->timecertifiedtemp) {
+                $record->timecertifiedtemp = null;
             }
         }
         if (property_exists($data, 'archived')) {
             $record->archived = (int)(bool)$data->archived;
         }
 
-        $DB->update_record('tool_certify_assignments', $record);
-        $record = $DB->get_record('tool_certify_assignments', ['id' => $record->id], '*', MUST_EXIST);
+        $DB->update_record('tool_mucertify_assignment', $record);
+        $record = $DB->get_record('tool_mucertify_assignment', ['id' => $record->id], '*', MUST_EXIST);
 
         if (property_exists($data, 'stoprecertify')) {
             period::update_recertifiable($record, (bool)$data->stoprecertify);
         }
 
-        assignment::make_snapshot($record->certificationid, $record->userid, 'assignment_edit');
+        $record = self::fix_caches($record->id);
+
+        self::make_snapshot($record->certificationid, $record->userid, 'assignment_edit');
 
         $trans->allow_commit();
 
-        \enrol_programs\local\source\certify::sync_certifications($record->certificationid, $record->userid);
+        \tool_muprog\local\source\mucertify::sync_certifications($record->certificationid, $record->userid);
 
         notification_manager::trigger_notifications($record->certificationid, $record->userid);
 
-        return $DB->get_record('tool_certify_assignments', ['id' => $record->id], '*', MUST_EXIST);
+        return $DB->get_record('tool_mucertify_assignment', ['id' => $record->id], '*', MUST_EXIST);
     }
 
     /**
@@ -121,16 +134,16 @@ final class assignment {
         }
 
         $sql = "SELECT cp.*
-                  FROM {tool_certify_periods} cp
-                  JOIN {tool_certify_assignments} ca ON ca.userid = cp.userid AND ca.certificationid = cp.certificationid
+                  FROM {tool_mucertify_period} cp
+                  JOIN {tool_mucertify_assignment} ca ON ca.userid = cp.userid AND ca.certificationid = cp.certificationid
                  WHERE cp.timerevoked IS NULL and cp.timecertified IS NOT NULL
                        AND ca.id = :assignmentid";
         $periods = $DB->get_records_sql($sql, ['assignmentid' => $assignment->id]);
         if (!$periods) {
-            if ($assignment->timecertifieduntil) {
-                return userdate($assignment->timecertifieduntil, get_string('strftimedatetimeshort'));
+            if ($assignment->timecertifiedtemp) {
+                return userdate($assignment->timecertifiedtemp, get_string('strftimedatetimeshort'));
             } else {
-                return get_string('notset', 'tool_certify');
+                return get_string('notset', 'tool_mucertify');
             }
         }
 
@@ -145,10 +158,10 @@ final class assignment {
             }
         }
         if ($until === null) {
-            return get_string('notset', 'tool_certify');
+            return get_string('notset', 'tool_mucertify');
         }
-        if ($assignment->timecertifieduntil && $assignment->timecertifieduntil > $until) {
-            return userdate($assignment->timecertifieduntil, get_string('strftimedatetimeshort'));
+        if ($assignment->timecertifiedtemp && $assignment->timecertifiedtemp > $until) {
+            return userdate($assignment->timecertifiedtemp, get_string('strftimedatetimeshort'));
         } else {
             return userdate($until, get_string('strftimedatetimeshort'));
         }
@@ -167,30 +180,31 @@ final class assignment {
         $now = time();
 
         if ($certification->archived || $assignment->archived) {
-            return '<span class="badge badge-dark">' . get_string('certificationstatus_archived', 'tool_certify') . '</span>';
+            return '<span class="badge badge-dark">' . get_string('certificationstatus_archived', 'tool_mucertify') . '</span>';
         }
 
-        $select = "certificationid = :certificationid AND userid = :userid AND timerevoked IS NULL AND timecertified IS NOT NULL AND timefrom <= $now AND (timeuntil IS NULL OR timeuntil > $now)";
+        $select = "certificationid = :certificationid AND userid = :userid AND timerevoked IS NULL"
+            . " AND timecertified IS NOT NULL AND timefrom <= $now AND (timeuntil IS NULL OR timeuntil > $now)";
         $params = ['certificationid' => $assignment->certificationid, 'userid' => $assignment->userid];
-        if ($DB->record_exists_select('tool_certify_periods', $select, $params)) {
-            return '<span class="badge badge-success">' . get_string('certificationstatus_valid', 'tool_certify') . '</span>';
+        if ($DB->record_exists_select('tool_mucertify_period', $select, $params)) {
+            return '<span class="badge badge-success">' . get_string('certificationstatus_valid', 'tool_mucertify') . '</span>';
         }
 
-        if ($assignment->timecertifieduntil && $assignment->timecertifieduntil > $now) {
-            return '<span class="badge badge-success">' . get_string('certificationstatus_temporary', 'tool_certify') . '</span>';
+        if ($assignment->timecertifiedtemp && $assignment->timecertifiedtemp > $now) {
+            return '<span class="badge badge-success">' . get_string('certificationstatus_temporary', 'tool_mucertify') . '</span>';
         }
 
         $select = "certificationid = :certificationid AND userid = :userid AND timerevoked IS NULL AND timecertified IS NOT NULL AND timeuntil < $now";
         $params = ['certificationid' => $assignment->certificationid, 'userid' => $assignment->userid];
-        if ($DB->record_exists_select('tool_certify_periods', $select, $params)) {
-            return '<span class="badge badge-light">' . get_string('certificationstatus_expired', 'tool_certify') . '</span>';
+        if ($DB->record_exists_select('tool_mucertify_period', $select, $params)) {
+            return '<span class="badge badge-light">' . get_string('certificationstatus_expired', 'tool_mucertify') . '</span>';
         }
 
-        return '<span class="badge badge-light">' . get_string('certificationstatus_notcertified', 'tool_certify') . '</span>';
+        return '<span class="badge badge-light">' . get_string('certificationstatus_notcertified', 'tool_mucertify') . '</span>';
     }
 
     /**
-     * Make sure current program status adn certification completion are up-to-date.
+     * Make sure current program status and certification completion are up-to-date.
      *
      * @param stdClass $assignment
      * @return stdClass
@@ -211,20 +225,20 @@ final class assignment {
         ];
 
         $sql = "SELECT cp.*
-                  FROM {tool_certify_periods} cp
-                  JOIN {enrol_programs_programs} p ON p.id = cp.programid
-                 WHERE cp.timewindowstart < :now1 AND (cp.timewindowend IS NULL OR cp.timewindowend > :now2)                      
+                  FROM {tool_mucertify_period} cp
+                  JOIN {tool_muprog_program} p ON p.id = cp.programid
+                 WHERE cp.timewindowstart < :now1 AND (cp.timewindowend IS NULL OR cp.timewindowend > :now2)
                        AND cp.certificationid = :certificationid AND cp.userid = :userid
                        AND cp.timecertified IS NULL AND cp.timerevoked IS NULL";
         $periods = $DB->get_records_sql($sql, $params);
         foreach ($periods as $period) {
-            \enrol_programs\local\allocation::fix_user_enrolments($period->programid, $period->userid);
+            \tool_muprog\local\allocation::fix_user_enrolments($period->programid, $period->userid);
         }
 
-        \tool_certify\local\assignment::fix_assignment_sources($assignment->certificationid, $assignment->userid);
-        \enrol_programs\local\source\certify::sync_certifications($assignment->certificationid, $assignment->userid);
+        self::fix_assignment_sources($assignment->certificationid, $assignment->userid);
+        \tool_muprog\local\source\mucertify::sync_certifications($assignment->certificationid, $assignment->userid);
 
-        return $DB->get_record('tool_certify_assignments', ['id' => $assignment->id], '*', MUST_EXIST);
+        return $DB->get_record('tool_mucertify_assignment', ['id' => $assignment->id], '*', MUST_EXIST);
     }
 
     /**
@@ -255,8 +269,8 @@ final class assignment {
         global $DB;
 
         $sql = "SELECT 1
-                  FROM {tool_certify_certifications} c
-                  JOIN {tool_certify_assignments} ca ON ca.certificationid = c.id
+                  FROM {tool_mucertify_certification} c
+                  JOIN {tool_mucertify_assignment} ca ON ca.certificationid = c.id
                  WHERE c.archived = 0 AND ca.archived = 0 AND ca.userid = :userid";
 
         return $DB->record_exists_sql($sql, ['userid' => $userid]);
@@ -274,7 +288,7 @@ final class assignment {
     public static function make_snapshot(int $certificationid, int $userid, string $reason, ?string $explanation = null): ?stdClass {
         global $DB, $USER;
 
-        $assignment = $DB->get_record('tool_certify_assignments', ['certificationid' => $certificationid, 'userid' => $userid]);
+        $assignment = $DB->get_record('tool_mucertify_assignment', ['certificationid' => $certificationid, 'userid' => $userid]);
         if (!$assignment) {
             $assignment = null;
             $assignmentid = null;
@@ -303,13 +317,90 @@ final class assignment {
         }
 
         $sql = "SELECT p.*
-                  FROM {tool_certify_periods} p
+                  FROM {tool_mucertify_period} p
                  WHERE p.userid = :userid AND p.certificationid = :certificationid
               ORDER BY p.id ASC";
         $data->periodsjson = util::json_encode($DB->get_records_sql($sql, ['certificationid' => $certificationid, 'userid' => $userid]));
 
-        $DB->insert_record('tool_certify_usr_snapshots', $data);
+        $DB->insert_record('tool_mucertify_usr_snapshot', $data);
 
         return $assignment;
+    }
+
+    /**
+     * Fix cached values in timecertifiedfrom and timecertifieduntil fields.
+     *
+     * @param int $assignmentid
+     * @return stdClass updated assignment record
+     */
+    public static function fix_caches(int $assignmentid): stdClass {
+        global $DB;
+
+        $assignment = $DB->get_record('tool_mucertify_assignment', ['id' => $assignmentid], '*', MUST_EXIST);
+
+        $sql = "SELECT p.id, p.timefrom, p.timeuntil
+                  FROM {tool_mucertify_period} p
+                 WHERE certificationid = :certificationid AND userid = :userid
+                       AND p.timerevoked IS NULL AND p.timecertified IS NOT NULL AND p.timefrom > 0";
+        $params = ['certificationid' => $assignment->certificationid, 'userid' => $assignment->userid];
+        $periods = $DB->get_records_sql($sql, $params);
+
+        $record = [];
+
+        if ($periods) {
+            $from = null;
+            $until = null;
+            foreach ($periods as $period) {
+                if (!$from || $period->timefrom < $from) {
+                    $from = $period->timefrom;
+                }
+                if ($period->timeuntil) {
+                    if ($period->timeuntil > $until) {
+                        $until = $period->timeuntil;
+                    }
+                } else {
+                    $until = (string)\tool_mulib\local\date_util::TIMESTAMP_FOREVER;
+                }
+            }
+            if ($assignment->timecertifiedtemp > $until) {
+                $until = $assignment->timecertifiedtemp;
+            }
+            if ($assignment->timecertifiedfrom !== $from) {
+                $record['timecertifiedfrom'] = $from;
+            }
+            if ($assignment->timecertifieduntil !== $until) {
+                $record['timecertifieduntil'] = $until;
+            }
+        } else {
+            if ($assignment->timecertifiedtemp) {
+                // Minimum one day of being temporarily certified to prevent problems with bad data.
+                if ($assignment->timecertifiedtemp >= $assignment->timecreated + DAYSECS) {
+                    if ($assignment->timecertifiedfrom !== $assignment->timecreated) {
+                        $record['timecertifiedfrom'] = $assignment->timecreated;
+                    }
+                } else {
+                    $record['timecertifiedfrom'] = (string)($assignment->timecertifiedtemp - DAYSECS);
+                }
+                if ($assignment->timecertifieduntil !== $assignment->timecertifiedtemp) {
+                    $record['timecertifieduntil'] = $assignment->timecertifiedtemp;
+                }
+            } else {
+                if ($assignment->timecertifiedfrom !== null) {
+                    $record['timecertifiedfrom'] = null;
+                }
+                if ($assignment->timecertifieduntil !== null) {
+                    $record['timecertifieduntil'] = null;
+                }
+            }
+        }
+
+        if (!$record) {
+            return $assignment;
+        }
+
+        $record['id'] = $assignment->id;
+        $DB->update_record('tool_mucertify_assignment', $record);
+
+        return $DB->get_record('tool_mucertify_assignment', ['id' => $assignment->id], '*', MUST_EXIST);
     }
 }

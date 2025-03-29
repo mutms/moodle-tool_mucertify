@@ -1,28 +1,32 @@
 <?php
-// This file is part of Moodle - https://moodle.org/
+// This file is part of Certifications for Moodle™.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-namespace tool_certify\local\source;
+// phpcs:disable moodle.Files.BoilerplateComment.CommentEndedTooSoon
+// phpcs:disable moodle.Files.LineLength.TooLong
+
+namespace tool_mucertify\local\source;
 
 use stdClass;
 
 /**
  * Manual certification assignment.
  *
- * @package    tool_certify
+ * @package    tool_mucertify
  * @copyright  2023 Open LMS (https://www.openlms.net/)
+ * @copyright  2025 Petr Skoda
  * @author     Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -87,7 +91,7 @@ final class manual extends base {
         if (!$certification->programid1) {
             return false;
         }
-        if (!$DB->record_exists('enrol_programs_programs', ['id' => $certification->programid1])) {
+        if (!$DB->record_exists('tool_muprog_program', ['id' => $certification->programid1])) {
             return false;
         }
         return true;
@@ -101,10 +105,7 @@ final class manual extends base {
      * @return array
      */
     public static function get_management_certification_users_buttons(stdClass $certification, stdClass $source): array {
-        global $PAGE;
-
-        /** @var \local_openlms\output\dialog_form\renderer $dialogformoutput */
-        $dialogformoutput = $PAGE->get_renderer('local_openlms', 'dialog_form');
+        global $OUTPUT;
 
         if ($source->type !== static::get_type()) {
             throw new \coding_exception('invalid instance');
@@ -112,14 +113,14 @@ final class manual extends base {
         $enabled = self::is_assignment_possible($certification, $source);
         $context = \context::instance_by_id($certification->contextid);
         $buttons = [];
-        if ($enabled && has_capability('tool/certify:assign', $context)) {
-            $url = new \moodle_url('/admin/tool/certify/management/source_manual_assign.php', ['sourceid' => $source->id]);
-            $button = new \local_openlms\output\dialog_form\button($url, get_string('source_manual_assignusers', 'tool_certify'));
-            $buttons[] = $dialogformoutput->render($button);
+        if ($enabled && has_capability('tool/mucertify:assign', $context)) {
+            $url = new \moodle_url('/admin/tool/mucertify/management/source_manual_assign.php', ['sourceid' => $source->id]);
+            $button = new \tool_mulib\output\dialog_form\button($url, get_string('source_manual_assignusers', 'tool_mucertify'));
+            $buttons[] = $OUTPUT->render($button);
 
-            $url = new \moodle_url('/admin/tool/certify/management/source_manual_upload.php', ['sourceid' => $source->id]);
-            $button = new \local_openlms\output\dialog_form\button($url, get_string('source_manual_uploadusers', 'tool_certify'));
-            $buttons[] = $dialogformoutput->render($button);
+            $url = new \moodle_url('/admin/tool/mucertify/management/source_manual_upload.php', ['sourceid' => $source->id]);
+            $button = new \tool_mulib\output\dialog_form\button($url, get_string('source_manual_uploadusers', 'tool_mucertify'));
+            $buttons[] = $OUTPUT->render($button);
         }
         return $buttons;
     }
@@ -157,8 +158,8 @@ final class manual extends base {
     public static function assign_users(int $certificationid, int $sourceid, array $userids, array $dateoverrides = []): void {
         global $DB;
 
-        $certification = $DB->get_record('tool_certify_certifications', ['id' => $certificationid], '*', MUST_EXIST);
-        $source = $DB->get_record('tool_certify_sources',
+        $certification = $DB->get_record('tool_mucertify_certification', ['id' => $certificationid], '*', MUST_EXIST);
+        $source = $DB->get_record('tool_mucertify_source',
             ['id' => $sourceid, 'type' => static::get_type(), 'certificationid' => $certification->id], '*', MUST_EXIST);
 
         if (count($userids) === 0) {
@@ -167,7 +168,7 @@ final class manual extends base {
 
         foreach ($userids as $userid) {
             $user = $DB->get_record('user', ['id' => $userid, 'deleted' => 0], '*', MUST_EXIST);
-            if ($DB->record_exists('tool_certify_assignments', ['certificationid' => $certification->id, 'userid' => $user->id])) {
+            if ($DB->record_exists('tool_mucertify_assignment', ['certificationid' => $certification->id, 'userid' => $user->id])) {
                 // One assignment per certification only.
                 continue;
             }
@@ -180,8 +181,8 @@ final class manual extends base {
             $userid = null;
         }
 
-        \enrol_programs\local\source\certify::sync_certifications($certification->id, $userid);
-        \tool_certify\local\notification_manager::trigger_notifications($certification->id, $userid);
+        \tool_muprog\local\source\mucertify::sync_certifications($certification->id, $userid);
+        \tool_mucertify\local\notification_manager::trigger_notifications($certification->id, $userid);
     }
 
     /**
@@ -210,8 +211,8 @@ final class manual extends base {
             'errors' => 0,
         ];
 
-        $source = $DB->get_record('tool_certify_sources', ['id' => $data->sourceid, 'type' => 'manual'], '*', MUST_EXIST);
-        $certification = $DB->get_record('tool_certify_certifications', ['id' => $source->certificationid], '*', MUST_EXIST);
+        $source = $DB->get_record('tool_mucertify_source', ['id' => $data->sourceid, 'type' => 'manual'], '*', MUST_EXIST);
+        $certification = $DB->get_record('tool_mucertify_certification', ['id' => $source->certificationid], '*', MUST_EXIST);
 
         if ($data->hasheaders) {
             unset($filedata[0]);
@@ -241,7 +242,7 @@ final class manual extends base {
                 $result['errors']++;
                 continue;
             }
-            if ($DB->record_exists('tool_certify_assignments', ['certificationid' => $certification->id, 'userid' => $user->id])) {
+            if ($DB->record_exists('tool_mucertify_assignment', ['certificationid' => $certification->id, 'userid' => $user->id])) {
                 $result['skipped']++;
                 continue;
             }
@@ -261,8 +262,8 @@ final class manual extends base {
                 $result['errors']++;
                 continue;
             }
-            \enrol_programs\local\source\certify::sync_certifications($certification->id, $user->id);
-            \tool_certify\local\notification_manager::trigger_notifications($certification->id, $user->id);
+            \tool_muprog\local\source\mucertify::sync_certifications($certification->id, $user->id);
+            \tool_mucertify\local\notification_manager::trigger_notifications($certification->id, $user->id);
             $result['assigned']++;
         }
 
@@ -270,7 +271,7 @@ final class manual extends base {
             $fs = get_file_storage();
             $context = \context_user::instance($USER->id);
             $fs->delete_area_files($context->id, 'user', 'draft', $data->csvfile);
-            $fs->delete_area_files($context->id, 'tool_certify', 'upload', $data->csvfile);
+            $fs->delete_area_files($context->id, 'tool_mucertify', 'upload', $data->csvfile);
         }
 
         return $result;

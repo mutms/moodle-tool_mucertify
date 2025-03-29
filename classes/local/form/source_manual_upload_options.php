@@ -1,30 +1,35 @@
 <?php
-// This file is part of Moodle - https://moodle.org/
+// This file is part of Certifications for Moodle™.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-namespace tool_certify\local\form;
+// phpcs:disable moodle.Files.BoilerplateComment.CommentEndedTooSoon
+// phpcs:disable moodle.Files.LineLength.TooLong
+
+namespace tool_mucertify\local\form;
 
 /**
  * Assign users via file upload.
  *
- * @package    tool_certify
+ * @package    tool_mucertify
  * @copyright  2022 Open LMS (https://www.openlms.net/)
+ * @copyright  2025 Petr Skoda
  * @author     Petr Skoda
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-final class source_manual_upload_options extends \local_openlms\dialog_form {
+final class source_manual_upload_options extends \tool_mulib\local\dialog_form {
+    #[\Override]
     protected function definition() {
         $mform = $this->_form;
         $certification = $this->_customdata['certification'];
@@ -47,7 +52,7 @@ final class source_manual_upload_options extends \local_openlms\dialog_form {
         $mform->addElement('static', 'preview', get_string('preview'), \html_writer::table($preview));
 
         $fileoptions = reset($filedata);
-        $mform->addElement('select', 'usercolumn', get_string('source_manual_usercolumn', 'tool_certify'), $fileoptions);
+        $mform->addElement('select', 'usercolumn', get_string('source_manual_usercolumn', 'tool_mucertify'), $fileoptions);
         $firstcolumn = reset($fileoptions);
 
         $options = [
@@ -55,20 +60,20 @@ final class source_manual_upload_options extends \local_openlms\dialog_form {
             'idnumber' => get_string('idnumber'),
             'email' => get_string('email'),
         ];
-        $mform->addElement('select', 'usermapping', get_string('source_manual_usermapping', 'tool_certify'), $options);
+        $mform->addElement('select', 'usermapping', get_string('source_manual_usermapping', 'tool_mucertify'), $options);
         if (isset($options[$firstcolumn])) {
             $mform->setDefault('usermapping', $firstcolumn);
         }
 
-        $mform->addElement('advcheckbox', 'hasheaders', get_string('source_manual_hasheaders', 'tool_certify'));
+        $mform->addElement('advcheckbox', 'hasheaders', get_string('source_manual_hasheaders', 'tool_mucertify'));
         if (isset($options[$filedata[0][0]])) {
             $mform->setDefault('hasheaders', 1);
         }
 
         $options = [-1 => get_string('choose')] + $fileoptions;
-        $mform->addElement('select', 'timestartcolumn', get_string('source_manual_timestartcolumn', 'tool_certify'), $options);
-        $mform->addElement('select', 'timeduecolumn', get_string('source_manual_timeduecolumn', 'tool_certify'), $options);
-        $mform->addElement('select', 'timeendcolumn', get_string('source_manual_timeendcolumn', 'tool_certify'), $options);
+        $mform->addElement('select', 'timestartcolumn', get_string('source_manual_timestartcolumn', 'tool_mucertify'), $options);
+        $mform->addElement('select', 'timeduecolumn', get_string('source_manual_timeduecolumn', 'tool_mucertify'), $options);
+        $mform->addElement('select', 'timeendcolumn', get_string('source_manual_timeendcolumn', 'tool_mucertify'), $options);
 
         $mform->addElement('hidden', 'sourceid');
         $mform->setType('sourceid', PARAM_INT);
@@ -78,9 +83,10 @@ final class source_manual_upload_options extends \local_openlms\dialog_form {
         $mform->setType('csvfile', PARAM_INT);
         $mform->setDefault('csvfile', $csvfile);
 
-        $this->add_action_buttons(true, get_string('source_manual_uploadusers', 'tool_certify'));
+        $this->add_action_buttons(true, get_string('source_manual_uploadusers', 'tool_mucertify'));
     }
 
+    #[\Override]
     public function validation($data, $files) {
         $errors = parent::validation($data, $files);
         $usedfields = [];
@@ -88,7 +94,7 @@ final class source_manual_upload_options extends \local_openlms\dialog_form {
         $columns = ['timestartcolumn', 'timeduecolumn', 'timeendcolumn', 'usermapping'];
         foreach ($columns as $column) {
             if ($data[$column] != -1 && in_array($data[$column], $usedfields)) {
-                $errors[$column] = get_string('columnusedalready', 'tool_certify');
+                $errors[$column] = get_string('columnusedalready', 'tool_mucertify');
             } else {
                 $usedfields[] = $data[$column];
             }

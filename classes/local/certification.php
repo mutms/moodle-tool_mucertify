@@ -1,29 +1,33 @@
 <?php
-// This file is part of Moodle - https://moodle.org/
+// This file is part of Certifications for Moodle™.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-namespace tool_certify\local;
+// phpcs:disable moodle.Files.BoilerplateComment.CommentEndedTooSoon
+// phpcs:disable moodle.Files.LineLength.TooLong
+
+namespace tool_mucertify\local;
 
 use stdClass;
-use enrol_programs\local\course_reset;
+use tool_muprog\local\course_reset;
 
 /**
  * Certification helper.
  *
- * @package    tool_certify
+ * @package    tool_mucertify
  * @copyright  2023 Open LMS (https://www.openlms.net/)
+ * @copyright  2025 Petr Skoda
  * @author     Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -110,12 +114,12 @@ final class certification {
         $data->periodsjson = util::json_encode(self::get_periods_defaults());
 
         if (isset($data->programid1)) {
-            if (!$DB->record_exists('enrol_programs_programs', ['id' => $data->programid1])) {
+            if (!$DB->record_exists('tool_muprog_program', ['id' => $data->programid1])) {
                 throw new \invalid_parameter_exception('Invalid programid1');
             }
             if (isset($data->recertify)) {
                 if (isset($data->programid2)) {
-                    if (!$DB->record_exists('enrol_programs_programs', ['id' => $data->programid2])) {
+                    if (!$DB->record_exists('tool_muprog_program', ['id' => $data->programid2])) {
                         throw new \invalid_parameter_exception('Invalid programid2');
                     }
                 } else {
@@ -126,7 +130,7 @@ final class certification {
                 $data->programid2 = null;
             }
         } else {
-            if (isset($data->programid2) && $DB->record_exists('enrol_programs_programs', ['id' => $data->programid2])) {
+            if (isset($data->programid2) && $DB->record_exists('tool_muprog_program', ['id' => $data->programid2])) {
                 throw new \invalid_parameter_exception('Unexpected programid2');
             }
             $data->programid1 = null;
@@ -134,33 +138,33 @@ final class certification {
         }
 
         $data->timecreated = time();
-        $data->id = $DB->insert_record('tool_certify_certifications', $data);
+        $data->id = $DB->insert_record('tool_mucertify_certification', $data);
 
         self::update_certification_image($data);
 
         if ($CFG->usetags && isset($data->tags)) {
-            \core_tag_tag::set_item_tags('tool_certify', 'certification', $data->id, $context, $data->tags);
+            \core_tag_tag::set_item_tags('tool_mucertify', 'certification', $data->id, $context, $data->tags);
         }
 
         if ($editorused) {
             $editoroptions = self::get_description_editor_options($data->contextid);
             $data = file_postupdate_standard_editor($data, 'description', $editoroptions, $editoroptions['context'],
-                'tool_certify', 'description', $data->id);
+                'tool_mucertify', 'description', $data->id);
             if ($rawdescription !== $data->description) {
-                $DB->set_field('tool_certify_certifications', 'description', $data->description, ['id' => $data->id]);
+                $DB->set_field('tool_mucertify_certification', 'description', $data->description, ['id' => $data->id]);
             }
         }
 
         $certification = self::make_snapshot($data->id, 'add');
 
         // Save custom fields if there are any of them in the form.
-        $handler = \tool_certify\customfield\fields_handler::create();
+        $handler = \tool_mucertify\customfield\fields_handler::create();
         $data->id = $certification->id;
         $handler->instance_form_save($data);
 
         $trans->allow_commit();
 
-        $event = \tool_certify\event\certification_created::create_from_certification($certification);
+        $event = \tool_mucertify\event\certification_created::create_from_certification($certification);
         $event->trigger();
 
         return $certification;
@@ -179,7 +183,7 @@ final class certification {
 
         $trans = $DB->start_delegated_transaction();
 
-        $oldcertification = $DB->get_record('tool_certify_certifications', ['id' => $data->id], '*', MUST_EXIST);
+        $oldcertification = $DB->get_record('tool_mucertify_certification', ['id' => $data->id], '*', MUST_EXIST);
 
         $record = new stdClass();
         $record->id = $oldcertification->id;
@@ -195,11 +199,11 @@ final class certification {
             $oldcontext = \context::instance_by_id($oldcertification->contextid, IGNORE_MISSING);
             if ($oldcontext) {
                 get_file_storage()->move_area_files_to_new_context($oldcertification->contextid, $context->id,
-                    'tool_certify', 'description', $data->id);
+                    'tool_mucertify', 'description', $data->id);
                 // Delete tags even if they are not enabled before move,
                 // tags API is not designed to deal with this,
                 // we cannot create instance of deleted context.
-                \core_tag_tag::set_item_tags('tool_certify', 'certification', $data->id, $oldcontext, null);
+                \core_tag_tag::set_item_tags('tool_mucertify', 'certification', $data->id, $oldcontext, null);
             }
             $record->contextid = $context->id;
         } else {
@@ -225,7 +229,7 @@ final class certification {
             $data->descriptionformat = $data->description_editor['format'];
             $editoroptions = self::get_description_editor_options($data->contextid);
             $data = file_postupdate_standard_editor($data, 'description', $editoroptions, $editoroptions['context'],
-                'tool_certify', 'description', $data->id);
+                'tool_mucertify', 'description', $data->id);
         }
         if (isset($data->description)) {
             $record->description = $data->description;
@@ -237,10 +241,10 @@ final class certification {
             $record->archived = (int)(bool)$data->archived;
         }
 
-        $DB->update_record('tool_certify_certifications', $record);
+        $DB->update_record('tool_mucertify_certification', $record);
 
         if ($CFG->usetags && isset($data->tags)) {
-            \core_tag_tag::set_item_tags('tool_certify', 'certification', $data->id, $context, $data->tags);
+            \core_tag_tag::set_item_tags('tool_mucertify', 'certification', $data->id, $context, $data->tags);
         }
 
         $certification = self::update_certification_image($data);
@@ -248,16 +252,16 @@ final class certification {
         $certification = self::make_snapshot($certification->id, 'update_general');
 
         // Save custom fields if there are any of them in the form.
-        $handler = \tool_certify\customfield\fields_handler::create();
+        $handler = \tool_mucertify\customfield\fields_handler::create();
         $handler->instance_form_save($data);
 
         $trans->allow_commit();
 
-        $event = \tool_certify\event\certification_updated::create_from_certification($certification);
+        $event = \tool_mucertify\event\certification_updated::create_from_certification($certification);
         $event->trigger();
 
-        \tool_certify\local\assignment::fix_assignment_sources($certification->id, null);
-        \enrol_programs\local\source\certify::sync_certifications($certification->id, null);
+        \tool_mucertify\local\assignment::fix_assignment_sources($certification->id, null);
+        \tool_muprog\local\source\mucertify::sync_certifications($certification->id, null);
 
         return $certification;
     }
@@ -271,12 +275,12 @@ final class certification {
     private static function update_certification_image(stdClass $data): stdClass {
         global $DB;
 
-        $certification = $DB->get_record('tool_certify_certifications', ['id' => $data->id], '*', MUST_EXIST);
+        $certification = $DB->get_record('tool_mucertify_certification', ['id' => $data->id], '*', MUST_EXIST);
         $context = \context::instance_by_id($certification->contextid);
 
         if (isset($data->image)) {
-            file_save_draft_area_files($data->image, $context->id, 'tool_certify', 'image', $data->id, array('subdirs' => 0, 'maxfiles' => 1));
-            $files = get_file_storage()->get_area_files($context->id, 'tool_certify', 'image', $data->id, '', false);
+            file_save_draft_area_files($data->image, $context->id, 'tool_mucertify', 'image', $data->id, ['subdirs' => 0, 'maxfiles' => 1]);
+            $files = get_file_storage()->get_area_files($context->id, 'tool_mucertify', 'image', $data->id, '', false);
             $presenation = (array)json_decode($certification->presentationjson);
             if ($files) {
                 $file = reset($files);
@@ -284,8 +288,8 @@ final class certification {
             } else {
                 unset($presenation['image']);
             }
-            $DB->set_field('tool_certify_certifications', 'presentationjson', util::json_encode($presenation), ['id' => $certification->id]);
-            $certification = $DB->get_record('tool_certify_certifications', ['id' => $data->id], '*', MUST_EXIST);
+            $DB->set_field('tool_mucertify_certification', 'presentationjson', util::json_encode($presenation), ['id' => $certification->id]);
+            $certification = $DB->get_record('tool_mucertify_certification', ['id' => $data->id], '*', MUST_EXIST);
         }
 
         return $certification;
@@ -308,10 +312,10 @@ final class certification {
 
         $trans = $DB->start_delegated_transaction();
 
-        $oldcertification = $DB->get_record('tool_certify_certifications', ['id' => $data->id], '*', MUST_EXIST);
+        $oldcertification = $DB->get_record('tool_mucertify_certification', ['id' => $data->id], '*', MUST_EXIST);
 
         if ($oldcertification->public != $data->public) {
-            $DB->set_field('tool_certify_certifications', 'public', (int)(bool)$data->public, ['id' => $data->id]);
+            $DB->set_field('tool_mucertify_certification', 'public', (int)(bool)$data->public, ['id' => $data->id]);
         }
 
         if (isset($data->cohorts)) {
@@ -324,10 +328,10 @@ final class certification {
                     continue;
                 }
                 $record = (object)['certificationid' => $data->id, 'cohortid' => $cid];
-                $DB->insert_record('tool_certify_cohorts', $record);
+                $DB->insert_record('tool_mucertify_cohort', $record);
             }
             foreach ($oldcohorts as $cid => $unused) {
-                $DB->delete_records('tool_certify_cohorts', ['certificationid' => $data->id, 'cohortid' => $cid]);
+                $DB->delete_records('tool_mucertify_cohort', ['certificationid' => $data->id, 'cohortid' => $cid]);
             }
         }
 
@@ -335,11 +339,11 @@ final class certification {
 
         $trans->allow_commit();
 
-        $event = \tool_certify\event\certification_updated::create_from_certification($certification);
+        $event = \tool_mucertify\event\certification_updated::create_from_certification($certification);
         $event->trigger();
 
-        \tool_certify\local\assignment::fix_assignment_sources($certification->id, null);
-        \enrol_programs\local\source\certify::sync_certifications($certification->id, null);
+        \tool_mucertify\local\assignment::fix_assignment_sources($certification->id, null);
+        \tool_muprog\local\source\mucertify::sync_certifications($certification->id, null);
 
         return $certification;
     }
@@ -359,7 +363,7 @@ final class certification {
 
         $trans = $DB->start_delegated_transaction();
 
-        $oldcertification = $DB->get_record('tool_certify_certifications', ['id' => $data->id], '*', MUST_EXIST);
+        $oldcertification = $DB->get_record('tool_mucertify_certification', ['id' => $data->id], '*', MUST_EXIST);
         $periods = (object)json_decode($oldcertification->periodsjson, true);
 
         $record = new stdClass();
@@ -367,7 +371,7 @@ final class certification {
 
         if (property_exists($data, 'programid1') && $oldcertification->programid1 != $data->programid1) {
             if ($data->programid1) {
-                $program = $DB->get_record('enrol_programs_programs', ['id' => $data->programid1], '*', MUST_EXIST);
+                $program = $DB->get_record('tool_muprog_program', ['id' => $data->programid1], '*', MUST_EXIST);
                 $record->programid1 = $program->id;
             } else {
                 $record->programid1 = null;
@@ -444,7 +448,7 @@ final class certification {
         } else {
             if (property_exists($data, 'programid2') && $oldcertification->programid2 != $data->programid2) {
                 if ($data->programid2) {
-                    $program = $DB->get_record('enrol_programs_programs', ['id' => $data->programid2], '*', MUST_EXIST);
+                    $program = $DB->get_record('tool_muprog_program', ['id' => $data->programid2], '*', MUST_EXIST);
                     $record->programid2 = $program->id;
                 } else {
                     $record->programid2 = null;
@@ -504,17 +508,17 @@ final class certification {
 
         $record->periodsjson = util::json_encode($periods);
 
-        $DB->update_record('tool_certify_certifications', $record);
+        $DB->update_record('tool_mucertify_certification', $record);
 
         $certification = self::make_snapshot($record->id, 'update_settings');
 
         $trans->allow_commit();
 
-        $event = \tool_certify\event\certification_updated::create_from_certification($certification);
+        $event = \tool_mucertify\event\certification_updated::create_from_certification($certification);
         $event->trigger();
 
-        \tool_certify\local\assignment::fix_assignment_sources($certification->id, null);
-        \enrol_programs\local\source\certify::sync_certifications($certification->id, null);
+        \tool_mucertify\local\assignment::fix_assignment_sources($certification->id, null);
+        \tool_muprog\local\source\mucertify::sync_certifications($certification->id, null);
 
         return $certification;
     }
@@ -529,7 +533,7 @@ final class certification {
     public static function update_certificate(int $certificationid, ?int $templateid): stdClass {
         global $DB;
 
-        $certification = $DB->get_record('tool_certify_certifications', ['id' => $certificationid], '*', MUST_EXIST);
+        $certification = $DB->get_record('tool_mucertify_certification', ['id' => $certificationid], '*', MUST_EXIST);
         if ($templateid) {
             $template = $DB->get_record('tool_certificate_templates', ['id' => $templateid], '*', MUST_EXIST);
             $templateid = $template->id;
@@ -543,13 +547,13 @@ final class certification {
 
         $trans = $DB->start_delegated_transaction();
 
-        $DB->set_field('tool_certify_certifications', 'templateid', $templateid, ['id' => $certification->id]);
+        $DB->set_field('tool_mucertify_certification', 'templateid', $templateid, ['id' => $certification->id]);
 
         $certification = self::make_snapshot($certification->id, 'update_certificate');
 
         $trans->allow_commit();
 
-        $event = \tool_certify\event\certification_updated::create_from_certification($certification);
+        $event = \tool_mucertify\event\certification_updated::create_from_certification($certification);
         $event->trigger();
 
         return $certification;
@@ -566,43 +570,43 @@ final class certification {
 
         $trans = $DB->start_delegated_transaction();
 
-        $certification = $DB->get_record('tool_certify_certifications', ['id' => $id], '*', MUST_EXIST);
+        $certification = $DB->get_record('tool_mucertify_certification', ['id' => $id], '*', MUST_EXIST);
         $context = \context::instance_by_id($certification->contextid);
 
         // Delete notifications configuration and data.
         notification_manager::delete_certification_notifications($certification);
 
-        $DB->delete_records('tool_certify_assignments', ['certificationid' => $certification->id]);
-        $sources = $DB->get_records('tool_certify_sources', ['certificationid' => $certification->id]);
+        $DB->delete_records('tool_mucertify_assignment', ['certificationid' => $certification->id]);
+        $sources = $DB->get_records('tool_mucertify_source', ['certificationid' => $certification->id]);
         foreach ($sources as $source) {
-            $DB->delete_records('tool_certify_requests', ['sourceid' => $source->id]);
-            $DB->delete_records('tool_certify_src_cohorts', ['sourceid' => $source->id]);
+            $DB->delete_records('tool_mucertify_request', ['sourceid' => $source->id]);
+            $DB->delete_records('tool_mucertify_src_cohort', ['sourceid' => $source->id]);
         }
         unset($sources);
-        $DB->delete_records('tool_certify_sources', ['certificationid' => $certification->id]);
-        $DB->delete_records('tool_certify_cohorts', ['certificationid' => $certification->id]);
-        $DB->delete_records('tool_certify_periods', ['certificationid' => $certification->id]);
+        $DB->delete_records('tool_mucertify_source', ['certificationid' => $certification->id]);
+        $DB->delete_records('tool_mucertify_cohort', ['certificationid' => $certification->id]);
+        $DB->delete_records('tool_mucertify_period', ['certificationid' => $certification->id]);
 
         // Certification details last.
-        \core_tag_tag::set_item_tags('tool_certify', 'certification', $certification->id, $context, null);
+        \core_tag_tag::set_item_tags('tool_mucertify', 'certification', $certification->id, $context, null);
         $fs = get_file_storage();
-        $fs->delete_area_files($context->id, 'tool_certify', 'description', $certification->id);
-        $fs->delete_area_files($context->id, 'tool_certify', 'image', $certification->id);
+        $fs->delete_area_files($context->id, 'tool_mucertify', 'description', $certification->id);
+        $fs->delete_area_files($context->id, 'tool_mucertify', 'image', $certification->id);
 
-        $DB->delete_records('tool_certify_certifications', ['id' => $certification->id]);
+        $DB->delete_records('tool_mucertify_certification', ['id' => $certification->id]);
 
         self::make_snapshot($certification->id, 'delete');
 
-        $handler = \tool_certify\customfield\fields_handler::create();
+        $handler = \tool_mucertify\customfield\fields_handler::create();
         $handler->delete_instance($certification->id);
 
         $trans->allow_commit();
 
-        $event = \tool_certify\event\certification_deleted::create_from_certification($certification);
+        $event = \tool_mucertify\event\certification_deleted::create_from_certification($certification);
         $event->trigger();
 
         // Deal with leftover program allocations.
-        \enrol_programs\local\source\certify::sync_certifications($certification->id, null);
+        \tool_muprog\local\source\mucertify::sync_certifications($certification->id, null);
     }
 
     /**
@@ -626,19 +630,19 @@ final class certification {
         $data->explanation = $explanation;
 
         if ($reason === 'delete') {
-            if ($DB->record_exists('tool_certify_certifications', ['id' => $certificationid])) {
+            if ($DB->record_exists('tool_mucertify_certification', ['id' => $certificationid])) {
                 throw new \coding_exception('deleted certification must not exist');
             }
-            $DB->insert_record('tool_certify_crt_snapshots', $data);
+            $DB->insert_record('tool_mucertify_crt_snapshot', $data);
             return null;
         }
 
-        $certification = $DB->get_record('tool_certify_certifications', ['id' => $certificationid], '*', MUST_EXIST);
+        $certification = $DB->get_record('tool_mucertify_certification', ['id' => $certificationid], '*', MUST_EXIST);
         $data->certificationjson = util::json_encode($certification);
-        $data->cohortsjson = util::json_encode($DB->get_records('tool_certify_cohorts', ['certificationid' => $certification->id], 'id ASC'));
-        $data->sourcesjson = util::json_encode($DB->get_records('tool_certify_sources', ['certificationid' => $certification->id], 'id ASC'));
+        $data->cohortsjson = util::json_encode($DB->get_records('tool_mucertify_cohort', ['certificationid' => $certification->id], 'id ASC'));
+        $data->sourcesjson = util::json_encode($DB->get_records('tool_mucertify_source', ['certificationid' => $certification->id], 'id ASC'));
 
-        $DB->insert_record('tool_certify_crt_snapshots', $data);
+        $DB->insert_record('tool_mucertify_crt_snapshot', $data);
 
         return $certification;
     }
@@ -655,7 +659,7 @@ final class certification {
         $catcontext = \context_coursecat::instance($category->id, MUST_EXIST);
         $parentcontext = $catcontext->get_parent_context();
 
-        $certifications = $DB->get_records('tool_certify_certifications', ['contextid' => $catcontext->id]);
+        $certifications = $DB->get_records('tool_mucertify_certification', ['contextid' => $catcontext->id]);
         foreach ($certifications as $certification) {
             $data = (object)[
                 'id' => $certification->id,
@@ -694,9 +698,9 @@ final class certification {
      */
     public static function get_periods_settings(stdClass $certification): stdClass {
         $resettypes = self::get_resettype_options();
-        $validoptions = certification::get_valid_options();
-        $windowendoptions = certification::get_windowend_options();
-        $expirationoptions = certification::get_expiration_options();
+        $validoptions = self::get_valid_options();
+        $windowendoptions = self::get_windowend_options();
+        $expirationoptions = self::get_expiration_options();
         $defaults = self::get_periods_defaults();
 
         $settings = (object)json_decode($certification->periodsjson, true);
@@ -766,10 +770,10 @@ final class certification {
      */
     public static function get_resettype_options(): array {
         $result = [
-            course_reset::RESETTYPE_NONE => new \lang_string('resettype_none', 'enrol_programs'),
-            course_reset::RESETTYPE_DEALLOCATE => new \lang_string('resettype_deallocate', 'enrol_programs'),
-            course_reset::RESETTYPE_STANDARD => new \lang_string('resettype_standard', 'enrol_programs'),
-            course_reset::RESETTYPE_FULL => new \lang_string('resettype_full', 'enrol_programs'),
+            course_reset::RESETTYPE_NONE => new \lang_string('resettype_none', 'tool_muprog'),
+            course_reset::RESETTYPE_DEALLOCATE => new \lang_string('resettype_deallocate', 'tool_muprog'),
+            course_reset::RESETTYPE_STANDARD => new \lang_string('resettype_standard', 'tool_muprog'),
+            course_reset::RESETTYPE_FULL => new \lang_string('resettype_full', 'tool_muprog'),
         ];
         return $result;
     }
@@ -781,10 +785,10 @@ final class certification {
      */
     public static function get_valid_options(): array {
         return [
-            self::SINCE_CERTIFIED => new \lang_string('certifieddate', 'tool_certify'),
-            self::SINCE_WINDOWSTART => new \lang_string('windowstartdate', 'tool_certify'),
-            self::SINCE_WINDOWDUE => new \lang_string('windowduedate', 'tool_certify'),
-            self::SINCE_WINDOWEND => new \lang_string('windowenddate', 'tool_certify'),
+            self::SINCE_CERTIFIED => new \lang_string('certifieddate', 'tool_mucertify'),
+            self::SINCE_WINDOWSTART => new \lang_string('windowstartdate', 'tool_mucertify'),
+            self::SINCE_WINDOWDUE => new \lang_string('windowduedate', 'tool_mucertify'),
+            self::SINCE_WINDOWEND => new \lang_string('windowenddate', 'tool_mucertify'),
         ];
     }
 
@@ -795,9 +799,9 @@ final class certification {
      */
     public static function get_windowend_options(): array {
         return [
-            self::SINCE_NEVER => new \lang_string('never', 'tool_certify'),
-            self::SINCE_WINDOWSTART => new \lang_string('windowstartdate', 'tool_certify'),
-            self::SINCE_WINDOWDUE => new \lang_string('windowduedate', 'tool_certify'),
+            self::SINCE_NEVER => new \lang_string('never', 'tool_mucertify'),
+            self::SINCE_WINDOWSTART => new \lang_string('windowstartdate', 'tool_mucertify'),
+            self::SINCE_WINDOWDUE => new \lang_string('windowduedate', 'tool_mucertify'),
         ];
     }
 
@@ -808,11 +812,11 @@ final class certification {
      */
     public static function get_expiration_options(): array {
         return [
-            self::SINCE_NEVER => new \lang_string('never', 'tool_certify'),
-            self::SINCE_CERTIFIED => new \lang_string('certifieddate', 'tool_certify'),
-            self::SINCE_WINDOWSTART => new \lang_string('windowstartdate', 'tool_certify'),
-            self::SINCE_WINDOWDUE => new \lang_string('windowduedate', 'tool_certify'),
-            self::SINCE_WINDOWEND => new \lang_string('windowenddate', 'tool_certify'),
+            self::SINCE_NEVER => new \lang_string('never', 'tool_mucertify'),
+            self::SINCE_CERTIFIED => new \lang_string('certifieddate', 'tool_mucertify'),
+            self::SINCE_WINDOWSTART => new \lang_string('windowstartdate', 'tool_mucertify'),
+            self::SINCE_WINDOWDUE => new \lang_string('windowduedate', 'tool_mucertify'),
+            self::SINCE_WINDOWEND => new \lang_string('windowenddate', 'tool_mucertify'),
         ];
     }
 }

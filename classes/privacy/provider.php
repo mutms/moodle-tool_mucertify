@@ -1,20 +1,22 @@
 <?php
-// This file is part of Moodle - https://moodle.org/
+// This file is part of Certifications for Moodle™.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-namespace tool_certify\privacy;
+// phpcs:disable moodle.Files.BoilerplateComment.CommentEndedTooSoon
+
+namespace tool_mucertify\privacy;
 
 use core_privacy\local\metadata\collection;
 use core_privacy\local\request\approved_contextlist;
@@ -26,8 +28,9 @@ use core_privacy\local\request\writer;
 /**
  * Certifications privacy info.
  *
- * @package    tool_certify
+ * @package    tool_mucertify
  * @copyright  2023 Open LMS (https://www.openlms.net/)
+ * @copyright  2025 Petr Skoda
  * @author     Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -47,9 +50,9 @@ class provider implements
      * @param collection $collection The initialised collection to add items to.
      * @return collection A listing of user data stored through this system.
      */
-    public static function get_metadata(collection $collection) : collection {
+    public static function get_metadata(collection $collection): collection {
         $collection->add_database_table(
-            'tool_certify_requests',
+            'tool_mucertify_request',
             [
                 'sourceid' => 'privacy:metadata:field:sourceid',
                 'userid' => 'privacy:metadata:field:userid',
@@ -58,21 +61,21 @@ class provider implements
                 'timerejected' => 'privacy:metadata:field:timerejected',
                 'rejectedby' => 'privacy:metadata:field:rejectedby',
             ],
-            'privacy:metadata:table:tool_certify_requests'
+            'privacy:metadata:table:tool_mucertify_request'
         );
         $collection->add_database_table(
-            'tool_certify_assignments',
+            'tool_mucertify_assignment',
             [
                 'certificationid' => 'privacy:metadata:field:certificationid',
                 'userid' => 'privacy:metadata:field:userid',
                 'archived' => 'privacy:metadata:field:archived',
-                'timecertifieduntil' => 'privacy:metadata:field:timecertifieduntil',
+                'timecertifiedtemp' => 'privacy:metadata:field:timecertifiedtemp',
             ],
-            'privacy:metadata:table:tool_certify_assignments'
+            'privacy:metadata:table:tool_mucertify_assignment'
         );
 
         $collection->add_database_table(
-            'tool_certify_periods',
+            'tool_mucertify_period',
             [
                 'certificationid' => 'privacy:metadata:field:certificationid',
                 'userid' => 'privacy:metadata:field:userid',
@@ -86,11 +89,11 @@ class provider implements
                 'timeuntil' => 'privacy:metadata:field:timeuntil',
                 'timerevoked' => 'privacy:metadata:field:timerevoked',
             ],
-            'privacy:metadata:table:tool_certify_periods'
+            'privacy:metadata:table:tool_mucertify_period'
         );
 
         $collection->add_database_table(
-            'tool_certify_usr_snapshots',
+            'tool_mucertify_usr_snapshot',
             [
                 'certificationid' => 'privacy:metadata:field:certificationid',
                 'userid' => 'privacy:metadata:field:userid',
@@ -100,17 +103,7 @@ class provider implements
                 'snapshotby' => 'privacy:metadata:field:snapshotby',
                 'explanation' => 'privacy:metadata:field:explanation',
             ],
-            'privacy:metadata:table:tool_certify_usr_snapshots'
-        );
-
-        $collection->add_database_table(
-            'tool_certify_src_commholds',
-            [
-                'userid' => 'privacy:metadata:field:userid',
-                'quantity' => 'privacy:metadata:field:quantity',
-                'programid' => 'privacy:metadata:field:programid',
-            ],
-            'privacy:metadata:table:tool_certify_src_commholds'
+            'privacy:metadata:table:tool_mucertify_usr_snapshot'
         );
 
         return $collection;
@@ -122,10 +115,10 @@ class provider implements
      * @param int $userid The user to search.
      * @return contextlist The contextlist containing the list of contexts used in this plugin.
      */
-    public static function get_contexts_for_userid(int $userid) : contextlist {
+    public static function get_contexts_for_userid(int $userid): contextlist {
         $sql = "SELECT ctx.id
-                  FROM {tool_certify_certifications} c
-                  JOIN {tool_certify_assignments} ca ON ca.certificationid = c.id
+                  FROM {tool_mucertify_certification} c
+                  JOIN {tool_mucertify_assignment} ca ON ca.certificationid = c.id
                   JOIN {context} ctx ON c.contextid = ctx.id
                   JOIN {user} u ON u.id = ca.userid AND u.deleted = 0
                  WHERE u.id = :userid";
@@ -142,12 +135,12 @@ class provider implements
      *
      * @param userlist $userlist The userlist containing the list of users who have data in this context/plugin combination.
      */
-    public static function get_users_in_context(userlist $userlist) {
+    public static function get_users_in_context(userlist $userlist): void {
         $context = $userlist->get_context();
 
         $sql = "SELECT u.id
-                  FROM {tool_certify_certifications} c
-                  JOIN {tool_certify_assignments} ca ON ca.certificationid = c.id
+                  FROM {tool_mucertify_certification} c
+                  JOIN {tool_mucertify_assignment} ca ON ca.certificationid = c.id
                   JOIN {context} ctx ON c.contextid = ctx.id
                   JOIN {user} u ON u.id = ca.userid AND u.deleted = 0
                  WHERE ctx.id = :contextid";
@@ -161,7 +154,7 @@ class provider implements
      *
      * @param approved_contextlist $contextlist The approved contexts to export information for.
      */
-    public static function export_user_data(approved_contextlist $contextlist) {
+    public static function export_user_data(approved_contextlist $contextlist): void {
         global $DB;
 
         if (empty($contextlist->count())) {
@@ -173,8 +166,8 @@ class provider implements
         list($contextsql, $contextparams) = $DB->get_in_or_equal($contextlist->get_contextids(), SQL_PARAMS_NAMED);
 
         $sql = "SELECT c.contextid, c.fullname, ca.id, ca.certificationid, ca.userid, ca.sourceid, ca.archived, ca.timecreated
-                  FROM {tool_certify_certifications} c
-                  JOIN {tool_certify_assignments} ca ON ca.certificationid = c.id
+                  FROM {tool_mucertify_certification} c
+                  JOIN {tool_mucertify_assignment} ca ON ca.certificationid = c.id
                   JOIN {context} ctx ON c.contextid = ctx.id
                   JOIN {user} u ON u.id = ca.userid AND u.deleted = 0
                  WHERE ctx.id {$contextsql} AND u.id = :userid
@@ -182,7 +175,7 @@ class provider implements
         $params = ['userid' => $user->id];
         $params += $contextparams;
 
-        $strassignment = get_string('assignments', 'tool_certify');
+        $strassignment = get_string('assignments', 'tool_mucertify');
 
         $rs = $DB->get_recordset_sql($sql, $params);
         foreach ($rs as $assignment) {
@@ -191,7 +184,7 @@ class provider implements
 
             // Add periods.
             $assignment->periods = [];
-            $periods = $DB->get_records('tool_certify_periods',
+            $periods = $DB->get_records('tool_mucertify_period',
                 ['certificationid' => $assignment->certificationid, 'userid' => $assignment->userid], 'timewindowstart ASC');
             foreach ($periods as $p) {
                 $period = new \stdClass();
@@ -210,7 +203,7 @@ class provider implements
             $assignment->usersnapshots = [];
             $sql = "SELECT certificationid, userid, reason, timesnapshot, snapshotby, explanation, sourceid,
                            archived, periodsjson
-                      FROM {tool_certify_usr_snapshots}
+                      FROM {tool_mucertify_usr_snapshot}
                      WHERE certificationid = :certificationid AND userid = :userid
                   ORDER BY timesnapshot ASC";
             $params = ['certificationid' => $assignment->certificationid, 'userid' => $assignment->userid];
@@ -237,33 +230,33 @@ class provider implements
      *
      * @param \context $context The specific context to delete data for.
      */
-    public static function delete_data_for_all_users_in_context(\context $context) {
+    public static function delete_data_for_all_users_in_context(\context $context): void {
         global $DB;
 
         $sql = "SELECT ca.*
-                  FROM {tool_certify_certifications} c
-                  JOIN {tool_certify_assignments} ca ON ca.certificationid = c.id
-                  JOIN {tool_certify_sources} s ON s.id = ca.sourceid AND s.certificationid = c.id
+                  FROM {tool_mucertify_certification} c
+                  JOIN {tool_mucertify_assignment} ca ON ca.certificationid = c.id
+                  JOIN {tool_mucertify_source} s ON s.id = ca.sourceid AND s.certificationid = c.id
                   JOIN {context} ctx ON c.contextid = ctx.id
                   JOIN {user} u ON u.id = ca.userid AND u.deleted = 0
                  WHERE ctx.id = :contextid
               ORDER BY ca.id ASC, u.id ASC";
         $params = ['contextid' => $context->id];
 
-        $allclasses = \tool_certify\local\assignment::get_source_classes();
+        $allclasses = \tool_mucertify\local\assignment::get_source_classes();
         $rs = $DB->get_recordset_sql($sql, $params);
         foreach ($rs as $assignment) {
-            $certification = $DB->get_record('tool_certify_certifications', ['id' => $assignment->certificationid]);
-            $source = $DB->get_record('tool_certify_sources', ['id' => $assignment->sourceid]);
+            $certification = $DB->get_record('tool_mucertify_certification', ['id' => $assignment->certificationid]);
+            $source = $DB->get_record('tool_mucertify_source', ['id' => $assignment->sourceid]);
             if (!isset($allclasses[$source->type])) {
                 continue;
             }
-            /** @var \tool_certify\local\source\base $coursceclass */
+            /** @var \tool_mucertify\local\source\base $coursceclass */
             $coursceclass = $allclasses[$source->type];
             $coursceclass::unassign_user($certification, $source, $assignment);
 
             $params = ['certificationid' => $assignment->certificationid, 'userid' => $assignment->userid];
-            $DB->delete_records('tool_certify_usr_snapshots', $params);
+            $DB->delete_records('tool_mucertify_usr_snapshot', $params);
         }
         $rs->close();
     }
@@ -273,7 +266,7 @@ class provider implements
      *
      * @param approved_contextlist $contextlist The approved contexts and user information to delete information for.
      */
-    public static function delete_data_for_user(approved_contextlist $contextlist) {
+    public static function delete_data_for_user(approved_contextlist $contextlist): void {
         global $DB;
 
         if (empty($contextlist->count())) {
@@ -284,9 +277,9 @@ class provider implements
         list($contextsql, $contextparams) = $DB->get_in_or_equal($contextlist->get_contextids(), SQL_PARAMS_NAMED);
 
         $sql = "SELECT ca.*
-                  FROM {tool_certify_certifications} c
-                  JOIN {tool_certify_assignments} ca ON ca.certificationid = c.id
-                  JOIN {tool_certify_sources} s ON s.id = ca.sourceid AND s.certificationid = c.id
+                  FROM {tool_mucertify_certification} c
+                  JOIN {tool_mucertify_assignment} ca ON ca.certificationid = c.id
+                  JOIN {tool_mucertify_source} s ON s.id = ca.sourceid AND s.certificationid = c.id
                   JOIN {context} ctx ON c.contextid = ctx.id
                   JOIN {user} u ON u.id = ca.userid AND u.deleted = 0
                  WHERE u.id = :userid AND ctx.id {$contextsql}
@@ -294,30 +287,30 @@ class provider implements
         $params = ['userid' => $user->id];
         $params += $contextparams;
 
-        $allclasses = \tool_certify\local\assignment::get_source_classes();
+        $allclasses = \tool_mucertify\local\assignment::get_source_classes();
         $rs = $DB->get_recordset_sql($sql, $params);
         foreach ($rs as $assignment) {
-            $certification = $DB->get_record('tool_certify_certifications', ['id' => $assignment->certificationid]);
-            $source = $DB->get_record('tool_certify_sources', ['id' => $assignment->sourceid]);
+            $certification = $DB->get_record('tool_mucertify_certification', ['id' => $assignment->certificationid]);
+            $source = $DB->get_record('tool_mucertify_source', ['id' => $assignment->sourceid]);
             if (!isset($allclasses[$source->type])) {
                 continue;
             }
-            /** @var \tool_certify\local\source\base $coursceclass */
+            /** @var \tool_mucertify\local\source\base $coursceclass */
             $coursceclass = $allclasses[$source->type];
             $coursceclass::unassign_user($certification, $source, $assignment);
         }
         $rs->close();
 
         $params = ['userid' => $user->id];
-        $DB->delete_records('tool_certify_usr_snapshots', $params);
+        $DB->delete_records('tool_mucertify_usr_snapshot', $params);
     }
 
     /**
      * Delete multiple users within a single context.
      *
-     * @param   approved_userlist       $userlist The approved context and user information to delete information for.
+     * @param approved_userlist $userlist The approved context and user information to delete information for.
      */
-    public static function delete_data_for_users(approved_userlist $userlist) {
+    public static function delete_data_for_users(approved_userlist $userlist): void {
         global $DB;
 
         $context = $userlist->get_context();
@@ -325,9 +318,9 @@ class provider implements
         list($usersql, $userparams) = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED);
 
         $sql = "SELECT ca.*
-                  FROM {tool_certify_certifications} c
-                  JOIN {tool_certify_assignments} ca ON ca.certificationid = c.id
-                  JOIN {tool_certify_sources} s ON s.id = ca.sourceid AND s.certificationid = c.id
+                  FROM {tool_mucertify_certification} c
+                  JOIN {tool_mucertify_assignment} ca ON ca.certificationid = c.id
+                  JOIN {tool_mucertify_source} s ON s.id = ca.sourceid AND s.certificationid = c.id
                   JOIN {context} ctx ON c.contextid = ctx.id
                   JOIN {user} u ON u.id = ca.userid AND u.deleted = 0
                  WHERE ctx.id = :contextid AND u.id {$usersql}
@@ -335,20 +328,20 @@ class provider implements
         $params = ['contextid' => $context->id];
         $params += $userparams;
 
-        $allclasses = \tool_certify\local\assignment::get_source_classes();
+        $allclasses = \tool_mucertify\local\assignment::get_source_classes();
         $rs = $DB->get_recordset_sql($sql, $params);
         foreach ($rs as $assignment) {
-            $certification = $DB->get_record('tool_certify_certifications', ['id' => $assignment->certificationid]);
-            $source = $DB->get_record('tool_certify_sources', ['id' => $assignment->sourceid]);
+            $certification = $DB->get_record('tool_mucertify_certification', ['id' => $assignment->certificationid]);
+            $source = $DB->get_record('tool_mucertify_source', ['id' => $assignment->sourceid]);
             if (!isset($allclasses[$source->type])) {
                 continue;
             }
-            /** @var \tool_certify\local\source\base $coursceclass */
+            /** @var \tool_mucertify\local\source\base $coursceclass */
             $coursceclass = $allclasses[$source->type];
             $coursceclass::unassign_user($certification, $source, $assignment);
 
             $params = ['userid' => $assignment->userid];
-            $DB->delete_records('tool_certify_usr_snapshots', $params);
+            $DB->delete_records('tool_mucertify_usr_snapshot', $params);
         }
         $rs->close();
     }

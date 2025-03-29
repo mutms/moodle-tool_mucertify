@@ -1,24 +1,27 @@
 <?php
-// This file is part of Moodle - https://moodle.org/
+// This file is part of Certifications for Moodle™.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+// phpcs:disable moodle.Files.BoilerplateComment.CommentEndedTooSoon
 
 /**
  * Certification plugin capabilities.
  *
- * @package    tool_certify
+ * @package    tool_mucertify
  * @copyright  2023 Open LMS (https://www.openlms.net/)
+ * @copyright  2025 Petr Skoda
  * @author     Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -27,7 +30,7 @@ defined('MOODLE_INTERNAL') || die();
 
 $capabilities = [
     /* Access certification catalogue - catalogue uses certification.public, visible cohorts and own assignments. */
-    'tool/certify:viewcatalogue' => [
+    'tool/mucertify:viewcatalogue' => [
         'captype' => 'read',
         'contextlevel' => CONTEXT_SYSTEM,
         'archetypes' => [
@@ -37,62 +40,58 @@ $capabilities = [
 
     /* Access the certification management UI - needed for certification management capabilities
        this allows sidestepping of regular certification visibility rules */
-    'tool/certify:view' => [
+    'tool/mucertify:view' => [
         'captype' => 'read',
         'contextlevel' => CONTEXT_COURSECAT,
         'archetypes' => [
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
             'manager' => CAP_ALLOW,
-            'tenantmanager' => CAP_ALLOW,
         ],
     ],
 
     /* Add and update certifications. */
-    'tool/certify:edit' => [
+    'tool/mucertify:edit' => [
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSECAT,
         'archetypes' => [
             'editingteacher' => CAP_ALLOW,
             'manager' => CAP_ALLOW,
-            'tenantmanager' => CAP_ALLOW,
         ],
     ],
 
     /* Delete certifications. */
-    'tool/certify:delete' => [
+    'tool/mucertify:delete' => [
         'riskbitmask' => RISK_DATALOSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSECAT,
         'archetypes' => [
             'editingteacher' => CAP_ALLOW,
             'manager' => CAP_ALLOW,
-            'tenantmanager' => CAP_ALLOW,
         ],
     ],
 
     /* Assign (and unassign) certifications to users manually, used only when manual source enabled in certification,
        applies to special cases such as unassigning suspended cohort auto-allocations after not a membership removal. */
-    'tool/certify:assign' => [
+    'tool/mucertify:assign' => [
         'riskbitmask' => RISK_DATALOSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSECAT,
         'archetypes' => [
             'editingteacher' => CAP_ALLOW,
             'manager' => CAP_ALLOW,
-            'tenantmanager' => CAP_ALLOW,
         ],
     ],
 
     /* All other advanced functionality not intended for regular managers */
-    'tool/certify:admin' => [
+    'tool/mucertify:admin' => [
         'riskbitmask' => RISK_CONFIG | RISK_DATALOSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSECAT,
         'archetypes' => [
         ],
     ],
-    'tool/certify:configurecustomfields' => [
+    'tool/mucertify:configurecustomfields' => [
         'riskbitmask' => RISK_CONFIG | RISK_DATALOSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
@@ -102,9 +101,3 @@ $capabilities = [
     ],
 ];
 
-// Compatibility hacks for vanilla Moodle.
-if (!file_exists(__DIR__ . '/../../../admin/tool/olms_tenant/version.php')) {
-    foreach ($capabilities as $k => $unused) {
-        unset($capabilities[$k]['archetypes']['tenantmanager']);
-    }
-}

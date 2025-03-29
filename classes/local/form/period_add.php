@@ -1,34 +1,40 @@
 <?php
-// This file is part of Moodle - https://moodle.org/
+// This file is part of Certifications for Moodle™.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-namespace tool_certify\local\form;
+// phpcs:disable moodle.Files.BoilerplateComment.CommentEndedTooSoon
+// phpcs:disable moodle.Files.LineLength.TooLong
 
-use tool_certify\local\period;
+namespace tool_mucertify\local\form;
+
+use tool_mucertify\local\period;
 
 /**
  * Edit user period.
  *
- * @package    tool_certify
+ * @package    tool_mucertify
  * @copyright  2023 Open LMS (https://www.openlms.net/)
+ * @copyright  2025 Petr Skoda
  * @author     Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-final class period_add extends \local_openlms\dialog_form {
+final class period_add extends \tool_mulib\local\dialog_form {
+    /** @var array autocompletion arguments */
     protected $arguments;
 
+    #[\Override]
     protected function definition() {
         global $DB;
 
@@ -39,17 +45,17 @@ final class period_add extends \local_openlms\dialog_form {
         $context = $this->_customdata['context'];
         $now = time();
 
-        $firstperiod = $DB->get_record('tool_certify_periods', ['certificationid' => $certification->id, 'userid' => $user->id, 'first' => 1]);
+        $firstperiod = $DB->get_record('tool_mucertify_period', ['certificationid' => $certification->id, 'userid' => $user->id, 'first' => 1]);
 
         $mform->addElement('static', 'userfullname', get_string('user'), fullname($user));
 
         $this->arguments = ['certificationid' => $certification->id];
-        $settings = \tool_certify\local\certification::get_periods_settings($certification);
+        $settings = \tool_mucertify\local\certification::get_periods_settings($certification);
 
         $defaultdates = period::get_default_dates($certification, $user->id, []);
 
-        \tool_certify\external\form_certification_periods_programid::add_form_element(
-            $mform, $this->arguments, 'programid', get_string('program', 'enrol_programs'));
+        \tool_mucertify\external\form_certification_periods_programid::add_form_element(
+            $mform, $this->arguments, 'programid', get_string('program', 'tool_muprog'));
         if ($firstperiod) {
             $mform->setDefault('programid', $settings->programid2);
         } else {
@@ -57,28 +63,29 @@ final class period_add extends \local_openlms\dialog_form {
         }
         $mform->addRule('programid', get_string('required'), 'required', null, 'client');
 
-        $mform->addElement('date_time_selector', 'timewindowstart', get_string('windowstartdate', 'tool_certify'), ['optional' => false]);
+        $mform->addElement('date_time_selector', 'timewindowstart', get_string('windowstartdate', 'tool_mucertify'), ['optional' => false]);
         $mform->setDefault('timewindowstart', $defaultdates['timewindowstart']);
 
-        $mform->addElement('date_time_selector', 'timewindowdue', get_string('windowduedate', 'tool_certify'), ['optional' => true]);
+        $mform->addElement('date_time_selector', 'timewindowdue', get_string('windowduedate', 'tool_mucertify'), ['optional' => true]);
         $mform->setDefault('timewindowdue', $defaultdates['timewindowdue']);
 
-        $mform->addElement('date_time_selector', 'timewindowend', get_string('windowenddate', 'tool_certify'), ['optional' => true]);
+        $mform->addElement('date_time_selector', 'timewindowend', get_string('windowenddate', 'tool_mucertify'), ['optional' => true]);
         $mform->setDefault('timewindowend', $defaultdates['timewindowend']);
 
-        $mform->addElement('date_time_selector', 'timefrom', get_string('fromdate', 'tool_certify'), ['optional' => true]);
+        $mform->addElement('date_time_selector', 'timefrom', get_string('fromdate', 'tool_mucertify'), ['optional' => true]);
         $mform->setDefault('timefrom', $defaultdates['timefrom']);
 
-        $mform->addElement('date_time_selector', 'timeuntil', get_string('untildate', 'tool_certify'), ['optional' => true]);
+        $mform->addElement('date_time_selector', 'timeuntil', get_string('untildate', 'tool_mucertify'), ['optional' => true]);
         $mform->setDefault('timeuntil', $defaultdates['timeuntil']);
 
         $mform->addElement('hidden', 'assignmentid');
         $mform->setType('assignmentid', PARAM_INT);
         $mform->setDefault('assignmentid', $assignment->id);
 
-        $this->add_action_buttons(true, get_string('addperiod', 'tool_certify'));
+        $this->add_action_buttons(true, get_string('addperiod', 'tool_mucertify'));
     }
 
+    #[\Override]
     public function validation($data, $files) {
         $errors = parent::validation($data, $files);
 
@@ -95,7 +102,7 @@ final class period_add extends \local_openlms\dialog_form {
             $errors['timeuntil'] = get_string('error');
         }
 
-        if (\tool_certify\external\form_certification_periods_programid::validate_form_value($this->arguments, $data['programid']) !== null) {
+        if (\tool_mucertify\external\form_certification_periods_programid::validate_form_value($this->arguments, $data['programid']) !== null) {
             $errors['programid'] = get_string('error');
         }
 

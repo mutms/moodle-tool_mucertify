@@ -1,4 +1,4 @@
-@tool @tool_certify @openlms
+@tool @tool_mucertify @muTMS
 Feature: Certification completion by students tests
 
   Background:
@@ -35,33 +35,33 @@ Feature: Certification completion by students tests
       | student2 | Student   | 2        | student2@example.com |
       | student3 | Student   | 3        | student3@example.com |
     And the following "roles" exist:
-      | name            | shortname |
+      | name                  | shortname |
       | Certification viewer  | pviewer   |
       | Certification manager | pmanager  |
     And the following "permission overrides" exist:
-      | capability                   | permission | role     | contextlevel | reference |
-      | tool/certify:view            | Allow      | pviewer  | System       |           |
-      | tool/certify:view            | Allow      | pmanager | System       |           |
-      | tool/certify:edit            | Allow      | pmanager | System       |           |
-      | tool/certify:assign          | Allow      | pmanager | System       |           |
-      | tool/certify:delete          | Allow      | pmanager | System       |           |
-      | tool/certify:admin           | Allow      | pmanager | System       |           |
-      | enrol/programs:view          | Allow      | pmanager | System       |           |
-      | enrol/programs:edit          | Allow      | pmanager | System       |           |
-      | enrol/programs:admin         | Allow      | pmanager | System       |           |
+      | capability                     | permission | role     | contextlevel | reference |
+      | tool/mucertify:view            | Allow      | pviewer  | System       |           |
+      | tool/mucertify:view            | Allow      | pmanager | System       |           |
+      | tool/mucertify:edit            | Allow      | pmanager | System       |           |
+      | tool/mucertify:assign          | Allow      | pmanager | System       |           |
+      | tool/mucertify:delete          | Allow      | pmanager | System       |           |
+      | tool/mucertify:admin           | Allow      | pmanager | System       |           |
+      | tool/muprog:view               | Allow      | pmanager | System       |           |
+      | tool/muprog:edit               | Allow      | pmanager | System       |           |
+      | tool/muprog:admin              | Allow      | pmanager | System       |           |
     And the following "role assigns" exist:
       | user      | role          | contextlevel | reference |
       | manager1  | pmanager      | System       |           |
       | viewer1   | pviewer       | System       |           |
-    And the following "enrol_programs > programs" exist:
+    And the following "tool_muprog > programs" exist:
       | fullname    | idnumber | category | sources |
-      | Program 001 | PR1      |          | certify |
-      | Program 002 | PR2      |          | certify |
-    And the following "enrol_programs > program_items" exist:
+      | Program 001 | PR1      |          | mucertify |
+      | Program 002 | PR2      |          | mucertify |
+    And the following "tool_muprog > program_items" exist:
       | program     | parent     | course   | fullname   | sequencetype     | minprerequisites |
       | Program 001 |            | Course 1 |            |                  |                  |
       | Program 002 |            | Course 2 |            |                  |                  |
-    And the following "tool_certify > certifications" exist:
+    And the following "tool_mucertify > certifications" exist:
       | fullname          | idnumber | category | program1 | sources |
       | Certification 001 | CT1      |          | PR1      | manual  |
       | Certification 002 | CT2      |          | PR2      | manual  |
@@ -84,9 +84,9 @@ Feature: Certification completion by students tests
   @javascript
   Scenario: Student may complete a certification
     Given I log in as "manager1"
-    And I am on all certifications management page
+    And I am on the "tool_mucertify > All certifications management" page
     And I follow "Certification 001"
-    And I click on "Users" "link" in the "#region-main" "css_element"
+    And I click on "Users" "link" in the ".secondary-navigation" "css_element"
     And I press "Assign users"
     And I set the following fields to these values:
       | Users                    | Student 1 |
@@ -108,7 +108,7 @@ Feature: Certification completion by students tests
     And I log out
 
     When I log in as "student1"
-    And I am on My programs page
+    And I am on the "tool_muprog > My programs" page
     And I follow "Program 001"
     And I follow "Course 1"
     And I follow "Sample page"
@@ -116,17 +116,16 @@ Feature: Certification completion by students tests
     And I run the "core\task\completion_regular_task" task
     And I wait "1" seconds
     And I run the "core\task\completion_regular_task" task
-    And I am on My certifications page
+    And I am on the "tool_mucertify > My certifications" page
     And I follow "Certification 001"
-    Then I should see "Valid" in the "Certification status:" definition list item
+    Then I should see "Valid" in the "Certification status" definition list item
     And I log out
 
     When I log in as "manager1"
-    And I am on all certifications management page
+    And I am on the "tool_mucertify > All certifications management" page
     And I follow "Certification 001"
-    And I click on "Users" "link" in the "#region-main" "css_element"
-    And I set the following fields to these values:
-      | status                    | Valid |
-    Then the following should exist in the "certification_assignments" table:
-      | First name / Last name | Certification status     |
-      | Student 1              | Valid                    |
+    And I click on "Users" "link" in the ".secondary-navigation" "css_element"
+    Then the following should exist in the "reportbuilder-table" table:
+      | First name  | Certification status |
+      | Student 1   | Certified            |
+      | Student 2   | Not certified        |

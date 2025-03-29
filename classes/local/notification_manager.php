@@ -1,30 +1,34 @@
 <?php
-// This file is part of Moodle - https://moodle.org/
+// This file is part of Certifications for Moodle™.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-namespace tool_certify\local;
+// phpcs:disable moodle.Files.BoilerplateComment.CommentEndedTooSoon
+// phpcs:disable moodle.Files.LineLength.TooLong
+
+namespace tool_mucertify\local;
 
 /**
- * certifications notification manager.
+ * Certifications notification manager.
  *
- * @package    tool_certify
+ * @package    tool_mucertify
  * @copyright  2023 Open LMS (https://www.openlms.net/)
+ * @copyright  2025 Petr Skoda
  * @author     Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-final class notification_manager extends \local_openlms\notification\manager {
+final class notification_manager extends \tool_mulib\local\notification\manager {
     /**
      * Returns list of all notifications in plugin.
      *
@@ -34,17 +38,15 @@ final class notification_manager extends \local_openlms\notification\manager {
         // Note: order here affects cron task execution.
         return [
             'assignment' => notification\assignment::class,
-            'assignment_relateduser' => notification\assignment_relateduser::class,
             'valid' => notification\valid::class,
-            'valid_relateduser' => notification\valid_relateduser::class,
             'unassignment' => notification\unassignment::class,
-            'unassignment_relateduser' => notification\unassignment_relateduser::class,
         ];
     }
 
     /**
      * Returns list of candidate types for adding of new notifications.
      *
+     * @param int $instanceid
      * @return array of type names with notificationtype as keys
      */
     public static function get_candidate_types(int $instanceid): array {
@@ -52,21 +54,13 @@ final class notification_manager extends \local_openlms\notification\manager {
 
         $types = self::get_all_types();
 
-        $fieldid = notification\base::get_relateduser_fieldid();
-        if (!$fieldid) {
-            foreach ($types as $k => $v) {
-                if (str_ends_with($k, '_relateduser')) {
-                    unset($types[$k]);
-                }
-            }
-        }
-
-        $existing = $DB->get_records('local_openlms_notifications',
-            ['component' => 'tool_certify', 'instanceid' => $instanceid]);
+        $existing = $DB->get_records('tool_mulib_notification',
+            ['component' => 'tool_mucertify', 'instanceid' => $instanceid]);
         foreach ($existing as $notification) {
             unset($types[$notification->notificationtype]);
         }
 
+        // phpcs:ignore moodle.Commenting.InlineComment.TypeHintingForeach
         /** @var class-string<notification\base> $classname */
         foreach ($types as $type => $classname) {
             $types[$type] = $classname::get_name();
@@ -84,7 +78,7 @@ final class notification_manager extends \local_openlms\notification\manager {
     public static function get_instance_context(int $instanceid): ?\context {
         global $DB;
 
-        $certification = $DB->get_record('tool_certify_certifications', ['id' => $instanceid]);
+        $certification = $DB->get_record('tool_mucertify_certification', ['id' => $instanceid]);
         if (!$certification) {
             return null;
         }
@@ -100,13 +94,13 @@ final class notification_manager extends \local_openlms\notification\manager {
      */
     public static function can_view(int $instanceid): bool {
         global $DB;
-        $certification = $DB->get_record('tool_certify_certifications', ['id' => $instanceid]);
+        $certification = $DB->get_record('tool_mucertify_certification', ['id' => $instanceid]);
         if (!$certification) {
             return false;
         }
 
         $context = \context::instance_by_id($certification->contextid);
-        return has_capability('tool/certify:view', $context);
+        return has_capability('tool/mucertify:view', $context);
     }
 
     /**
@@ -117,13 +111,13 @@ final class notification_manager extends \local_openlms\notification\manager {
      */
     public static function can_manage(int $instanceid): bool {
         global $DB;
-        $certification = $DB->get_record('tool_certify_certifications', ['id' => $instanceid]);
+        $certification = $DB->get_record('tool_mucertify_certification', ['id' => $instanceid]);
         if (!$certification) {
             return false;
         }
 
         $context = \context::instance_by_id($certification->contextid);
-        return has_capability('tool/certify:edit', $context);
+        return has_capability('tool/mucertify:edit', $context);
     }
 
     /**
@@ -134,7 +128,7 @@ final class notification_manager extends \local_openlms\notification\manager {
      */
     public static function get_instance_name(int $instanceid): ?string {
         global $DB;
-        $certification = $DB->get_record('tool_certify_certifications', ['id' => $instanceid]);
+        $certification = $DB->get_record('tool_mucertify_certification', ['id' => $instanceid]);
         if (!$certification) {
             return null;
         }
@@ -149,17 +143,17 @@ final class notification_manager extends \local_openlms\notification\manager {
      */
     public static function get_instance_management_url(int $instanceid): ?\moodle_url {
         global $DB;
-        $certification = $DB->get_record('tool_certify_certifications', ['id' => $instanceid]);
+        $certification = $DB->get_record('tool_mucertify_certification', ['id' => $instanceid]);
         if (!$certification) {
             return null;
         }
 
         $context = \context::instance_by_id($certification->contextid);
-        if (!has_capability('tool/certify:view', $context)) {
+        if (!has_capability('tool/mucertify:view', $context)) {
             return null;
         }
 
-        return new \moodle_url('/admin/tool/certify/management/certification_notifications.php', ['id' => $certification->id]);
+        return new \moodle_url('/admin/tool/mucertify/management/certification_notifications.php', ['id' => $certification->id]);
     }
 
     /**
@@ -171,7 +165,7 @@ final class notification_manager extends \local_openlms\notification\manager {
     public static function setup_view_page(\stdClass $notification): void {
         global $PAGE, $DB, $OUTPUT;
 
-        $certification = $DB->get_record('tool_certify_certifications', ['id' => $notification->instanceid]);
+        $certification = $DB->get_record('tool_mucertify_certification', ['id' => $notification->instanceid]);
         if (!$certification) {
             return;
         }
@@ -179,15 +173,10 @@ final class notification_manager extends \local_openlms\notification\manager {
         $context = \context::instance_by_id($certification->contextid);
         $manageurl = self::get_instance_management_url($notification->instanceid);
 
-        management::setup_certification_page($manageurl, $context, $certification);
-        $PAGE->set_url('/local/openlms/notification/view.php', ['id' => $notification->id]);
+        management::setup_certification_page($manageurl, $context, $certification, 'certification_notifications');
+        $PAGE->set_url('/admin/tool/mulib/notification/view.php', ['id' => $notification->id]);
 
         echo $OUTPUT->header();
-
-        /** @var \tool_certify\output\management\renderer $managementoutput */
-        $managementoutput = $PAGE->get_renderer('tool_certify', 'management');
-
-        echo $managementoutput->render_management_certification_tabs($certification, 'notifications');
     }
 
     /**
@@ -200,13 +189,13 @@ final class notification_manager extends \local_openlms\notification\manager {
     public static function trigger_notifications(?int $certificationid, ?int $userid): void {
         global $DB;
 
-        if (!enrol_is_enabled('programs')) {
+        if (!enrol_is_enabled('muprog')) {
             return;
         }
 
         $certification = null;
         if ($certificationid) {
-            $certification = $DB->get_record('tool_certify_certifications', ['id' => $certificationid], '*', MUST_EXIST);
+            $certification = $DB->get_record('tool_mucertify_certification', ['id' => $certificationid], '*', MUST_EXIST);
             if ($certification->archived) {
                 return;
             }
@@ -237,8 +226,8 @@ final class notification_manager extends \local_openlms\notification\manager {
     public static function delete_assignment_notifications(\stdClass $assignment) {
         global $DB;
 
-        $notifications = $DB->get_records('local_openlms_notifications',
-            ['component' => 'tool_certify', 'instanceid' => $assignment->certificationid]);
+        $notifications = $DB->get_records('tool_mulib_notification',
+            ['component' => 'tool_mucertify', 'instanceid' => $assignment->certificationid]);
         foreach ($notifications as $notification) {
             /** @var class-string<notification\base> $classname */
             $classname = self::get_classname($notification->notificationtype);
@@ -258,8 +247,8 @@ final class notification_manager extends \local_openlms\notification\manager {
     public static function delete_period_notifications(\stdClass $period) {
         global $DB;
 
-        $notifications = $DB->get_records('local_openlms_notifications',
-            ['component' => 'tool_certify', 'instanceid' => $period->certificationid]);
+        $notifications = $DB->get_records('tool_mulib_notification',
+            ['component' => 'tool_mucertify', 'instanceid' => $period->certificationid]);
         foreach ($notifications as $notification) {
             /** @var class-string<notification\base> $classname */
             $classname = self::get_classname($notification->notificationtype);
@@ -279,10 +268,10 @@ final class notification_manager extends \local_openlms\notification\manager {
     public static function delete_certification_notifications(\stdClass $certification) {
         global $DB;
 
-        $notifications = $DB->get_records('local_openlms_notifications',
-            ['component' => 'tool_certify', 'instanceid' => $certification->id]);
+        $notifications = $DB->get_records('tool_mulib_notification',
+            ['component' => 'tool_mucertify', 'instanceid' => $certification->id]);
         foreach ($notifications as $notification) {
-            \local_openlms\notification\util::notification_delete($notification->id);
+            \tool_mulib\local\notification\util::notification_delete($notification->id);
         }
     }
 
@@ -299,11 +288,11 @@ final class notification_manager extends \local_openlms\notification\manager {
 
         $params = ['certificationid' => $certificationid, 'assigneduserid' => $assigneduserid, 'type' => $notificationtype];
         $sql = "SELECT MAX(un.timenotified)
-                  FROM {tool_certify_assignments} pa
-                  JOIN {tool_certify_certifications} p ON p.id = pa.certificationid
-                  JOIN {local_openlms_notifications} n
-                       ON n.component = 'tool_certify' AND n.notificationtype = :type AND n.instanceid = p.id
-                  JOIN {local_openlms_user_notified} un
+                  FROM {tool_mucertify_assignment} pa
+                  JOIN {tool_mucertify_certification} p ON p.id = pa.certificationid
+                  JOIN {tool_mulib_notification} n
+                       ON n.component = 'tool_mucertify' AND n.notificationtype = :type AND n.instanceid = p.id
+                  JOIN {tool_mulib_notification_user} un
                        ON un.notificationid = n.id AND un.otherid1 = pa.id
                  WHERE p.id = :certificationid AND pa.userid = :assigneduserid";
         return $DB->get_field_sql($sql, $params);

@@ -1,28 +1,32 @@
 <?php
-// This file is part of Moodle - https://moodle.org/
+// This file is part of Certifications for Moodle™.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-namespace tool_certify\local\source;
+// phpcs:disable moodle.Files.BoilerplateComment.CommentEndedTooSoon
+// phpcs:disable moodle.Files.LineLength.TooLong
+
+namespace tool_mucertify\local\source;
 
 use stdClass;
 
 /**
  * certification assignment for all visible cohort members.
  *
- * @package    tool_certify
+ * @package    tool_mucertify
  * @copyright  2023 Open LMS (https://www.openlms.net/)
+ * @copyright  2025 Petr Skoda
  * @author     Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -49,7 +53,7 @@ final class cohort extends base {
         $result = parent::render_status_details($certification, $source);
 
         if ($source) {
-            $cohorts = cohort::fetch_assignment_cohorts_menu($source->id);
+            $cohorts = self::fetch_assignment_cohorts_menu($source->id);
             \core_collator::asort($cohorts);
             if ($cohorts) {
                 $cohorts = array_map('format_string', $cohorts);
@@ -103,8 +107,8 @@ final class cohort extends base {
             return;
         }
 
-        $oldcohorts = cohort::fetch_assignment_cohorts_menu($source->id);
-        $sourceid = $DB->get_field('tool_certify_sources', 'id', ['certificationid' => $data->certificationid, 'type' => 'cohort']);
+        $oldcohorts = self::fetch_assignment_cohorts_menu($source->id);
+        $sourceid = $DB->get_field('tool_mucertify_source', 'id', ['certificationid' => $data->certificationid, 'type' => 'cohort']);
         $data->cohorts = $data->cohorts ?? [];
         foreach ($data->cohorts as $cid) {
             if (isset($oldcohorts[$cid])) {
@@ -112,10 +116,10 @@ final class cohort extends base {
                 continue;
             }
             $record = (object)['sourceid' => $sourceid, 'cohortid' => $cid];
-            $DB->insert_record('tool_certify_src_cohorts', $record);
+            $DB->insert_record('tool_mucertify_src_cohort', $record);
         }
         foreach ($oldcohorts as $cid => $unused) {
-            $DB->delete_records('tool_certify_src_cohorts', ['sourceid' => $sourceid, 'cohortid' => $cid]);
+            $DB->delete_records('tool_mucertify_src_cohort', ['sourceid' => $sourceid, 'cohortid' => $cid]);
         }
     }
 
@@ -130,7 +134,7 @@ final class cohort extends base {
 
         $sql = "SELECT c.id, c.name
                   FROM {cohort} c
-                  JOIN {tool_certify_src_cohorts} pc ON c.id = pc.cohortid                                    
+                  JOIN {tool_mucertify_src_cohort} pc ON c.id = pc.cohortid
                  WHERE pc.sourceid = :sourceid
               ORDER BY c.name ASC, c.id ASC";
         $params = ['sourceid' => $sourceid];
@@ -170,10 +174,10 @@ final class cohort extends base {
         $params['now2'] = $now;
         $sql = "SELECT DISTINCT c.id, cm.userid, s.id AS sourceid, ca.id AS assignmentid
                   FROM {cohort_members} cm
-                  JOIN {tool_certify_src_cohorts} psc ON psc.cohortid = cm.cohortid
-                  JOIN {tool_certify_sources} s ON s.id = psc.sourceid
-                  JOIN {tool_certify_certifications} c ON c.id = s.certificationid
-             LEFT JOIN {tool_certify_assignments} ca ON ca.certificationid = c.id AND ca.userid = cm.userid
+                  JOIN {tool_mucertify_src_cohort} psc ON psc.cohortid = cm.cohortid
+                  JOIN {tool_mucertify_source} s ON s.id = psc.sourceid
+                  JOIN {tool_mucertify_certification} c ON c.id = s.certificationid
+             LEFT JOIN {tool_mucertify_assignment} ca ON ca.certificationid = c.id AND ca.userid = cm.userid
                  WHERE (ca.id IS NULL OR (ca.archived = 1 AND ca.sourceid = s.id))
                        AND c.archived = 0
                        $certificationselect $userselect
@@ -184,18 +188,18 @@ final class cohort extends base {
         $lastsource = null;
         foreach ($rs as $record) {
             if ($record->assignmentid) {
-                $DB->set_field('tool_certify_assignments', 'archived', 0, ['id' => $record->assignmentid]);
+                $DB->set_field('tool_mucertify_assignment', 'archived', 0, ['id' => $record->assignmentid]);
             } else {
                 if ($lastcertification && $lastcertification->id == $record->id) {
                     $certification = $lastcertification;
                 } else {
-                    $certification = $DB->get_record('tool_certify_certifications', ['id' => $record->id], '*', MUST_EXIST);
+                    $certification = $DB->get_record('tool_mucertify_certification', ['id' => $record->id], '*', MUST_EXIST);
                     $lastcertification = $certification;
                 }
                 if ($lastsource && $lastsource->id == $record->sourceid) {
                     $source = $lastsource;
                 } else {
-                    $source = $DB->get_record('tool_certify_sources', ['id' => $record->sourceid], '*', MUST_EXIST);
+                    $source = $DB->get_record('tool_mucertify_source', ['id' => $record->sourceid], '*', MUST_EXIST);
                     $lastsource = $source;
                 }
                 self::assign_user($certification, $source, $record->userid, []);
@@ -220,14 +224,14 @@ final class cohort extends base {
         $params['now1'] = $now;
         $params['now2'] = $now;
         $sql = "SELECT ca.id
-                  FROM {tool_certify_assignments} ca
-                  JOIN {tool_certify_sources} s ON s.certificationid = ca.certificationid AND s.type = 'cohort' AND s.id = ca.sourceid
-                  JOIN {tool_certify_certifications} c ON c.id = ca.certificationid
+                  FROM {tool_mucertify_assignment} ca
+                  JOIN {tool_mucertify_source} s ON s.certificationid = ca.certificationid AND s.type = 'cohort' AND s.id = ca.sourceid
+                  JOIN {tool_mucertify_certification} c ON c.id = ca.certificationid
                  WHERE c.archived = 0 AND ca.archived = 0
                        AND NOT EXISTS (
                             SELECT 1
                               FROM {cohort_members} cm
-                              JOIN {tool_certify_src_cohorts} psc ON psc.cohortid = cm.cohortid
+                              JOIN {tool_mucertify_src_cohort} psc ON psc.cohortid = cm.cohortid
                              WHERE cm.userid = ca.userid AND psc.sourceid = s.id
                        )
                        $certificationselect $userselect
@@ -235,7 +239,7 @@ final class cohort extends base {
         $rs = $DB->get_recordset_sql($sql, $params);
         foreach ($rs as $ca) {
             // NOTE: it is expected that program allocation fixing is executed right after this method.
-            $DB->set_field('tool_certify_assignments', 'archived', 1, ['id' => $ca->id]);
+            $DB->set_field('tool_mucertify_assignment', 'archived', 1, ['id' => $ca->id]);
             $updated = true;
         }
         $rs->close();

@@ -1,4 +1,4 @@
-@tool @tool_certify @openlms
+@tool @tool_mucertify @muTMS
 Feature: Certification visibility management tests
 
   Background:
@@ -36,11 +36,11 @@ Feature: Certification visibility management tests
       | Certification manager | pmanager  |
     And the following "permission overrides" exist:
       | capability                   | permission | role     | contextlevel | reference |
-      | tool/certify:view            | Allow      | pviewer  | System       |           |
-      | tool/certify:view            | Allow      | pmanager | System       |           |
-      | tool/certify:edit            | Allow      | pmanager | System       |           |
-      | tool/certify:delete          | Allow      | pmanager | System       |           |
-      | tool/certify:assign          | Allow      | pmanager | System       |           |
+      | tool/mucertify:view            | Allow      | pviewer  | System       |           |
+      | tool/mucertify:view            | Allow      | pmanager | System       |           |
+      | tool/mucertify:edit            | Allow      | pmanager | System       |           |
+      | tool/mucertify:delete          | Allow      | pmanager | System       |           |
+      | tool/mucertify:assign          | Allow      | pmanager | System       |           |
       | moodle/cohort:view           | Allow      | pmanager | System       |           |
     And the following "role assigns" exist:
       | user      | role          | contextlevel | reference |
@@ -51,21 +51,21 @@ Feature: Certification visibility management tests
 
   @javascript
   Scenario: Manager may update certification visibility settings
-    Given the following "tool_certify > certifications" exist:
+    Given the following "tool_mucertify > certifications" exist:
       | fullname          | idnumber | category |
       | Certification 000 | CT0      |          |
       | Certification 001 | CT1      | Cat 1    |
       | Certification 002 | CT2      | Cat 2    |
       | Certification 003 | CT3      | Cat 3    |
     And I log in as "manager1"
-    And I am on all certifications management page
-    And "Certification 000" row "Public" column of "management_certifications" table should contain "No"
-    And "Certification 001" row "Public" column of "management_certifications" table should contain "No"
-    And "Certification 002" row "Public" column of "management_certifications" table should contain "No"
-    And "Certification 003" row "Public" column of "management_certifications" table should contain "No"
+    And I am on the "tool_mucertify > All certifications management" page
+    And "Certification 000" row "Public" column of "reportbuilder-table" table should contain "No"
+    And "Certification 001" row "Public" column of "reportbuilder-table" table should contain "No"
+    And "Certification 002" row "Public" column of "reportbuilder-table" table should contain "No"
+    And "Certification 003" row "Public" column of "reportbuilder-table" table should contain "No"
 
     When I follow "Certification 000"
-    And I click on "Visibility settings" "link" in the "#region-main" "css_element"
+    And I click on "Visibility settings" "link" in the ".secondary-navigation" "css_element"
     And I press "Edit"
     And the following fields match these values:
       | Public             | No             |
@@ -77,8 +77,8 @@ Feature: Certification visibility management tests
     And the following fields match these values:
       | Public             | Yes            |
     And I press dialog form button "Cancel"
-    And I am on all certifications management page
-    And "Certification 000" row "Public" column of "management_certifications" table should contain "Yes"
+    And I am on the "tool_mucertify > All certifications management" page
+    And "Certification 000" row "Public" column of "reportbuilder-table" table should contain "Yes"
 
     When I click on "No" "link" in the "Certification 001" "table_row"
     And I press "Edit"
@@ -91,11 +91,11 @@ Feature: Certification visibility management tests
       | Visible to cohorts | Cohort 2 |
     And I press dialog form button "Update certification"
     And I should see "Cohort 2"
-    And I am on all certifications management page
-    And "Certification 001" row "Public" column of "management_certifications" table should contain "No"
+    And I am on the "tool_mucertify > All certifications management" page
+    And "Certification 001" row "Public" column of "reportbuilder-table" table should contain "No"
 
     When I follow "Certification 002"
-    And I click on "Visibility settings" "link" in the "#region-main" "css_element"
+    And I click on "Visibility settings" "link" in the ".secondary-navigation" "css_element"
     And I press "Edit"
     And I set the following fields to these values:
       | Visible to cohorts | Cohort 2, Cohort 1 |
@@ -103,7 +103,7 @@ Feature: Certification visibility management tests
     Then I should see "Cohort 1"
     And I should see "Cohort 2"
 
-    When I am on Certification catalogue page
+    When I am on the "tool_mucertify > Certification catalogue" page
     Then I should see "Certification 000"
     And I should not see "Certification 001"
     And I should not see "Certification 002"
@@ -111,7 +111,7 @@ Feature: Certification visibility management tests
     And I log out
 
     When I log in as "student1"
-    And I am on Certification catalogue page
+    And I am on the "tool_mucertify > Certification catalogue" page
     Then I should see "Certification 000"
     And I should not see "Certification 001"
     And I should see "Certification 002"
@@ -119,7 +119,7 @@ Feature: Certification visibility management tests
     And I log out
 
     When I log in as "student2"
-    And I am on Certification catalogue page
+    And I am on the "tool_mucertify > Certification catalogue" page
     Then I should see "Certification 000"
     And I should see "Certification 001"
     And I should see "Certification 002"
@@ -127,7 +127,7 @@ Feature: Certification visibility management tests
     And I log out
 
     When I log in as "student3"
-    And I am on Certification catalogue page
+    And I am on the "tool_mucertify > Certification catalogue" page
     Then I should see "Certification 000"
     And I should not see "Certification 001"
     And I should see "Certification 002"
@@ -135,7 +135,7 @@ Feature: Certification visibility management tests
     And I log out
 
     When I log in as "student4"
-    And I am on Certification catalogue page
+    And I am on the "tool_mucertify > Certification catalogue" page
     Then I should see "Certification 000"
     And I should not see "Certification 001"
     And I should not see "Certification 002"

@@ -1,5 +1,5 @@
-@tool @tool_certify @openlms
-Feature: Visible cohorts certification assignment tests
+@tool @tool_mucertify @muTMS
+Feature: Automatic cohorts assignments certification tests
 
   Background:
     Given unnecessary Admin bookmarks block gets deleted
@@ -38,26 +38,26 @@ Feature: Visible cohorts certification assignment tests
       | Certification viewer  | pviewer   |
       | Certification manager | pmanager  |
     And the following "permission overrides" exist:
-      | capability                   | permission | role     | contextlevel | reference |
-      | tool/certify:view            | Allow      | pviewer  | System       |           |
-      | tool/certify:view            | Allow      | pmanager | System       |           |
-      | tool/certify:edit            | Allow      | pmanager | System       |           |
-      | tool/certify:delete          | Allow      | pmanager | System       |           |
-      | tool/certify:assign          | Allow      | pmanager | System       |           |
-      | moodle/cohort:view           | Allow      | pmanager | System       |           |
+      | capability                     | permission | role     | contextlevel | reference |
+      | tool/mucertify:view            | Allow      | pviewer  | System       |           |
+      | tool/mucertify:view            | Allow      | pmanager | System       |           |
+      | tool/mucertify:edit            | Allow      | pmanager | System       |           |
+      | tool/mucertify:delete          | Allow      | pmanager | System       |           |
+      | tool/mucertify:assign          | Allow      | pmanager | System       |           |
+      | moodle/cohort:view             | Allow      | pmanager | System       |           |
     And the following "role assigns" exist:
       | user      | role          | contextlevel | reference |
       | manager1  | pmanager      | System       |           |
       | manager2  | pmanager      | Category     | CAT2      |
       | manager2  | pmanager      | Category     | CAT3      |
       | viewer1   | pviewer       | System       |           |
-    And the following "enrol_programs > programs" exist:
+    And the following "tool_muprog > programs" exist:
       | fullname    | idnumber | category | sources |
-      | Program 000 | PR0      |          | certify |
-      | Program 001 | PR1      | Cat 1    | certify |
-      | Program 002 | PR2      | Cat 2    | certify |
-      | Program 003 | PR3      | Cat 3    | certify |
-    And the following "tool_certify > certifications" exist:
+      | Program 000 | PR0      |          | mucertify |
+      | Program 001 | PR1      | Cat 1    | mucertify |
+      | Program 002 | PR2      | Cat 2    | mucertify |
+      | Program 003 | PR3      | Cat 3    | mucertify |
+    And the following "tool_mucertify > certifications" exist:
       | fullname          | idnumber | category | program1 |
       | Certification 000 | CT0      |          | PR0      |
       | Certification 001 | CT1      | Cat 1    | PR1      |
@@ -67,62 +67,66 @@ Feature: Visible cohorts certification assignment tests
   @javascript
   Scenario: Manager may enable automatic cohort assignment in certifications
     Given I log in as "manager1"
-    And I am on all certifications management page
+    And I am on the "tool_mucertify > All certifications management" page
     And I follow "Certification 000"
-    And I click on "Assignment settings" "link" in the "#region-main" "css_element"
+    And I click on "Assignment settings" "link" in the ".secondary-navigation" "css_element"
     And I click on "Update Automatic cohort assignment" "link"
     And I set the following fields to these values:
       | Active         | Yes                |
       | Assign to cohorts | Cohort 1, Cohort 2 |
     And I press dialog form button "Update"
-    Then I should see "Active (Cohort 1, Cohort 2)" in the "Automatic cohort assignment:" definition list item
-    And I click on "Users" "link" in the "#region-main" "css_element"
-    And "Student 1" row "Source" column of "certification_assignments" table should contain "Automatic cohort assignment"
-    And "Student 1" row "Certification status" column of "certification_assignments" table should contain "Not certified"
-    And "Student 2" row "Source" column of "certification_assignments" table should contain "Automatic cohort assignment"
-    And "Student 2" row "Certification status" column of "certification_assignments" table should contain "Not certified"
-    And "Student 3" row "Source" column of "certification_assignments" table should contain "Automatic cohort assignment"
-    And "Student 3" row "Certification status" column of "certification_assignments" table should contain "Not certified"
-    And "Student 4" row "Source" column of "certification_assignments" table should contain "Automatic cohort assignment"
-    And "Student 4" row "Certification status" column of "certification_assignments" table should contain "Not certified"
+    Then I should see "Active (Cohort 1, Cohort 2)" in the "Automatic cohort assignment" definition list item
+    And I click on "Users" "link" in the ".secondary-navigation" "css_element"
+    And "Student 1" row "Source" column of "reportbuilder-table" table should contain "Automatic cohort assignment"
+    And "Student 1" row "Certification status" column of "reportbuilder-table" table should contain "Not certified"
+    And "Student 2" row "Source" column of "reportbuilder-table" table should contain "Automatic cohort assignment"
+    And "Student 2" row "Certification status" column of "reportbuilder-table" table should contain "Not certified"
+    And "Student 3" row "Source" column of "reportbuilder-table" table should contain "Automatic cohort assignment"
+    And "Student 3" row "Certification status" column of "reportbuilder-table" table should contain "Not certified"
+    And "Student 4" row "Source" column of "reportbuilder-table" table should contain "Automatic cohort assignment"
+    And "Student 4" row "Certification status" column of "reportbuilder-table" table should contain "Not certified"
     And I should not see "Student 5"
 
-    When I click on "Assignment settings" "link" in the "#region-main" "css_element"
+    When I click on "Assignment settings" "link" in the ".secondary-navigation" "css_element"
     And I click on "Update Automatic cohort assignment" "link"
     And I set the following fields to these values:
       | Assign to cohorts | Cohort 1 |
     And I press dialog form button "Update"
-    Then I should see "Active (Cohort 1)" in the "Automatic cohort assignment:" definition list item
-    And I click on "Users" "link" in the "#region-main" "css_element"
-    And "Student 1" row "Source" column of "certification_assignments" table should contain "Automatic cohort assignment"
-    And "Student 1" row "Certification status" column of "certification_assignments" table should contain "Not certified"
-    And "Student 2" row "Source" column of "certification_assignments" table should contain "Automatic cohort assignment"
-    And "Student 2" row "Certification status" column of "certification_assignments" table should contain "Not certified"
-    And "Student 3" row "Source" column of "certification_assignments" table should contain "Automatic cohort assignment"
-    And "Student 3" row "Certification status" column of "certification_assignments" table should contain "Not certified"
-    And "Student 4" row "Source" column of "certification_assignments" table should contain "Automatic cohort assignment"
-    And "Student 4" row "Certification status" column of "certification_assignments" table should contain "Archived"
+    Then I should see "Active (Cohort 1)" in the "Automatic cohort assignment" definition list item
+    And I click on "Users" "link" in the ".secondary-navigation" "css_element"
+    And "Student 1" row "Source" column of "reportbuilder-table" table should contain "Automatic cohort assignment"
+    And "Student 1" row "Certification status" column of "reportbuilder-table" table should contain "Not certified"
+    And "Student 2" row "Source" column of "reportbuilder-table" table should contain "Automatic cohort assignment"
+    And "Student 2" row "Certification status" column of "reportbuilder-table" table should contain "Not certified"
+    And "Student 3" row "Source" column of "reportbuilder-table" table should contain "Automatic cohort assignment"
+    And "Student 3" row "Certification status" column of "reportbuilder-table" table should contain "Not certified"
+    And "Student 4" row "Source" column of "reportbuilder-table" table should contain "Automatic cohort assignment"
+    And "Student 4" row "Certification status" column of "reportbuilder-table" table should contain "Archived"
     And I should not see "Student 5"
 
-    When I click on "Assignment settings" "link" in the "#region-main" "css_element"
+    When I click on "Assignment settings" "link" in the ".secondary-navigation" "css_element"
     And I click on "Update Automatic cohort assignment" "link"
     And I set the following fields to these values:
       | Assign to cohorts | Cohort 4 |
     And I press dialog form button "Update"
-    And I should see "Active (Cohort 4)" in the "Automatic cohort assignment:" definition list item
-    And I click on "Users" "link" in the "#region-main" "css_element"
+    And I should see "Active (Cohort 4)" in the "Automatic cohort assignment" definition list item
+    And I click on "Users" "link" in the ".secondary-navigation" "css_element"
+    And I click on "Actions" "link" in the "Student 1" "table_row"
     And I click on "Delete assignment" "link" in the "Student 1" "table_row"
     And I press dialog form button "Delete assignment"
+    And I click on "Actions" "link" in the "Student 2" "table_row"
     And I click on "Delete assignment" "link" in the "Student 2" "table_row"
     And I press dialog form button "Delete assignment"
+    And I click on "Actions" "link" in the "Student 3" "table_row"
     And I click on "Delete assignment" "link" in the "Student 3" "table_row"
     And I press dialog form button "Delete assignment"
+    And I click on "Actions" "link" in the "Student 4" "table_row"
     And I click on "Delete assignment" "link" in the "Student 4" "table_row"
     And I press dialog form button "Delete assignment"
     And I should see "No certification assignments found"
-    And I click on "Assignment settings" "link" in the "#region-main" "css_element"
+    And I click on "Assignment settings" "link" in the ".secondary-navigation" "css_element"
     And I click on "Update Automatic cohort assignment" "link"
     And I set the following fields to these values:
       | Active              | No                |
     And I press dialog form button "Update"
-    Then I should see "Inactive" in the "Automatic cohort assignment:" definition list item
+    Then I should see "Inactive" in the "Automatic cohort assignment" definition list item

@@ -1,28 +1,32 @@
 <?php
-// This file is part of Moodle - https://moodle.org/
+// This file is part of Certifications for Moodle™.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-namespace tool_certify\local\notification;
+// phpcs:disable moodle.Files.BoilerplateComment.CommentEndedTooSoon
+// phpcs:disable moodle.Files.LineLength.TooLong
+
+namespace tool_mucertify\local\notification;
 
 use stdClass;
 
 /**
  * Certification unassignment notification.
  *
- * @package    tool_certify
+ * @package    tool_mucertify
  * @copyright  2023 Open LMS (https://www.openlms.net/)
+ * @copyright  2025 Petr Skoda
  * @author     Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -46,13 +50,12 @@ final class unassignment extends base {
      * @param stdClass $source
      * @param stdClass $assignment
      * @param stdClass $user
-     * @param stdClass|null $relateduser
      * @return array
      */
     public static function get_assignment_placeholders(stdClass $certification, stdClass $source, stdClass $assignment,
-                                                       stdClass $user, ?stdClass $relateduser = null): array {
-        $a = parent::get_assignment_placeholders($certification, $source, $assignment, $user, $relateduser);
-        $a['certification_url'] = (new \moodle_url('/admin/tool/certify/catalogue/certification.php', ['id' => $certification->id]))->out(false);
+                                                       stdClass $user): array {
+        $a = parent::get_assignment_placeholders($certification, $source, $assignment, $user);
+        $a['certification_url'] = (new \moodle_url('/admin/tool/mucertify/catalogue/certification.php', ['id' => $certification->id]))->out(false);
         return $a;
     }
 

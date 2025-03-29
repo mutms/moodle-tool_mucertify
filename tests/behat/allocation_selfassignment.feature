@@ -1,4 +1,4 @@
-@tool @tool_certify @openlms
+@tool @tool_mucertify @muTMS
 Feature: Certification self-assignment tests
 
   Background:
@@ -36,26 +36,26 @@ Feature: Certification self-assignment tests
       | Certification viewer  | pviewer   |
       | Certification manager | pmanager  |
     And the following "permission overrides" exist:
-      | capability                   | permission | role     | contextlevel | reference |
-      | tool/certify:view            | Allow      | pviewer  | System       |           |
-      | tool/certify:view            | Allow      | pmanager | System       |           |
-      | tool/certify:edit            | Allow      | pmanager | System       |           |
-      | tool/certify:delete          | Allow      | pmanager | System       |           |
-      | tool/certify:assign          | Allow      | pmanager | System       |           |
-      | moodle/cohort:view            | Allow      | pmanager | System       |           |
+      | capability                     | permission | role     | contextlevel | reference |
+      | tool/mucertify:view            | Allow      | pviewer  | System       |           |
+      | tool/mucertify:view            | Allow      | pmanager | System       |           |
+      | tool/mucertify:edit            | Allow      | pmanager | System       |           |
+      | tool/mucertify:delete          | Allow      | pmanager | System       |           |
+      | tool/mucertify:assign          | Allow      | pmanager | System       |           |
+      | moodle/cohort:view              | Allow      | pmanager | System       |           |
     And the following "role assigns" exist:
       | user      | role          | contextlevel | reference |
       | manager1  | pmanager      | System       |           |
       | manager2  | pmanager      | Category     | CAT2      |
       | manager2  | pmanager      | Category     | CAT3      |
       | viewer1   | pviewer       | System       |           |
-    And the following "enrol_programs > programs" exist:
-      | fullname    | idnumber | category | sources |
-      | Program 000 | PR0      |          | certify |
-      | Program 001 | PR1      | Cat 1    | certify |
-      | Program 002 | PR2      | Cat 2    | certify |
-      | Program 003 | PR3      | Cat 3    | certify |
-    And the following "tool_certify > certifications" exist:
+    And the following "tool_muprog > programs" exist:
+      | fullname    | idnumber | category | sources   |
+      | Program 000 | PR0      |          | mucertify |
+      | Program 001 | PR1      | Cat 1    | mucertify |
+      | Program 002 | PR2      | Cat 2    | mucertify |
+      | Program 003 | PR3      | Cat 3    | mucertify |
+    And the following "tool_mucertify > certifications" exist:
       | fullname          | idnumber | category | program1 | cohorts  | public |
       | Certification 000 | CT0      |          | PR0      | Cohort 2 | 0      |
       | Certification 001 | CT1      | Cat 1    | PR1      |          | 1      |
@@ -65,7 +65,7 @@ Feature: Certification self-assignment tests
   @javascript
   Scenario: Student may self assign to certification without a key
     When I log in as "manager1"
-    And I am on all certifications management page
+    And I am on the "tool_mucertify > All certifications management" page
     And I follow "Certification 000"
     And I follow "Assignment settings"
     And I click on "Update Self assignment" "link"
@@ -73,11 +73,11 @@ Feature: Certification self-assignment tests
       | Active             | Yes |
       | Allow new sign ups | No  |
     And I press dialog form button "Update"
-    Then I should see "Active; Sign ups are not allowed" in the "Self assignment:" definition list item
+    Then I should see "Active; Sign ups are not allowed" in the "Self assignment" definition list item
     And I log out
 
     When I log in as "student2"
-    And I am on Certification catalogue page
+    And I am on the "tool_mucertify > Certification catalogue" page
     And I should see "Certification 000"
     And I should see "Certification 001"
     And I follow "Certification 000"
@@ -85,18 +85,18 @@ Feature: Certification self-assignment tests
     And I log out
 
     When I log in as "manager1"
-    And I am on all certifications management page
+    And I am on the "tool_mucertify > All certifications management" page
     And I follow "Certification 000"
     And I follow "Assignment settings"
     And I click on "Update Self assignment" "link"
     And I set the following fields to these values:
       | Allow new sign ups | Yes |
     And I press dialog form button "Update"
-    Then I should see "Active; Sign ups are allowed" in the "Self assignment:" definition list item
+    Then I should see "Active; Sign ups are allowed" in the "Self assignment" definition list item
     And I log out
 
     When I log in as "student2"
-    And I am on Certification catalogue page
+    And I am on the "tool_mucertify > Certification catalogue" page
     And I should see "Certification 000"
     And I should see "Certification 001"
     And I follow "Certification 000"
@@ -104,13 +104,13 @@ Feature: Certification self-assignment tests
     And I press dialog form button "Cancel"
     And I press "Sign up"
     And I press dialog form button "Sign up"
-    Then I should see "Not certified" in the "Certification status:" definition list item
+    Then I should see "Not certified" in the "Certification status" definition list item
     And I should see "Program 000"
 
   @javascript
   Scenario: Student may self assign to certification with a key
     Given I log in as "manager1"
-    And I am on all certifications management page
+    And I am on the "tool_mucertify > All certifications management" page
     And I follow "Certification 000"
     And I follow "Assignment settings"
 
@@ -119,11 +119,11 @@ Feature: Certification self-assignment tests
       | Active      | Yes   |
       | Sign up key | heslo |
     And I press dialog form button "Update"
-    Then I should see "Active; Sign up key is required; Sign ups are allowed" in the "Self assignment:" definition list item
+    Then I should see "Active; Sign up key is required; Sign ups are allowed" in the "Self assignment" definition list item
     And I log out
 
     When I log in as "student2"
-    And I am on Certification catalogue page
+    And I am on the "tool_mucertify > Certification catalogue" page
     And I follow "Certification 000"
     And I press "Sign up"
     And I press dialog form button "Sign up"
@@ -135,13 +135,13 @@ Feature: Certification self-assignment tests
     And I set the following fields to these values:
       | Sign up key | heslo |
     And I press dialog form button "Sign up"
-    Then I should see "Not certified" in the "Certification status:" definition list item
+    Then I should see "Not certified" in the "Certification status" definition list item
     And I should see "Program 000"
 
   @javascript
   Scenario: Student may self assign to certification with max users limit
     Given I log in as "manager1"
-    And I am on all certifications management page
+    And I am on the "tool_mucertify > All certifications management" page
     And I follow "Certification 001"
     And I follow "Assignment settings"
 
@@ -150,24 +150,24 @@ Feature: Certification self-assignment tests
       | Active    | Yes |
       | Max users | 2   |
     And I press dialog form button "Update"
-    Then I should see "Active; Users 0/2; Sign ups are allowed" in the "Self assignment:" definition list item
+    Then I should see "Active; Users 0/2; Sign ups are allowed" in the "Self assignment" definition list item
     And I log out
 
     And I log in as "student1"
-    And I am on Certification catalogue page
+    And I am on the "tool_mucertify > Certification catalogue" page
     And I follow "Certification 001"
     And I press "Sign up"
     And I press dialog form button "Sign up"
-    And I should see "Not certified" in the "Certification status:" definition list item
+    And I should see "Not certified" in the "Certification status" definition list item
     And I log out
     And I log in as "student2"
-    And I am on Certification catalogue page
+    And I am on the "tool_mucertify > Certification catalogue" page
     And I follow "Certification 001"
     And I press "Sign up"
     And I press dialog form button "Sign up"
     And I log out
 
     When I log in as "student3"
-    And I am on Certification catalogue page
+    And I am on the "tool_mucertify > Certification catalogue" page
     And I follow "Certification 001"
     Then I should see "Maximum number of users self-assigned already"

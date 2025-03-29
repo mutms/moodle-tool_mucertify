@@ -1,4 +1,4 @@
-@tool @tool_certify @openlms
+@tool @tool_mucertify @muTMS
 Feature: Import of historic certification periods
 
   Background:
@@ -9,11 +9,11 @@ Feature: Import of historic certification periods
     And the following "cohorts" exist:
       | name     | idnumber | contextlevel | reference |
       | Cohort 1 | CH1      | Category     | CAT1      |
-    And the following "enrol_programs > programs" exist:
-      | fullname    | idnumber | category | public | sources  |
-      | Program 000 | PR0      |          | 0      | certify  |
-      | Program 001 | PR1      | Cat 1    | 0      | certify  |
-      | Program 002 | PR2      | Cat 1    | 0      | certify  |
+    And the following "tool_muprog > programs" exist:
+      | fullname    | idnumber | category | public | sources    |
+      | Program 000 | PR0      |          | 0      | mucertify  |
+      | Program 001 | PR1      | Cat 1    | 0      | mucertify  |
+      | Program 002 | PR2      | Cat 1    | 0      | mucertify  |
     And the following "users" exist:
       | username | firstname | lastname | email                | idnumber |
       | manager  | Site      | Manager  | manager@example.com  |          |
@@ -34,20 +34,20 @@ Feature: Import of historic certification periods
       | Certification viewer  | cviewer   |
       | Certification manager | cmanager  |
     And the following "permission overrides" exist:
-      | capability                   | permission | role     | contextlevel | reference |
-      | tool/certify:view            | Allow      | cviewer  | System       |           |
-      | tool/certify:admin           | Allow      | cmanager | System       |           |
-      | tool/certify:view            | Allow      | cmanager | System       |           |
-      | tool/certify:edit            | Allow      | cmanager | System       |           |
-      | tool/certify:delete          | Allow      | cmanager | System       |           |
-      | tool/certify:assign          | Allow      | cmanager | System       |           |
-      | moodle/cohort:view           | Allow      | cmanager | System       |           |
+      | capability                     | permission | role     | contextlevel | reference |
+      | tool/mucertify:view            | Allow      | cviewer  | System       |           |
+      | tool/mucertify:admin           | Allow      | cmanager | System       |           |
+      | tool/mucertify:view            | Allow      | cmanager | System       |           |
+      | tool/mucertify:edit            | Allow      | cmanager | System       |           |
+      | tool/mucertify:delete          | Allow      | cmanager | System       |           |
+      | tool/mucertify:assign          | Allow      | cmanager | System       |           |
+      | moodle/cohort:view             | Allow      | cmanager | System       |           |
     And the following "role assigns" exist:
       | user      | role          | contextlevel | reference |
       | manager   | manager       | System       |           |
       | manager1  | cmanager      | Category     | CAT1      |
       | viewer1   | cviewer       | Category     | CAT1      |
-    And the following "tool_certify > certifications" exist:
+    And the following "tool_mucertify > certifications" exist:
       | fullname          | idnumber | category | program1 |
       | Certification 000 | CT0      |          | PR0      |
       | Certification 001 | CT1      | Cat 1    | PR1      |
@@ -55,9 +55,9 @@ Feature: Import of historic certification periods
   @javascript @_file_upload
   Scenario: Manager may upload historic certification periods using csv with header
     Given I log in as "manager1"
-    And I am on certifications management page in "Cat 1"
+    And I am on the "Cat 1" "tool_mucertify > Certifications management" page
     And I follow "Certification 001"
-    And I click on "Assignment settings" "link" in the "#region-main" "css_element"
+    And I click on "Assignment settings" "link" in the ".secondary-navigation" "css_element"
     And I click on "Update Manual assignment" "link"
     And I set the following fields to these values:
       | Active | Yes |
@@ -68,15 +68,15 @@ Feature: Import of historic certification periods
       | Assign to cohorts | Cohort 1 |
     And I press dialog form button "Update"
 
-    When I click on "Users" "link" in the "#region-main" "css_element"
+    When I click on "Users" "link" in the ".secondary-navigation" "css_element"
     And I click on "User actions" "link"
     And I click on "Upload history" "link"
-    And I upload "admin/tool/certify/tests/fixtures/history1.csv" file to "CSV file" filemanager
+    And I upload "admin/tool/mucertify/tests/fixtures/history1.csv" file to "CSV file" filemanager
     And I press dialog form button "Continue"
     And I press dialog form button "Upload history"
     Then I should see "Certification periods imported: 2"
     And I should see "Rows skipped: 1"
-    And the following should exist in the "certification_assignments" table:
+    And the following should exist in the "reportbuilder-table" table:
       | First name | Valid from     | Expiration      | Certification status | Source                      |
       | Student 1  | 1/01/20, 00:00 | 31/03/20, 00:00 | Expired              | Automatic cohort assignment |
       | Student 2  | 1/03/20, 00:00 | 31/05/20, 00:00 | Expired              | Automatic cohort assignment |
@@ -84,7 +84,7 @@ Feature: Import of historic certification periods
 
     When I click on "User actions" "link"
     And I click on "Upload history" "link"
-    And I upload "admin/tool/certify/tests/fixtures/history1.csv" file to "CSV file" filemanager
+    And I upload "admin/tool/mucertify/tests/fixtures/history1.csv" file to "CSV file" filemanager
     And I press dialog form button "Continue"
     And I set the following fields to these values:
       | Create new assignments | 1 |
@@ -92,7 +92,7 @@ Feature: Import of historic certification periods
     Then I should see "Users assigned to certification: 1"
     And I should see "Certification periods imported: 1"
     And I should see "Rows skipped: 2"
-    And the following should exist in the "certification_assignments" table:
+    And the following should exist in the "reportbuilder-table" table:
       | First name | Valid from     | Expiration      | Certification status | Source                      |
       | Student 1  | 1/01/20, 00:00 | 31/03/20, 00:00 | Expired              | Automatic cohort assignment |
       | Student 2  | 1/03/20, 00:00 | 31/05/20, 00:00 | Expired              | Automatic cohort assignment |
@@ -100,7 +100,7 @@ Feature: Import of historic certification periods
 
     When I click on "User actions" "link"
     And I click on "Upload history" "link"
-    And I upload "admin/tool/certify/tests/fixtures/history2.txt" file to "CSV file" filemanager
+    And I upload "admin/tool/mucertify/tests/fixtures/history2.txt" file to "CSV file" filemanager
     And I press dialog form button "Continue"
     And I set the following fields to these values:
       | Create new assignments      | 1 |
@@ -109,7 +109,7 @@ Feature: Import of historic certification periods
     Then I should see "Users assigned to certification: 1"
     And I should see "Certification periods imported: 1"
     And I should see "Rows skipped: 1"
-    And the following should exist in the "certification_assignments" table:
+    And the following should exist in the "reportbuilder-table" table:
       | First name | Valid from     | Expiration      | Certification status | Source                      |
       | Student 1  | 1/01/20, 00:00 | 31/03/20, 00:00 | Expired              | Automatic cohort assignment |
       | Student 2  | 1/03/20, 00:00 | 31/05/20, 00:00 | Expired              | Automatic cohort assignment |
@@ -118,7 +118,7 @@ Feature: Import of historic certification periods
 
     When I click on "User actions" "link"
     And I click on "Upload history" "link"
-    And I upload "admin/tool/certify/tests/fixtures/history1.csv" file to "CSV file" filemanager
+    And I upload "admin/tool/mucertify/tests/fixtures/history1.csv" file to "CSV file" filemanager
     And I press dialog form button "Continue"
     And I set the following fields to these values:
       | Period valid from column    | Choose...       |
@@ -149,7 +149,7 @@ Feature: Import of historic certification periods
       | Certification date column   | from            |
     And I press dialog form button "Upload history"
     Then I should see "Rows skipped: 3"
-    And the following should exist in the "certification_assignments" table:
+    And the following should exist in the "reportbuilder-table" table:
       | First name | Valid from     | Expiration      | Certification status | Source                      |
       | Student 1  | 1/01/20, 00:00 | 31/03/20, 00:00 | Expired              | Automatic cohort assignment |
       | Student 2  | 1/03/20, 00:00 | 31/05/20, 00:00 | Expired              | Automatic cohort assignment |
@@ -159,9 +159,9 @@ Feature: Import of historic certification periods
   @javascript @_file_upload
   Scenario: Manager may upload historic certification periods using csv without header
     Given I log in as "manager1"
-    And I am on certifications management page in "Cat 1"
+    And I am on the "Cat 1" "tool_mucertify > Certifications management" page
     And I follow "Certification 001"
-    And I click on "Assignment settings" "link" in the "#region-main" "css_element"
+    And I click on "Assignment settings" "link" in the ".secondary-navigation" "css_element"
     And I click on "Update Manual assignment" "link"
     And I set the following fields to these values:
       | Active | Yes |
@@ -172,10 +172,10 @@ Feature: Import of historic certification periods
       | Assign to cohorts | Cohort 1 |
     And I press dialog form button "Update"
 
-    When I click on "Users" "link" in the "#region-main" "css_element"
+    When I click on "Users" "link" in the ".secondary-navigation" "css_element"
     And I click on "User actions" "link"
     And I click on "Upload history" "link"
-    And I upload "admin/tool/certify/tests/fixtures/history3.csv" file to "CSV file" filemanager
+    And I upload "admin/tool/mucertify/tests/fixtures/history3.csv" file to "CSV file" filemanager
     And I press dialog form button "Continue"
     And I set the following fields to these values:
       | User identification column  | student1         |
@@ -191,8 +191,8 @@ Feature: Import of historic certification periods
     And I press dialog form button "Upload history"
     Then I should see "Users assigned to certification: 1"
     And I should see "Certification periods imported: 3"
-    And the following should exist in the "certification_assignments" table:
+    And the following should exist in the "reportbuilder-table" table:
       | First name | Valid from     | Expiration      | Certification status | Source                      |
       | Student 1  | 2/01/20, 00:00 | 31/03/20, 00:00 | Expired              | Automatic cohort assignment |
       | Student 2  | 1/01/20, 00:00 | 31/05/20, 00:00 | Expired              | Automatic cohort assignment |
-      | Student 3  | 1/03/19, 00:00 | 31/05/36, 00:00 | Valid                | Manual assignment           |
+      | Student 3  | 1/03/19, 00:00 | 31/05/36, 00:00 | Certified            | Manual assignment           |

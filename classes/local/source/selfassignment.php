@@ -1,30 +1,34 @@
 <?php
-// This file is part of Moodle - https://moodle.org/
+// This file is part of Certifications for Moodle™.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-namespace tool_certify\local\source;
+// phpcs:disable moodle.Files.BoilerplateComment.CommentEndedTooSoon
+// phpcs:disable moodle.Files.LineLength.TooLong
+
+namespace tool_mucertify\local\source;
 
 use stdClass;
 
 /**
  * Certification self assignment source.
  *
- * @package    tool_certify
+ * @package    tool_mucertify
  * @copyright  2023 Open LMS (https://www.openlms.net/)
+ * @copyright  2025 Petr Skoda
  * @author     Petr Skoda
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class selfassignment extends base {
     /**
@@ -89,20 +93,20 @@ final class selfassignment extends base {
             return false;
         }
 
-        if (!\tool_certify\local\catalogue::is_certification_visible($certification, $userid)) {
+        if (!\tool_mucertify\local\catalogue::is_certification_visible($certification, $userid)) {
             return false;
         }
 
-        if ($DB->record_exists('tool_certify_assignments', ['certificationid' => $certification->id, 'userid' => $userid])) {
+        if ($DB->record_exists('tool_mucertify_assignment', ['certificationid' => $certification->id, 'userid' => $userid])) {
             return false;
         }
 
         $data = (object)json_decode($source->datajson);
         if (isset($data->maxusers)) {
             // Any type of assignments.
-            $count = $DB->count_records('tool_certify_assignments', ['certificationid' => $certification->id]);
+            $count = $DB->count_records('tool_mucertify_assignment', ['certificationid' => $certification->id]);
             if ($count >= $data->maxusers) {
-                $failurereason = get_string('source_selfassignment_maxusersreached', 'tool_certify');
+                $failurereason = get_string('source_selfassignment_maxusersreached', 'tool_mucertify');
                 $failurereason = '<em><strong>' . $failurereason . '</strong></em>';
                 return false;
             }
@@ -124,7 +128,7 @@ final class selfassignment extends base {
      * @return string[]
      */
     public static function get_catalogue_actions(\stdClass $certification, \stdClass $source): array {
-        global $USER, $DB, $PAGE;
+        global $USER, $OUTPUT;
 
         $failurereason = null;
         if (!self::can_user_request($certification, $source, (int)$USER->id, $failurereason)) {
@@ -135,12 +139,10 @@ final class selfassignment extends base {
             }
         }
 
-        $url = new \moodle_url('/admin/tool/certify/catalogue/source_selfassignment.php', ['sourceid' => $source->id]);
-        $button = new \local_openlms\output\dialog_form\button($url, get_string('source_selfassignment_assign', 'tool_certify'));
+        $url = new \moodle_url('/admin/tool/mucertify/catalogue/source_selfassignment.php', ['sourceid' => $source->id]);
+        $button = new \tool_mulib\output\dialog_form\button($url, get_string('source_selfassignment_assign', 'tool_mucertify'));
 
-        /** @var \local_openlms\output\dialog_form\renderer $dialogformoutput */
-        $dialogformoutput = $PAGE->get_renderer('local_openlms', 'dialog_form');
-        $button = $dialogformoutput->render($button);
+        $button = $OUTPUT->render($button);
 
         return [$button];
     }
@@ -155,12 +157,12 @@ final class selfassignment extends base {
     public static function signup(int $certificationid, int $sourceid): stdClass {
         global $DB, $USER;
 
-        $certification = $DB->get_record('tool_certify_certifications', ['id' => $certificationid], '*', MUST_EXIST);
-        $source = $DB->get_record('tool_certify_sources',
+        $certification = $DB->get_record('tool_mucertify_certification', ['id' => $certificationid], '*', MUST_EXIST);
+        $source = $DB->get_record('tool_mucertify_source',
             ['id' => $sourceid, 'type' => static::get_type(), 'certificationid' => $certification->id], '*', MUST_EXIST);
 
         $user = $DB->get_record('user', ['id' => $USER->id, 'deleted' => 0], '*', MUST_EXIST);
-        $assignment = $DB->get_record('tool_certify_assignments', ['certificationid' => $certification->id, 'userid' => $user->id]);
+        $assignment = $DB->get_record('tool_mucertify_assignment', ['certificationid' => $certification->id, 'userid' => $user->id]);
         if ($assignment) {
             // One assignment per certification only.
             return $assignment;
@@ -168,8 +170,8 @@ final class selfassignment extends base {
 
         $assignment = self::assign_user($certification, $source, $user->id, []);
 
-        \enrol_programs\local\source\certify::sync_certifications($certification->id, $user->id);
-        \tool_certify\local\notification_manager::trigger_notifications($certification->id, $user->id);
+        \tool_muprog\local\source\mucertify::sync_certifications($certification->id, $user->id);
+        \tool_mucertify\local\notification_manager::trigger_notifications($certification->id, $user->id);
 
         return $assignment;
     }
@@ -223,7 +225,7 @@ final class selfassignment extends base {
         if (isset($formdata->selfassignment_allowsignup)) {
             $data['allowsignup'] = (int)(bool)$formdata->selfassignment_allowsignup;
         }
-        return \tool_certify\local\util::json_encode($data);
+        return \tool_mucertify\local\util::json_encode($data);
     }
 
     /**
@@ -241,17 +243,17 @@ final class selfassignment extends base {
         if ($source) {
             $data = (object)json_decode($source->datajson);
             if (isset($data->key)) {
-                $result .= '; ' . get_string('source_selfassignment_keyrequired', 'tool_certify');
+                $result .= '; ' . get_string('source_selfassignment_keyrequired', 'tool_mucertify');
             }
             if (isset($data->maxusers)) {
-                $count = $DB->count_records('tool_certify_assignments', ['certificationid' => $certification->id, 'sourceid' => $source->id]);
+                $count = $DB->count_records('tool_mucertify_assignment', ['certificationid' => $certification->id, 'sourceid' => $source->id]);
                 $a = (object)['count' => $count, 'max' => $data->maxusers];
-                $result .= '; ' . get_string('source_selfassignment_maxusers_status', 'tool_certify', $a);
+                $result .= '; ' . get_string('source_selfassignment_maxusers_status', 'tool_mucertify', $a);
             }
             if (!isset($data->allowsignup) || $data->allowsignup) {
-                $result .= '; ' . get_string('source_selfassignment_signupallowed', 'tool_certify');
+                $result .= '; ' . get_string('source_selfassignment_signupallowed', 'tool_mucertify');
             } else {
-                $result .= '; ' . get_string('source_selfassignment_signupnotallowed', 'tool_certify');
+                $result .= '; ' . get_string('source_selfassignment_signupnotallowed', 'tool_mucertify');
             }
         }
 

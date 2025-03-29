@@ -1,28 +1,32 @@
 <?php
-// This file is part of Moodle - https://moodle.org/
+// This file is part of Certifications for Moodle™.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-namespace tool_certify\local;
+// phpcs:disable moodle.Files.BoilerplateComment.CommentEndedTooSoon
+// phpcs:disable moodle.Files.LineLength.TooLong
+
+namespace tool_mucertify\local;
 
 use moodle_url, stdClass;
 
 /**
  * Certification management helper.
  *
- * @package    tool_certify
+ * @package    tool_mucertify
  * @copyright  2023 Open LMS (https://www.openlms.net/)
+ * @copyright  2025 Petr Skoda
  * @author     Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -36,18 +40,18 @@ final class management {
         if (isguestuser() || !isloggedin()) {
             return null;
         }
-        if (has_capability('tool/certify:view', \context_system::instance())) {
-            return new moodle_url('/admin/tool/certify/management/index.php');
+        if (has_capability('tool/mucertify:view', \context_system::instance())) {
+            return new moodle_url('/admin/tool/mucertify/management/index.php');
         } else {
             // This is not very fast, but we need to let users somehow access certification
             // management if they can do so in course category only.
-            $categories = \core_course_category::make_categories_list('tool/certify:view');
+            $categories = \core_course_category::make_categories_list('tool/mucertify:view');
             // NOTE: Add some better logic here looking for categories with certifications or remember which one was accessed before.
             if ($categories) {
                 foreach ($categories as $cid => $unusedname) {
                     $catcontext = \context_coursecat::instance($cid, IGNORE_MISSING);
                     if ($catcontext) {
-                        return new moodle_url('/admin/tool/certify/management/index.php', ['contextid' => $catcontext->id]);
+                        return new moodle_url('/admin/tool/mucertify/management/index.php', ['contextid' => $catcontext->id]);
                     }
                 }
             }
@@ -59,9 +63,11 @@ final class management {
      * Fetch list of certifications.
      *
      * @param \context|null $context null means all contexts
+     * @param bool $archived
      * @param string $search search string
      * @param int $page
      * @param int $perpage
+     * @param string $orderby
      * @return array ['certifications' => array, 'totalcount' => int]
      */
     public static function fetch_certifications(?\context $context, bool $archived, string $search, int $page, int $perpage, string $orderby = 'fullname ASC'): array {
@@ -72,8 +78,8 @@ final class management {
         $select .= ' AND archived = :archived';
         $params['archived'] = (int)$archived;
 
-        $certifications = $DB->get_records_select('tool_certify_certifications', $select, $params, $orderby, '*', $page * $perpage, $perpage);
-        $totalcount = $DB->count_records_select('tool_certify_certifications', $select, $params);
+        $certifications = $DB->get_records_select('tool_mucertify_certification', $select, $params, $orderby, '*', $page * $perpage, $perpage);
+        $totalcount = $DB->count_records_select('tool_mucertify_certification', $select, $params);
 
         return ['certifications' => $certifications, 'totalcount' => $totalcount];
     }
@@ -91,15 +97,15 @@ final class management {
 
         $result = [];
 
-        if (has_capability('tool/certify:view', $syscontext)) {
-            $allcount = $DB->count_records('tool_certify_certifications', []);
-            $result[0] = get_string('allcertifications', 'tool_certify') . ' (' . $allcount . ')';
+        if (has_capability('tool/mucertify:view', $syscontext)) {
+            $allcount = $DB->count_records('tool_mucertify_certification', []);
+            $result[0] = get_string('allcertifications', 'tool_mucertify') . ' (' . $allcount . ')';
 
-            $syscount = $DB->count_records('tool_certify_certifications', ['contextid' => $syscontext->id]);
+            $syscount = $DB->count_records('tool_mucertify_certification', ['contextid' => $syscontext->id]);
             $result[$syscontext->id] = $syscontext->get_context_name() . ' (' . $syscount .')';
         }
 
-        $categories = \core_course_category::make_categories_list('tool/certify:view');
+        $categories = \core_course_category::make_categories_list('tool/mucertify:view');
         if (!$categories) {
             return $result;
         }
@@ -107,7 +113,7 @@ final class management {
         $sql = "SELECT cat.id, COUNT(p.id)
                   FROM {course_categories} cat
                   JOIN {context} ctx ON ctx.instanceid = cat.id AND ctx.contextlevel = 40
-                  JOIN {tool_certify_certifications} p ON p.contextid = ctx.id
+                  JOIN {tool_mucertify_certification} p ON p.contextid = ctx.id
               GROUP BY cat.id
                 HAVING COUNT(p.id) > 0";
         $certificationcounts = $DB->get_records_sql_menu($sql);
@@ -187,7 +193,7 @@ final class management {
 
         $sql = "SELECT c.id, c.name
                   FROM {cohort} c
-                  JOIN {tool_certify_cohorts} pc ON c.id = pc.cohortid
+                  JOIN {tool_mucertify_cohort} pc ON c.id = pc.cohortid
                  WHERE pc.certificationid = :certificationid
               ORDER BY c.name ASC, c.id ASC";
         $params = ['certificationid' => $certificationid];
@@ -200,43 +206,38 @@ final class management {
      *
      * @param moodle_url $pageurl
      * @param \context $context
-     * @param int $contextid
      * @return void
      */
-    public static function setup_index_page(\moodle_url $pageurl, \context $context, int $contextid): void {
-        global $PAGE, $CFG;
+    public static function setup_index_page(\moodle_url $pageurl, \context $context): void {
+        global $PAGE;
 
-        $syscontext = \context_system::instance();
-
-        if (!enrol_is_enabled('programs')) {
-            // Programs are required for certifications.
-            redirect(new moodle_url('/'));
-        }
-
-        if (has_capability('tool/certify:view', $syscontext) && has_capability('moodle/site:config', $syscontext)) {
-            require_once($CFG->libdir . '/adminlib.php');
-            admin_externalpage_setup('certificationsmanagement', '', null, $pageurl, ['pagelayout' => 'admin', 'nosearch' => true]);
-            $PAGE->set_heading(get_string('management', 'tool_certify'));
-        } else {
-            $PAGE->set_pagelayout('admin');
-            $PAGE->set_context($context);
-            $PAGE->set_url($pageurl);
-            $PAGE->set_title(get_string('certifications', 'tool_certify'));
-            $PAGE->set_heading(get_string('management', 'tool_certify'));
-            if ($contextid) {
-                if (has_capability('tool/certify:view', $syscontext)) {
-                    $url = new moodle_url('/admin/tool/certify/management/index.php');
-                    $PAGE->navbar->add(get_string('management', 'tool_certify'), $url);
-                } else {
-                    $PAGE->navbar->add(get_string('management', 'tool_certify'));
-                }
-            } else {
-                $PAGE->navbar->add(get_string('management', 'tool_certify'));
-            }
-        }
+        $PAGE->set_pagelayout('admin');
+        $PAGE->set_context($context);
+        $PAGE->set_url($pageurl);
+        $PAGE->set_title(get_string('certifications', 'tool_mucertify'));
+        $PAGE->set_heading(get_string('certifications', 'tool_mucertify'));
         $PAGE->set_secondary_navigation(false);
 
-        //$PAGE->set_docs_path("$CFG->wwwroot/admin/tool/certify/documentation.php/management.md");
+        $contexts = [];
+        while (true) {
+            $contexts[] = $context;
+            $parent = $context->get_parent_context();
+            if (!$parent) {
+                break;
+            }
+            $context = $parent;
+        }
+
+        $contexts = array_reverse($contexts);
+
+        /** @var \context $context */
+        foreach ($contexts as $context) {
+            $url = null;
+            if (has_capability('tool/mucertify:view', $context)) {
+                $url = new moodle_url('/admin/tool/mucertify/management/index.php', ['contextid' => $context->id]);
+            }
+            $PAGE->navbar->add($context->get_context_name(false), $url);
+        }
     }
 
     /**
@@ -245,33 +246,43 @@ final class management {
      * @param moodle_url $pageurl
      * @param \context $context
      * @param stdClass $certification
+     * @param string $secondarytab
      * @return void
      */
-    public static function setup_certification_page(\moodle_url $pageurl, \context $context, stdClass $certification): void {
-        global $PAGE, $CFG;
+    public static function setup_certification_page(\moodle_url $pageurl, \context $context, stdClass $certification, string $secondarytab): void {
+        global $PAGE;
 
-        if (!enrol_is_enabled('programs')) {
-            redirect(new moodle_url('/'));
+        $PAGE->set_pagelayout('admin');
+        $PAGE->set_context($context);
+        $PAGE->set_url($pageurl);
+        $PAGE->set_title(get_string('certifications', 'tool_mucertify'));
+        $PAGE->set_heading(format_string($certification->fullname));
+
+        $secondarynav = new \tool_mucertify\navigation\views\certification_secondary($PAGE, $certification);
+        $PAGE->set_secondarynav($secondarynav);
+        $PAGE->set_secondary_active_tab($secondarytab);
+        $secondarynav->initialise();
+
+        $contexts = [];
+        while (true) {
+            $contexts[] = $context;
+            $parent = $context->get_parent_context();
+            if (!$parent) {
+                break;
+            }
+            $context = $parent;
         }
 
-        $syscontext = \context_system::instance();
+        $contexts = array_reverse($contexts);
 
-        if (has_capability('tool/certify:view', $syscontext) && has_capability('moodle/site:config', $syscontext)) {
-            require_once($CFG->libdir . '/adminlib.php');
-            admin_externalpage_setup('certificationsmanagement', '', null, $pageurl, ['pagelayout' => 'admin', 'nosearch' => true]);
-            $PAGE->set_heading(format_string($certification->fullname));
-        } else {
-            $PAGE->set_pagelayout('admin');
-            $PAGE->set_context($context);
-            $PAGE->set_url($pageurl);
-            $PAGE->set_title(get_string('certifications', 'tool_certify'));
-            $PAGE->set_heading(format_string($certification->fullname));
-            $url = new moodle_url('/admin/tool/certify/management/index.php', ['contextid' => $context->id]);
-            $PAGE->navbar->add(get_string('management', 'tool_certify'), $url);
+        /** @var \context $context */
+        foreach ($contexts as $context) {
+            $url = null;
+            if (has_capability('tool/mucertify:view', $context)) {
+                $url = new moodle_url('/admin/tool/mucertify/management/index.php', ['contextid' => $context->id]);
+            }
+            $PAGE->navbar->add($context->get_context_name(false), $url);
         }
-        $PAGE->set_secondary_navigation(false);
         $PAGE->navbar->add(format_string($certification->fullname));
-
-        //$PAGE->set_docs_path("$CFG->wwwroot/admin/tool/certify/documentation.php/management.md");
     }
 }

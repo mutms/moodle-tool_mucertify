@@ -1,4 +1,4 @@
-@tool @tool_certify @openlms
+@tool @tool_mucertify @muTMS
 Feature: Certification periods settings management tests
 
   Background:
@@ -9,12 +9,12 @@ Feature: Certification periods settings management tests
       | Cat 2 | 0        | CAT2     |
       | Cat 3 | 0        | CAT3     |
       | Cat 4 | CAT3     | CAT4     |
-    And the following "enrol_programs > programs" exist:
-      | fullname    | idnumber | category | public | sources  |
-      | Program 000 | PR0      |          | 0      | certify  |
-      | Program 001 | PR1      | Cat 1    | 0      | certify  |
-      | Program 002 | PR2      | Cat 2    | 0      | certify  |
-      | Program 003 | PR3      | Cat 3    | 0      | certify  |
+    And the following "tool_muprog > programs" exist:
+      | fullname    | idnumber | category | public | sources    |
+      | Program 000 | PR0      |          | 0      | mucertify  |
+      | Program 001 | PR1      | Cat 1    | 0      | mucertify  |
+      | Program 002 | PR2      | Cat 2    | 0      | mucertify  |
+      | Program 003 | PR3      | Cat 3    | 0      | mucertify  |
     And the following "users" exist:
       | username | firstname | lastname | email                |
       | manager1 | Manager   | 1        | manager1@example.com |
@@ -27,13 +27,13 @@ Feature: Certification periods settings management tests
       | Certification viewer  | pviewer   |
       | Certification manager | pmanager  |
     And the following "permission overrides" exist:
-      | capability                         | permission | role     | contextlevel | reference |
-      | tool/certify:view                  | Allow      | pviewer  | System       |           |
-      | tool/certify:view                  | Allow      | pmanager | System       |           |
-      | tool/certify:edit                  | Allow      | pmanager | System       |           |
-      | tool/certify:delete                | Allow      | pmanager | System       |           |
-      | tool/certify:assign                | Allow      | pmanager | System       |           |
-      | enrol/programs:addtocertifications | Allow      | pmanager | System       |           |
+      | capability                           | permission | role     | contextlevel | reference |
+      | tool/mucertify:view                  | Allow      | pviewer  | System       |           |
+      | tool/mucertify:view                  | Allow      | pmanager | System       |           |
+      | tool/mucertify:edit                  | Allow      | pmanager | System       |           |
+      | tool/mucertify:delete                | Allow      | pmanager | System       |           |
+      | tool/mucertify:assign                | Allow      | pmanager | System       |           |
+      | tool/muprog:addtocertifications      | Allow      | pmanager | System       |           |
     And the following "role assigns" exist:
       | user      | role          | contextlevel | reference |
       | manager1  | pmanager      | System       |           |
@@ -44,21 +44,21 @@ Feature: Certification periods settings management tests
   @javascript
   Scenario: Manager may set defaults for certification periods
     Given I log in as "manager1"
-    And I am on all certifications management page
+    And I am on the "tool_mucertify > All certifications management" page
 
     And I press "Add certification"
-    And I set the following fields to these values:
+    And I set the following fields in the ".modal-dialog" "css_element" to these values:
       | Certification name | Certification 001 |
-      | ID number          | CT01              |
+      | Certification ID   | CT01              |
     And I press dialog form button "Add certification"
-    And I click on "Period settings" "link" in the "#region-main" "css_element"
-    And I should see "Not set" in the "Program:" definition list item
-    And I should see "Not set" in the "Certification due:" definition list item
-    And I should see "Certification completion date" in the "Valid from:" definition list item
-    And I should see "Never" in the "Window closing:" definition list item
-    And I should see "Never" in the "Expiration:" definition list item
-    And I should see "Standard course purge" in the "Certification program reset:" definition list item
-    And I should see "No" in the "Re-certify automatically:" definition list item
+    And I click on "Period settings" "link" in the ".secondary-navigation" "css_element"
+    And I should see "Not set" in the "Program" definition list item
+    And I should see "Not set" in the "Certification due" definition list item
+    And I should see "Certification completion date" in the "Valid from" definition list item
+    And I should see "Never" in the "Window closing" definition list item
+    And I should see "Never" in the "Expiration" definition list item
+    And I should see "Standard course purge" in the "Certification program reset" definition list item
+    And I should see "No" in the "Re-certify automatically" definition list item
 
     When I click on "Update certification" "link"
     And the following fields match these values:
@@ -83,23 +83,23 @@ Feature: Certification periods settings management tests
       | expiration1[timeunit] | Months                                |
       | recertify[enabled]    | 0                                     |
     And I press dialog form button "Update certification"
-    Then I should see "Program 001" in the "Program:" definition list item
-    And I should see "21 days" in the "Certification due:" definition list item
-    And I should see "Window opening" in the "Valid from:" definition list item
-    And I should see "2 months after Window opening" in the "Window closing:" definition list item
-    And I should see "12 months after Certification completion date" in the "Expiration:" definition list item
-    And I should see "Full course purge" in the "Certification program reset:" definition list item
-    And I should see "No" in the "Re-certify automatically:" definition list item
+    Then I should see "Program 001" in the "Program" definition list item
+    And I should see "21 days" in the "Certification due" definition list item
+    And I should see "Window opening" in the "Valid from" definition list item
+    And I should see "2 months after Window opening" in the "Window closing" definition list item
+    And I should see "12 months after Certification completion date" in the "Expiration" definition list item
+    And I should see "Full course purge" in the "Certification program reset" definition list item
+    And I should see "No" in the "Re-certify automatically" definition list item
 
     When I click on "Update certification" "link"
     And I press dialog form button "Update certification"
-    Then I should see "Program 001" in the "Program:" definition list item
-    And I should see "21 days" in the "Certification due:" definition list item
-    And I should see "Window opening" in the "Valid from:" definition list item
-    And I should see "2 months after Window opening" in the "Window closing:" definition list item
-    And I should see "12 months after Certification completion date" in the "Expiration:" definition list item
-    And I should see "Full course purge" in the "Certification program reset:" definition list item
-    And I should see "No" in the "Re-certify automatically:" definition list item
+    Then I should see "Program 001" in the "Program" definition list item
+    And I should see "21 days" in the "Certification due" definition list item
+    And I should see "Window opening" in the "Valid from" definition list item
+    And I should see "2 months after Window opening" in the "Window closing" definition list item
+    And I should see "12 months after Certification completion date" in the "Expiration" definition list item
+    And I should see "Full course purge" in the "Certification program reset" definition list item
+    And I should see "No" in the "Re-certify automatically" definition list item
 
     When I click on "Update certification" "link"
     And the following fields match these values:
@@ -124,35 +124,35 @@ Feature: Certification periods settings management tests
       | expiration1[since]    | Never                                 |
       | recertify[enabled]    | 0                                     |
     And I press dialog form button "Update certification"
-    Then I should see "Program 002" in the "Program:" definition list item
-    And I should see "Not set" in the "Certification due:" definition list item
-    And I should see "Certification completion date" in the "Valid from:" definition list item
-    And I should see "Never" in the "Window closing:" definition list item
-    And I should see "Never" in the "Expiration:" definition list item
-    And I should see "Standard course purge" in the "Certification program reset:" definition list item
-    And I should see "No" in the "Re-certify automatically:" definition list item
+    Then I should see "Program 002" in the "Program" definition list item
+    And I should see "Not set" in the "Certification due" definition list item
+    And I should see "Certification completion date" in the "Valid from" definition list item
+    And I should see "Never" in the "Window closing" definition list item
+    And I should see "Never" in the "Expiration" definition list item
+    And I should see "Standard course purge" in the "Certification program reset" definition list item
+    And I should see "No" in the "Re-certify automatically" definition list item
 
   @javascript
   Scenario: Manager may set defaults for re-certification periods
     Given I log in as "manager1"
-    And I am on all certifications management page
+    And I am on the "tool_mucertify > All certifications management" page
 
     And I press "Add certification"
-    And I set the following fields to these values:
+    And I set the following fields in the ".modal-dialog" "css_element" to these values:
       | Certification name | Certification 001 |
-      | ID number          | CT01              |
+      | Certification ID   | CT01              |
     And I press dialog form button "Add certification"
-    And I click on "Period settings" "link" in the "#region-main" "css_element"
-    And I should see "Not set" in the "Program:" definition list item
-    And I should see "Not set" in the "Certification due:" definition list item
-    And I should see "Certification completion date" in the "Valid from:" definition list item
-    And I should see "Never" in the "Window closing:" definition list item
-    And I should see "Never" in the "Expiration:" definition list item
-    And I should see "Standard course purge" in the "Certification program reset:" definition list item
-    And I should see "No" in the "Re-certify automatically:" definition list item
+    And I click on "Period settings" "link" in the ".secondary-navigation" "css_element"
+    And I should see "Not set" in the "Program" definition list item
+    And I should see "Not set" in the "Certification due" definition list item
+    And I should see "Certification completion date" in the "Valid from" definition list item
+    And I should see "Never" in the "Window closing" definition list item
+    And I should see "Never" in the "Expiration" definition list item
+    And I should see "Standard course purge" in the "Certification program reset" definition list item
+    And I should see "No" in the "Re-certify automatically" definition list item
 
     When I click on "Update certification" "link"
-    And I set the following fields to these values:
+    And I set the following fields in the ".modal-dialog" "css_element" to these values:
       | Program               | Program 001                           |
       | resettype1            | Standard course purge                 |
       | due1[enabled]         | 0                                     |
@@ -188,7 +188,7 @@ Feature: Certification periods settings management tests
       | expiration2[number]   | 12                                    |
       | expiration2[timeunit] | Months                                |
     And I press dialog form button "Update re-certification"
-    Then I should see "30 days before Expiration" in the "Re-certify automatically:" definition list item
+    Then I should see "30 days before Expiration" in the "Re-certify automatically" definition list item
     And I click on "Update re-certification" "link"
     And the following fields match these values:
       | resettype2            | Full course purge                     |
@@ -208,24 +208,24 @@ Feature: Certification periods settings management tests
     And I set the following fields to these values:
       | recertify[enabled]    | 0                                     |
     And I press dialog form button "Update certification"
-    Then I should see "No" in the "Re-certify automatically:" definition list item
+    Then I should see "No" in the "Re-certify automatically" definition list item
 
   @javascript
   Scenario: Manager may manage periods manually
     Given I log in as "manager1"
     And the following "permission overrides" exist:
       | capability                         | permission | role     | contextlevel | reference |
-      | tool/certify:admin                 | Allow      | pmanager | System       |           |
-    And I am on all certifications management page
+      | tool/mucertify:admin               | Allow      | pmanager | System       |           |
+    And I am on the "tool_mucertify > All certifications management" page
 
     And I press "Add certification"
-    And I set the following fields to these values:
+    And I set the following fields in the ".modal-dialog" "css_element" to these values:
       | Certification name | Certification 001 |
-      | ID number          | CT01              |
+      | Certification ID   | CT01              |
     And I press dialog form button "Add certification"
-    And I click on "Period settings" "link" in the "#region-main" "css_element"
+    And I click on "Period settings" "link" in the ".secondary-navigation" "css_element"
     And I click on "Update certification" "link"
-    And I set the following fields to these values:
+    And I set the following fields in the ".modal-dialog" "css_element" to these values:
       | Program               | Program 001                           |
       | resettype1            | Standard course purge                 |
       | due1[enabled]         | 0                                     |
@@ -238,12 +238,12 @@ Feature: Certification periods settings management tests
       | recertify[number]     | 30                                    |
       | recertify[timeunit]   | days                                  |
     And I press dialog form button "Update certification"
-    And I click on "Assignment settings" "link" in the "#region-main" "css_element"
+    And I click on "Assignment settings" "link" in the ".secondary-navigation" "css_element"
     And I click on "Update Manual assignment" "link"
     And I set the following fields to these values:
       | Active | Yes |
     And I press dialog form button "Update"
-    And I click on "Users" "link" in the "#region-main" "css_element"
+    And I click on "Users" "link" in the ".secondary-navigation" "css_element"
     And I press "Assign users"
     And I set the following fields to these values:
       | Users                    | Student 1 |
@@ -276,7 +276,7 @@ Feature: Certification periods settings management tests
       | timeuntil[hour]          | 09          |
       | timeuntil[minute]        | 00          |
     And I press dialog form button "Add period"
-    Then the following should exist in the "tool_certify_assignment_periods_table" table:
+    Then the following should exist in the "tool_mucertify_assignment_periods_table" table:
       | Program     | Window opening | Window closing | Expiration                                    | Re-certify automatically |
       | Program 002 | 5/10/23        | Not set        |                                               | 5/09/24                  |
       | Program 001 | 5/10/22        | Not set        | 12 months after Certification completion date | No                       |
@@ -314,15 +314,15 @@ Feature: Certification periods settings management tests
       | timeuntil[hour]          | 09          |
       | timeuntil[minute]        | 00          |
     And I press dialog form button "Override period dates"
-    Then I should see "Program 001" in the "Program:" definition list item
-    And I should see "1 October 2022" in the "Window opening:" definition list item
-    And I should see "10 October 2022" in the "Certification due:" definition list item
-    And I should see "20 October 2022" in the "Window closing:" definition list item
-    And I should see "5 October 2022" in the "Valid from:" definition list item
-    And I should see "5 October 2023" in the "Expiration:" definition list item
-    And I should see "No" in the "Re-certify automatically:" definition list item
-    And I should see "Not set" in the "Certification completion date:" definition list item
-    And I should see "Not set" in the "Revocation date:" definition list item
+    Then I should see "Program 001" in the "Program" definition list item
+    And I should see "1 October 2022" in the "Window opening" definition list item
+    And I should see "10 October 2022" in the "Certification due" definition list item
+    And I should see "20 October 2022" in the "Window closing" definition list item
+    And I should see "5 October 2022" in the "Valid from" definition list item
+    And I should see "5 October 2023" in the "Expiration" definition list item
+    And I should see "No" in the "Re-certify automatically" definition list item
+    And I should see "Not set" in the "Certification completion date" definition list item
+    And I should see "Not set" in the "Revocation date" definition list item
 
     When I press "Override period dates"
     And I set the following fields to these values:
@@ -330,7 +330,7 @@ Feature: Certification periods settings management tests
     And I press dialog form button "Override period dates"
     And I press "Delete period"
     And I press dialog form button "Delete period"
-    Then the following should exist in the "tool_certify_assignment_periods_table" table:
+    Then the following should exist in the "tool_mucertify_assignment_periods_table" table:
       | Program     | Window opening | Window closing | Expiration                                    | Re-certify automatically |
       | Program 002 | 5/10/23        | Not set        |                                               | 5/09/24                  |
     And I should not see "Program 001"

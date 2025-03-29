@@ -1,30 +1,34 @@
 <?php
-// This file is part of Moodle - https://moodle.org/
+// This file is part of Certifications for Moodle™.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use tool_certify\local\certification;
+// phpcs:disable moodle.Files.BoilerplateComment.CommentEndedTooSoon
+// phpcs:disable moodle.Files.LineLength.TooLong
+
+use tool_mucertify\local\certification;
 
 /**
  * Certification generator class.
  *
- * @package    tool_certify
+ * @package    tool_mucertify
  * @copyright  2023 Open LMS (https://www.openlms.net/)
+ * @copyright  2025 Petr Skoda
  * @author     Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class tool_certify_generator extends component_generator_base {
+class tool_mucertify_generator extends component_generator_base {
     /**
      * @var int Framework count.
      */
@@ -78,12 +82,12 @@ class tool_certify_generator extends component_generator_base {
         unset($record->category);
 
         if (!empty($record->program1)) {
-            $program = $DB->get_record('enrol_programs_programs', ['idnumber' => $record->program1], '*', MUST_EXIST);
+            $program = $DB->get_record('tool_muprog_program', ['idnumber' => $record->program1], '*', MUST_EXIST);
             $record->programid1 = $program->id;
         }
         unset($record->program1);
         if (!empty($record->program2)) {
-            $program = $DB->get_record('enrol_programs_programs', ['idnumber' => $record->program2], '*', MUST_EXIST);
+            $program = $DB->get_record('tool_muprog_program', ['idnumber' => $record->program2], '*', MUST_EXIST);
             $record->programid2 = $program->id;
         }
         unset($record->program2);
@@ -151,7 +155,7 @@ class tool_certify_generator extends component_generator_base {
             $data['certificationid'] = $certification->id;
             $data['type'] = $source;
             $data = (object)$data;
-            \tool_certify\local\source\base::update_source($data);
+            \tool_mucertify\local\source\base::update_source($data);
         }
 
         return $certification;
@@ -160,7 +164,7 @@ class tool_certify_generator extends component_generator_base {
     /**
      * Add certification notification.
      *
-     * @param $record
+     * @param mixed $record
      * @return \stdClass notification record
      */
     public function create_certifiction_notification($record): stdClass {
@@ -169,22 +173,22 @@ class tool_certify_generator extends component_generator_base {
         $record = (object)(array)$record;
 
         if (!empty($record->certificationid)) {
-            $certification = $DB->get_record('tool_certify_certifications', ['id' => $record->certificationid], '*', MUST_EXIST);
+            $certification = $DB->get_record('tool_mucertify_certification', ['id' => $record->certificationid], '*', MUST_EXIST);
         } else {
-            $certification = $DB->get_record('tool_certify_certifications', ['fullname' => $record->certification], '*', MUST_EXIST);
+            $certification = $DB->get_record('tool_mucertify_certification', ['fullname' => $record->certification], '*', MUST_EXIST);
         }
 
-        $alltypes = \tool_certify\local\notification_manager::get_all_types();
+        $alltypes = \tool_mucertify\local\notification_manager::get_all_types();
         if (!$record->notificationtype || !isset($alltypes[$record->notificationtype])) {
             throw new coding_exception('Invalid notification type');
         }
 
         $data = [
-            'component' => 'tool_certify',
+            'component' => 'tool_mucertify',
             'notificationtype' => $record->notificationtype,
             'instanceid' => $certification->id,
             'enabled' => '1',
         ];
-        return \local_openlms\notification\util::notification_create($data);
+        return \tool_mulib\local\notification\util::notification_create($data);
     }
 }

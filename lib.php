@@ -1,29 +1,44 @@
 <?php
-// This file is part of Moodle - https://moodle.org/
+// This file is part of Certifications for Moodle™.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+// phpcs:disable moodle.Files.BoilerplateComment.CommentEndedTooSoon
 
 /**
  * Certification plugin lib functions.
  *
- * @package    tool_certify
+ * @package    tool_mucertify
  * @copyright  2023 Open LMS (https://www.openlms.net/)
+ * @copyright  2025 Petr Skoda
  * @author     Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-function tool_certify_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options = []) {
+/**
+ * Certifications file serving support.
+ *
+ * @param stdClass $course
+ * @param stdClass $cm
+ * @param context $context
+ * @param string $filearea
+ * @param array $args
+ * @param bool $forcedownload
+ * @param array $options
+ * @return void
+ */
+function tool_mucertify_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options = []) {
     global $DB;
 
     if ($context->contextlevel != CONTEXT_SYSTEM && $context->contextlevel != CONTEXT_COURSECAT) {
@@ -36,12 +51,12 @@ function tool_certify_pluginfile($course, $cm, $context, $filearea, $args, $forc
 
     $certificationid = (int)array_shift($args);
 
-    $certification = $DB->get_record('tool_certify_certifications', ['id' => $certificationid]);
+    $certification = $DB->get_record('tool_mucertify_certification', ['id' => $certificationid]);
     if (!$certification) {
         send_file_not_found();
     }
-    if (!has_capability('tool/certify:view', $context)
-        && !\tool_certify\local\catalogue::is_certification_visible($certification)
+    if (!has_capability('tool/mucertify:view', $context)
+        && !\tool_mucertify\local\catalogue::is_certification_visible($certification)
     ) {
         send_file_not_found();
     }
@@ -50,7 +65,7 @@ function tool_certify_pluginfile($course, $cm, $context, $filearea, $args, $forc
     $filepath = implode('/', $args) . '/';
 
     $fs = get_file_storage();
-    $file = $fs->get_file($context->id, 'tool_certify', $filearea, $certificationid, $filepath, $filename);
+    $file = $fs->get_file($context->id, 'tool_mucertify', $filearea, $certificationid, $filepath, $filename);
     if (!$file || $file->is_directory()) {
         send_file_not_found();
     }
@@ -66,20 +81,18 @@ function tool_certify_pluginfile($course, $cm, $context, $filearea, $args, $forc
  * @param bool $iscurrentuser
  * @param stdClass $course Course object
  */
-function tool_certify_myprofile_navigation(core_user\output\myprofile\tree $tree, $user, $iscurrentuser, $course) {
+function tool_mucertify_myprofile_navigation(core_user\output\myprofile\tree $tree, $user, $iscurrentuser, $course) {
     global $USER;
 
-    if (!enrol_is_enabled('programs')) {
+    if (!enrol_is_enabled('muprog')) {
         return;
     }
 
     if ($USER->id == $user->id) {
-        if (\tool_certify\local\assignment::has_active_assignments($USER->id)) {
-            $link = get_string('mycertifications', 'tool_certify');
-            $url = new moodle_url('/admin/tool/certify/my/index.php');
-            $node = new core_user\output\myprofile\node('miscellaneous', 'toolcertify_certifications', $link, null, $url);
-            $tree->add_node($node);
-        }
+        $link = get_string('mycertifications', 'tool_mucertify');
+        $url = new moodle_url('/admin/tool/mucertify/my/index.php');
+        $node = new core_user\output\myprofile\node('miscellaneous', 'toolcertify_certifications', $link, null, $url);
+        $tree->add_node($node);
     }
 }
 
@@ -88,19 +101,47 @@ function tool_certify_myprofile_navigation(core_user\output\myprofile\tree $tree
  *
  * @param \stdClass $category The category record.
  */
-function tool_certify_pre_course_category_delete(\stdClass $category) {
-    \tool_certify\local\certification::pre_course_category_delete($category);
+function tool_mucertify_pre_course_category_delete(\stdClass $category) {
+    \tool_mucertify\local\certification::pre_course_category_delete($category);
 }
 
 /**
  * Map icons for font-awesome themes.
  */
-function tool_certify_get_fontawesome_icon_map() {
+function tool_mucertify_get_fontawesome_icon_map() {
     return [
-        'tool_certify:catalogue' => 'fa-cubes',
-        'tool_certify:certification' => 'fa-certificate',
-        'tool_certify:mycertifications' => 'fa-certificate',
-        'tool_certify:requestapprove' => 'fa-check-square-o',
-        'tool_certify:requestreject' => 'fa-times-rectangle-o',
+        'tool_mucertify:catalogue' => 'fa-cubes',
+        'tool_mucertify:certification' => 'fa-certificate',
+        'tool_mucertify:mycertifications' => 'fa-certificate',
+        'tool_mucertify:requestapprove' => 'fa-check-square-o',
+        'tool_mucertify:requestreject' => 'fa-times-rectangle-o',
     ];
+}
+
+/**
+ * Returns certifications tagged with a specified tag.
+ *
+ * @param core_tag_tag $tag
+ * @param bool $exclusivemode if set to true it means that no other entities tagged
+ *      with this tag are displayed on the page and the per-page limit may be bigger
+ * @param int $fromctx context id where the link was displayed, may be used by callbacks
+ *      to display items in the same context first
+ * @param int $ctx context id where to search for records
+ * @param bool $rec search in subcontexts as well
+ * @param int $page 0-based number of page being displayed
+ * @return core_tag\output\tagindex
+ */
+function tool_mucertify_get_tagged_certifications($tag, $exclusivemode = false, $fromctx = 0, $ctx = 0, $rec = 1, $page = 0) {
+    // NOTE: When learners browse certifications we ignore the contexts, certifications have a flat structure,
+    // then only complication here may be multi-tenancy.
+
+    $perpage = $exclusivemode ? 20 : 5;
+
+    $result = \tool_mucertify\local\catalogue::get_tagged_certifications($tag->id, $exclusivemode, $page * $perpage, $perpage);
+
+    $content = $result['content'];
+    $totalpages = ceil($result['totalcount'] / $perpage);
+
+    return new core_tag\output\tagindex($tag, 'tool_mucertify', 'certification', $content,
+        $exclusivemode, 0, 0, 1, $page, $totalpages);
 }

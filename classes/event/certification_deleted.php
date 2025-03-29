@@ -1,26 +1,29 @@
 <?php
-// This file is part of Moodle - https://moodle.org/
+// This file is part of Certifications for Moodle™.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-namespace tool_certify\event;
+// phpcs:disable moodle.Files.BoilerplateComment.CommentEndedTooSoon
+
+namespace tool_mucertify\event;
 
 /**
  * Certification deleted event.
  *
- * @package    tool_certify
+ * @package    tool_mucertify
  * @copyright  2023 Open LMS (https://www.openlms.net/)
+ * @copyright  2025 Petr Skoda
  * @author     Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -34,13 +37,13 @@ final class certification_deleted extends \core\event\base {
      */
     public static function create_from_certification(\stdClass $certification) {
         $context = \context::instance_by_id($certification->contextid);
-        $data = array(
+        $data = [
             'context' => $context,
             'objectid' => $certification->id,
-        );
+        ];
         /** @var static $event */
         $event = self::create($data);
-        $event->add_record_snapshot('tool_certify_certifications', $certification);
+        $event->add_record_snapshot('tool_mucertify_certification', $certification);
         return $event;
     }
 
@@ -59,7 +62,7 @@ final class certification_deleted extends \core\event\base {
      * @return string
      */
     public static function get_name() {
-        return get_string('event_certification_deleted', 'tool_certify');
+        return get_string('event_certification_deleted', 'tool_mucertify');
     }
 
     /**
@@ -68,7 +71,7 @@ final class certification_deleted extends \core\event\base {
      * @return \moodle_url
      */
     public function get_url() {
-        return new \moodle_url('/admin/tool/certify/management/index.php', ['contextid' => $this->contextid]);
+        return new \moodle_url('/admin/tool/mucertify/management/index.php', ['contextid' => $this->contextid]);
     }
 
     /**
@@ -79,6 +82,6 @@ final class certification_deleted extends \core\event\base {
     protected function init() {
         $this->data['crud'] = 'd';
         $this->data['edulevel'] = self::LEVEL_OTHER;
-        $this->data['objecttable'] = 'tool_certify_certifications';
+        $this->data['objecttable'] = 'tool_mucertify_certification';
     }
 }

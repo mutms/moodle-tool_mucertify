@@ -1,26 +1,29 @@
 <?php
-// This file is part of Moodle - https://moodle.org/
+// This file is part of Certifications for Moodle™.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-namespace tool_certify\event;
+// phpcs:disable moodle.Files.BoilerplateComment.CommentEndedTooSoon
+
+namespace tool_mucertify\event;
 
 /**
  * User certified event.
  *
- * @package    tool_certify
+ * @package    tool_mucertify
  * @copyright  2022 Open LMS (https://www.openlms.net/)
+ * @copyright  2025 Petr Skoda
  * @author     Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -39,7 +42,7 @@ final class user_certified extends \core\event\base {
             throw new \coding_exception('user must have already completed the certification');
         }
         $context = \context::instance_by_id($certification->contextid);
-        $data = array(
+        $data = [
             'context' => $context,
             'objectid' => $assignment->id,
             'relateduserid' => $assignment->userid,
@@ -47,13 +50,13 @@ final class user_certified extends \core\event\base {
                 'certificationid' => $certification->id,
                 'allocationid' => $assignment->id,
                 'timecertified' => $period->timecertified,
-            ]
-        );
+            ],
+        ];
         /** @var static $event */
         $event = self::create($data);
-        $event->add_record_snapshot('tool_certify_periods', $period);
-        $event->add_record_snapshot('tool_certify_assignments', $assignment);
-        $event->add_record_snapshot('tool_certify_certifications', $certification);
+        $event->add_record_snapshot('tool_mucertify_period', $period);
+        $event->add_record_snapshot('tool_mucertify_assignment', $assignment);
+        $event->add_record_snapshot('tool_mucertify_certification', $certification);
         return $event;
     }
 
@@ -72,7 +75,7 @@ final class user_certified extends \core\event\base {
      * @return string
      */
     public static function get_name() {
-        return get_string('event_user_certified', 'tool_certify');
+        return get_string('event_user_certified', 'tool_mucertify');
     }
 
     /**
@@ -81,7 +84,7 @@ final class user_certified extends \core\event\base {
      * @return \moodle_url
      */
     public function get_url() {
-        return new \moodle_url('/admin/tool/certify/management/user_assignment.php', ['id' => $this->objectid]);
+        return new \moodle_url('/admin/tool/mucertify/management/user_assignment.php', ['id' => $this->objectid]);
     }
 
     /**
@@ -92,6 +95,6 @@ final class user_certified extends \core\event\base {
     protected function init() {
         $this->data['crud'] = 'u';
         $this->data['edulevel'] = self::LEVEL_PARTICIPATING;
-        $this->data['objecttable'] = 'tool_certify_assignments';
+        $this->data['objecttable'] = 'tool_mucertify_assignment';
     }
 }

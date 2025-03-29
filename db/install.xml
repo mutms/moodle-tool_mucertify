@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="admin/tool/certify/db" VERSION="20231125" COMMENT="XMLDB file for Open LMS tool_certify plugin"
+<XMLDB PATH="admin/tool/mucertify/db" VERSION="20231125" COMMENT="XMLDB file for tool_mucertify plugin"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../../lib/xmldb/xmldb.xsd"
 >
   <TABLES>
-    <TABLE NAME="tool_certify_certifications" COMMENT="List of certifications">
+    <TABLE NAME="tool_mucertify_certification" COMMENT="List of certifications">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="contextid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Context for certification management access control, will also be used for multi-tenancy"/>
@@ -25,15 +25,15 @@
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
         <KEY NAME="contextid" TYPE="foreign" FIELDS="contextid" REFTABLE="context" REFFIELDS="id"/>
-        <KEY NAME="programid1" TYPE="foreign" FIELDS="programid1" REFTABLE="enrol_programs_programs" REFFIELDS="id"/>
-        <KEY NAME="programid2" TYPE="foreign" FIELDS="programid2" REFTABLE="enrol_programs_programs" REFFIELDS="id"/>
+        <KEY NAME="programid1" TYPE="foreign" FIELDS="programid1" REFTABLE="tool_muprog_program" REFFIELDS="id"/>
+        <KEY NAME="programid2" TYPE="foreign" FIELDS="programid2" REFTABLE="tool_muprog_program" REFFIELDS="id"/>
       </KEYS>
       <INDEXES>
         <INDEX NAME="idnumber" UNIQUE="true" FIELDS="idnumber" COMMENT="Enforce unique idnumber for all certifications"/>
         <INDEX NAME="templateid" UNIQUE="false" FIELDS="templateid" COMMENT="Soft reference to tool_certificate_templates.id, one template can be used in multiple certifications"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="tool_certify_cohorts" COMMENT="Members of these cohorts may browse non-public certifications before assignment">
+    <TABLE NAME="tool_mucertify_cohort" COMMENT="Members of these cohorts may browse non-public certifications before assignment">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="certificationid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
@@ -41,14 +41,14 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-        <KEY NAME="certificationid" TYPE="foreign" FIELDS="certificationid" REFTABLE="tool_certify_certifications" REFFIELDS="id"/>
+        <KEY NAME="certificationid" TYPE="foreign" FIELDS="certificationid" REFTABLE="tool_mucertify_certification" REFFIELDS="id"/>
         <KEY NAME="cohortid" TYPE="foreign" FIELDS="cohortid" REFTABLE="cohort" REFFIELDS="id"/>
       </KEYS>
       <INDEXES>
         <INDEX NAME="certificationid-cohortid" UNIQUE="true" FIELDS="certificationid, cohortid" COMMENT="Prevent duplicates"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="tool_certify_sources" COMMENT="Certification assignment sources representing different means of user assignment">
+    <TABLE NAME="tool_mucertify_source" COMMENT="Certification assignment sources representing different means of user assignment">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="certificationid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
@@ -60,10 +60,10 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-        <KEY NAME="certificationid" TYPE="foreign" FIELDS="certificationid" REFTABLE="tool_certify_certifications" REFFIELDS="id"/>
+        <KEY NAME="certificationid" TYPE="foreign" FIELDS="certificationid" REFTABLE="tool_mucertify_certification" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="tool_certify_src_cohorts" COMMENT="General certification source cohorts list - for things like automatic assignment">
+    <TABLE NAME="tool_mucertify_src_cohort" COMMENT="General certification source cohorts list - for things like automatic assignment">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="sourceid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
@@ -72,13 +72,13 @@
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
         <KEY NAME="cohortid" TYPE="foreign" FIELDS="cohortid" REFTABLE="cohort" REFFIELDS="id"/>
-        <KEY NAME="sourceid" TYPE="foreign" FIELDS="sourceid" REFTABLE="tool_certify_sources" REFFIELDS="id"/>
+        <KEY NAME="sourceid" TYPE="foreign" FIELDS="sourceid" REFTABLE="tool_mucertify_source" REFFIELDS="id"/>
       </KEYS>
       <INDEXES>
         <INDEX NAME="sourceid-cohortid" UNIQUE="true" FIELDS="sourceid, cohortid"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="tool_certify_requests" COMMENT="List of people waiting for assignment to certifications, entry is deleted after assignment, there are no historic snapshots for requests">
+    <TABLE NAME="tool_mucertify_request" COMMENT="List of people waiting for assignment to certifications, entry is deleted after assignment, there are no historic snapshots for requests">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="sourceid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
@@ -90,7 +90,7 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-        <KEY NAME="sourceid" TYPE="foreign" FIELDS="sourceid" REFTABLE="tool_certify_sources" REFFIELDS="id"/>
+        <KEY NAME="sourceid" TYPE="foreign" FIELDS="sourceid" REFTABLE="tool_mucertify_source" REFFIELDS="id"/>
         <KEY NAME="userid" TYPE="foreign" FIELDS="userid" REFTABLE="users" REFFIELDS="id"/>
         <KEY NAME="rejectedby" TYPE="foreign" FIELDS="rejectedby" REFTABLE="users" REFFIELDS="id"/>
       </KEYS>
@@ -98,7 +98,7 @@
         <INDEX NAME="sourceid-userid" UNIQUE="true" FIELDS="sourceid, userid" COMMENT="Only one request for assignment of user per source, delete rejection if they are allowed to retry"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="tool_certify_assignments" COMMENT="User assignments to certifications">
+    <TABLE NAME="tool_mucertify_assignment" COMMENT="User assignments to certifications">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="certificationid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
@@ -106,21 +106,23 @@
         <FIELD NAME="sourceid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Means of user assignment"/>
         <FIELD NAME="sourcedatajson" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="Extra assignment data belonging to source, person who allocated manually, etc."/>
         <FIELD NAME="archived" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="All program allocations are suspended when user assignment is archived and certification is frozen"/>
-        <FIELD NAME="timecertifieduntil" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Temporary certification until given date"/>
+        <FIELD NAME="timecertifiedtemp" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Temporary certification until given date"/>
         <FIELD NAME="evidencejson" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="Alternative certification evidence details for temporary certification"/>
+        <FIELD NAME="timecertifiedfrom" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Cached value of first certification start"/>
+        <FIELD NAME="timecertifieduntil" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Cached value of latest certification end - uses TIMESTAMP_FOREVER"/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-        <KEY NAME="certificationid" TYPE="foreign" FIELDS="certificationid" REFTABLE="tool_certify_certifications" REFFIELDS="id"/>
+        <KEY NAME="certificationid" TYPE="foreign" FIELDS="certificationid" REFTABLE="tool_mucertify_certification" REFFIELDS="id"/>
         <KEY NAME="userid" TYPE="foreign" FIELDS="userid" REFTABLE="users" REFFIELDS="id"/>
-        <KEY NAME="sourceid" TYPE="foreign" FIELDS="sourceid" REFTABLE="tool_certify_sources" REFFIELDS="id"/>
+        <KEY NAME="sourceid" TYPE="foreign" FIELDS="sourceid" REFTABLE="tool_mucertify_source" REFFIELDS="id"/>
       </KEYS>
       <INDEXES>
         <INDEX NAME="certificationid-userid" UNIQUE="true" FIELDS="certificationid, userid" COMMENT="Maximum one assignment of user per certification"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="tool_certify_periods" COMMENT="Periods representing certification validity date ranges - periods are treated as archived if assignment record is missing">
+    <TABLE NAME="tool_mucertify_period" COMMENT="Periods representing certification validity date ranges - periods are treated as archived if assignment record is missing">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="certificationid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
@@ -141,16 +143,16 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-        <KEY NAME="certificationid" TYPE="foreign" FIELDS="certificationid" REFTABLE="tool_certify_certifications" REFFIELDS="id"/>
+        <KEY NAME="certificationid" TYPE="foreign" FIELDS="certificationid" REFTABLE="tool_mucertify_certification" REFFIELDS="id"/>
         <KEY NAME="userid" TYPE="foreign" FIELDS="userid" REFTABLE="users" REFFIELDS="id"/>
-        <KEY NAME="programid" TYPE="foreign" FIELDS="programid" REFTABLE="enrol_programs_programs" REFFIELDS="id"/>
+        <KEY NAME="programid" TYPE="foreign" FIELDS="programid" REFTABLE="tool_muprog_program" REFFIELDS="id"/>
       </KEYS>
       <INDEXES>
         <INDEX NAME="allocationid" UNIQUE="true" FIELDS="allocationid" COMMENT="Duplicates should never happen"/>
         <INDEX NAME="certificateissueid" UNIQUE="true" FIELDS="certificateissueid" COMMENT="Soft unique reference to tool_certificate_issues.id"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="tool_certify_crt_snapshots" COMMENT="Archive of ALL certification entity snapshots after modification including items, sources and cohorts">
+    <TABLE NAME="tool_mucertify_crt_snapshot" COMMENT="Archive of ALL certification entity snapshots after modification including items, sources and cohorts">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="certificationid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
@@ -158,17 +160,17 @@
         <FIELD NAME="timesnapshot" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="When was the program modified"/>
         <FIELD NAME="snapshotby" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Who modified the program, NULL means system action"/>
         <FIELD NAME="explanation" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Extra explanation"/>
-        <FIELD NAME="certificationjson" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Serialised data from tool_certify_certifications, NULL after program deletion"/>
-        <FIELD NAME="cohortsjson" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Serialised data from tool_certify_cohorts"/>
-        <FIELD NAME="sourcesjson" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Serialised data from tool_certify_sources"/>
+        <FIELD NAME="certificationjson" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Serialised data from tool_mucertify_certification, NULL after program deletion"/>
+        <FIELD NAME="cohortsjson" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Serialised data from tool_mucertify_cohort"/>
+        <FIELD NAME="sourcesjson" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Serialised data from tool_mucertify_source"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-        <KEY NAME="certificationid" TYPE="foreign" FIELDS="certificationid" REFTABLE="tool_certify_certifications" REFFIELDS="id"/>
+        <KEY NAME="certificationid" TYPE="foreign" FIELDS="certificationid" REFTABLE="tool_mucertify_certification" REFFIELDS="id"/>
         <KEY NAME="snapshotby" TYPE="foreign" FIELDS="snapshotby" REFTABLE="users" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="tool_certify_usr_snapshots" COMMENT="Archive of SOME user assignment/periods/progress snapshots - only important stuff is recorded">
+    <TABLE NAME="tool_mucertify_usr_snapshot" COMMENT="Archive of SOME user assignment/periods/progress snapshots - only important stuff is recorded">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="certificationid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
@@ -181,35 +183,18 @@
         <FIELD NAME="sourceid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="sourcedatajson" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="archived" TYPE="int" LENGTH="1" NOTNULL="false" SEQUENCE="false"/>
-        <FIELD NAME="timecertifieduntil" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="timecertifiedtemp" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="evidencejson" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="periodsjson" TYPE="text" NOTNULL="true" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-        <KEY NAME="certificationid" TYPE="foreign" FIELDS="certificationid" REFTABLE="enrol_programs_programs" REFFIELDS="id"/>
+        <KEY NAME="certificationid" TYPE="foreign" FIELDS="certificationid" REFTABLE="tool_muprog_program" REFFIELDS="id"/>
         <KEY NAME="userid" TYPE="foreign" FIELDS="userid" REFTABLE="users" REFFIELDS="id"/>
         <KEY NAME="snapshotby" TYPE="foreign" FIELDS="snapshotby" REFTABLE="users" REFFIELDS="id"/>
       </KEYS>
       <INDEXES>
         <INDEX NAME="reason-userid-certificationid" UNIQUE="false" FIELDS="reason, userid, certificationid" COMMENT="Faster lookup by reason and userid"/>
-      </INDEXES>
-    </TABLE>
-    <TABLE NAME="tool_certify_src_commholds" COMMENT="Reserve spaces from the maximum allocated users for a hold key.">
-      <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
-        <FIELD NAME="quantity" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
-        <FIELD NAME="holdkey" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
-        <FIELD NAME="certificationid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
-      </FIELDS>
-      <KEYS>
-        <KEY NAME="id" TYPE="primary" FIELDS="id" COMMENT="primary key"/>
-        <KEY NAME="userid" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/>
-        <KEY NAME="certificationid" TYPE="foreign" FIELDS="certificationid" REFTABLE="tool_certify_certifications" REFFIELDS="id"/>
-      </KEYS>
-      <INDEXES>
-        <INDEX NAME="holdkey" UNIQUE="false" FIELDS="holdkey" COMMENT="index instead of key because commerce is optional"/>
       </INDEXES>
     </TABLE>
   </TABLES>

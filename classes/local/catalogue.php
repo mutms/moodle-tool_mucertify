@@ -1,26 +1,30 @@
 <?php
-// This file is part of Moodle - https://moodle.org/
+// This file is part of Certifications for Moodle™.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-namespace tool_certify\local;
+// phpcs:disable moodle.Files.BoilerplateComment.CommentEndedTooSoon
+// phpcs:disable moodle.Files.LineLength.TooLong
+
+namespace tool_mucertify\local;
 
 /**
  * Certification catalogue for learners.
  *
- * @package    tool_certify
+ * @package    tool_mucertify
  * @copyright  2023 Open LMS (https://www.openlms.net/)
+ * @copyright  2025 Petr Skoda
  * @author     Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -76,7 +80,7 @@ final class catalogue {
         if ($this->searchtext !== null) {
             $pageparams['searchtext'] = $this->searchtext;
         }
-        return new \moodle_url('/admin/tool/certify/catalogue/index.php', $pageparams);
+        return new \moodle_url('/admin/tool/mucertify/catalogue/index.php', $pageparams);
     }
 
     /**
@@ -142,32 +146,32 @@ final class catalogue {
     public function render_certifications(): string {
         global $OUTPUT, $CFG, $DB, $USER, $PAGE;
 
-        $catalogueoutput = $PAGE->get_renderer('tool_certify', 'catalogue');
+        $catalogueoutput = $PAGE->get_renderer('tool_mucertify', 'catalogue');
 
         $totalcount = $this->count_certifications();
         $certifications = $this->get_certifications();
 
         if (!$totalcount && !$this->is_filtering()) {
-            return get_string('errornocertifications', 'tool_certify');
+            return get_string('errornocertifications', 'tool_mucertify');
         }
 
-        $certificationicon = $OUTPUT->pix_icon('certification', '', 'tool_certify');
+        $certificationicon = $OUTPUT->pix_icon('certification', '', 'tool_mucertify');
         $currenturl = $this->get_current_url();
 
         $result = '';
 
         $data = [
-            'action' => new \moodle_url('/admin/tool/certify/catalogue/index.php'),
+            'action' => new \moodle_url('/admin/tool/mucertify/catalogue/index.php'),
             'inputname' => 'searchtext',
             'searchstring' => get_string('search', 'cohort'),
             'query' => $this->searchtext,
             'hiddenfields' => $this->get_hidden_search_fields(),
-            'extraclasses' => 'mb-3'
+            'extraclasses' => 'mb-3',
         ];
         $result .= $OUTPUT->render_from_template('core/search_input', $data);
 
         if (!$totalcount) {
-            $result .= get_string('errornocertifications', 'tool_certify');
+            $result .= get_string('errornocertifications', 'tool_mucertify');
             return $result;
         }
 
@@ -176,7 +180,7 @@ final class catalogue {
         $i = 0;
         $count = count($certifications);
         foreach ($certifications as $certification) {
-            $assignment = $DB->get_record('tool_certify_assignments', ['certificationid' => $certification->id, 'userid' => $USER->id, 'archived' => 0]);
+            $assignment = $DB->get_record('tool_mucertify_assignment', ['certificationid' => $certification->id, 'userid' => $USER->id, 'archived' => 0]);
             $context = \context::instance_by_id($certification->contextid);
             $classes = ['certificationbox', 'clearfix'];
             if ($i % 2 === 0) {
@@ -193,18 +197,18 @@ final class catalogue {
             $classes = implode(' ', $classes);
             $fullname = format_string($certification->fullname);
             if ($assignment) {
-                $url = new \moodle_url('/admin/tool/certify/my/certification.php', ['id' => $certification->id]);
+                $url = new \moodle_url('/admin/tool/mucertify/my/certification.php', ['id' => $certification->id]);
             } else {
-                $url = new \moodle_url('/admin/tool/certify/catalogue/certification.php', ['id' => $certification->id]);
+                $url = new \moodle_url('/admin/tool/mucertify/catalogue/certification.php', ['id' => $certification->id]);
             }
             $url = $url->out(true);
 
-            $description = file_rewrite_pluginfile_urls($certification->description, 'pluginfile.php', $context->id, 'tool_certify', 'description', $certification->id);
+            $description = file_rewrite_pluginfile_urls($certification->description, 'pluginfile.php', $context->id, 'tool_mucertify', 'description', $certification->id);
             $description = format_text($description, $certification->descriptionformat, ['context' => $context]);
 
             $tagsdiv = '';
             if ($CFG->usetags) {
-                $tags = \core_tag_tag::get_item_tags('tool_certify', 'certification', $certification->id);
+                $tags = \core_tag_tag::get_item_tags('tool_mucertify', 'certification', $certification->id);
                 if ($tags) {
                     $tagsdiv = $OUTPUT->tag_list($tags, '', 'certification-tags');
                 }
@@ -219,7 +223,7 @@ final class catalogue {
             $presentation = (array)json_decode($certification->presentationjson);
             if (!empty($presentation['image'])) {
                 $imageurl = \moodle_url::make_file_url("$CFG->wwwroot/pluginfile.php",
-                    '/' . $context->id . '/tool_certify/image/' . $certification->id . '/'. $presentation['image'], false);
+                    '/' . $context->id . '/tool_mucertify/image/' . $certification->id . '/'. $presentation['image'], false);
                 $certificationimage = '<div class="float-end certificationimage">' . \html_writer::img($imageurl, '') . '</div>';
             }
 
@@ -290,8 +294,8 @@ EOT;
         }
 
         $tenantjoin = "";
-        if (tenant::is_active()) {
-            $tenantid = \tool_olms_tenant\tenancy::get_tenant_id();
+        if (util::is_mutenancy_active()) {
+            $tenantid = \tool_mutenancy\local\tenancy::get_current_tenantid();
             if ($tenantid) {
                 $tenantjoin = "JOIN {context} pc ON pc.id = p.contextid AND (pc.tenantid IS NULL OR pc.tenantid = :tenantid)";
                 $params['tenantid'] = $tenantid;
@@ -299,14 +303,14 @@ EOT;
         }
 
         $sql = "SELECT p.*
-                  FROM {tool_certify_certifications} p
-             LEFT JOIN {tool_certify_assignments} pa ON pa.certificationid = p.id AND pa.userid = :userid1 AND pa.archived = 0
+                  FROM {tool_mucertify_certification} p
+             LEFT JOIN {tool_mucertify_assignment} pa ON pa.certificationid = p.id AND pa.userid = :userid1 AND pa.archived = 0
                   $tenantjoin
                  WHERE p.archived = 0 $searchwhere
                        AND (p.public = 1 OR pa.id IS NOT NULL OR EXISTS (
                             SELECT cm.id
                               FROM {cohort_members} cm
-                              JOIN {tool_certify_cohorts} pc ON pc.cohortid = cm.cohortid
+                              JOIN {tool_mucertify_cohort} pc ON pc.cohortid = cm.cohortid
                              WHERE cm.userid = :userid2 AND pc.certificationid = p.id))
               ORDER BY p.fullname ASC";
 
@@ -330,16 +334,15 @@ EOT;
             return false;
         }
 
-        if (\tool_certify\local\tenant::is_active()) {
+        if (util::is_mutenancy_active()) {
             if ($userid == $USER->id) {
-                $tenantid = \tool_olms_tenant\tenancy::get_tenant_id();
+                $tenantid = \tool_mutenancy\local\tenancy::get_current_tenantid();
             } else {
-                $tenantid = \tool_olms_tenant\tenant_users::get_user_tenant_id($userid);
+                $tenantid = \tool_mutenancy\local\tenancy::get_user_tenantid($userid);
             }
             if ($tenantid) {
                 $certificationcontext = \context::instance_by_id($certification->contextid);
-                $certificationtenantid = \tool_olms_tenant\tenants::get_context_tenant_id($certificationcontext);
-                if ($certificationtenantid && $certificationtenantid != $tenantid) {
+                if ($certificationcontext->tenantid && $certificationcontext->tenantid != $tenantid) {
                     return false;
                 }
             }
@@ -348,11 +351,11 @@ EOT;
         if ($certification->public) {
             return true;
         }
-        if ($DB->record_exists('tool_certify_assignments', ['certificationid' => $certification->id, 'userid' => $userid, 'archived' => 0])) {
+        if ($DB->record_exists('tool_mucertify_assignment', ['certificationid' => $certification->id, 'userid' => $userid, 'archived' => 0])) {
             return true;
         }
         $sql = "SELECT 1
-                  FROM {tool_certify_cohorts} c
+                  FROM {tool_mucertify_cohort} c
                   JOIN {cohort_members} cm ON cm.cohortid = c.cohortid AND cm.userid = :userid
                  WHERE c.certificationid = :certificationid";
         $params = ['certificationid' => $certification->id, 'userid' => $userid];
@@ -368,16 +371,16 @@ EOT;
      * @return ?\moodle_url null of certifications disabled or user cannot access catalogue
      */
     public static function get_catalogue_url(): ?\moodle_url {
-        if (!enrol_is_enabled('programs')) {
+        if (!enrol_is_enabled('muprog')) {
             return null;
         }
         if (!isloggedin()) {
             return null;
         }
-        if (!has_capability('tool/certify:viewcatalogue', \context_system::instance())) {
+        if (!has_capability('tool/mucertify:viewcatalogue', \context_system::instance())) {
             return null;
         }
-        return new \moodle_url('/admin/tool/certify/catalogue/index.php');
+        return new \moodle_url('/admin/tool/mucertify/catalogue/index.php');
     }
 
     /**
@@ -401,14 +404,14 @@ EOT;
 
         $sql = "SELECT DISTINCT t.id, t.name
                   FROM {tag} t
-                  JOIN {tag_instance} tt ON tt.itemtype = 'certification' AND tt.tagid = t.id AND tt.component = 'tool_certify'
-                  JOIN {tool_certify_certifications} p ON p.id = tt.itemid
-             LEFT JOIN {tool_certify_assignments} pa ON pa.certificationid = p.id AND pa.userid = :userid1 AND pa.archived = 0
+                  JOIN {tag_instance} tt ON tt.itemtype = 'certification' AND tt.tagid = t.id AND tt.component = 'tool_mucertify'
+                  JOIN {tool_mucertify_certification} p ON p.id = tt.itemid
+             LEFT JOIN {tool_mucertify_assignment} pa ON pa.certificationid = p.id AND pa.userid = :userid1 AND pa.archived = 0
                  WHERE p.archived = 0
                        AND (p.public = 1 OR pa.id IS NOT NULL OR EXISTS (
                             SELECT cm.id
                               FROM {cohort_members} cm
-                              JOIN {tool_certify_cohorts} pc ON pc.cohortid = cm.cohortid
+                              JOIN {tool_mucertify_cohort} pc ON pc.cohortid = cm.cohortid
                              WHERE cm.userid = :userid2 AND pc.certificationid = p.id))
               ORDER BY t.name ASC";
         $params = ['userid1' => $userid, 'userid2' => $userid];
@@ -435,14 +438,14 @@ EOT;
         // then only complication here may be multi-tenancy.
 
         $sql = "SELECT p.*
-                  FROM {tool_certify_certifications} p
-                  JOIN {tag_instance} tt ON tt.itemid = p.id AND tt.itemtype = 'certification' AND tt.tagid = :tagid AND tt.component = 'tool_certify'
-             LEFT JOIN {tool_certify_assignments} pa ON pa.certificationid = p.id AND pa.userid = :userid1 AND pa.archived = 0
+                  FROM {tool_mucertify_certification} p
+                  JOIN {tag_instance} tt ON tt.itemid = p.id AND tt.itemtype = 'certification' AND tt.tagid = :tagid AND tt.component = 'tool_mucertify'
+             LEFT JOIN {tool_mucertify_assignment} pa ON pa.certificationid = p.id AND pa.userid = :userid1 AND pa.archived = 0
                  WHERE p.archived = 0
                        AND (p.public = 1 OR pa.id IS NOT NULL OR EXISTS (
                              SELECT cm.id
                                FROM {cohort_members} cm
-                               JOIN {tool_certify_cohorts} pc ON pc.cohortid = cm.cohortid
+                               JOIN {tool_mucertify_cohort} pc ON pc.cohortid = cm.cohortid
                               WHERE cm.userid = :userid2 AND pc.certificationid = p.id))
               ORDER BY p.fullname";
         $countsql = util::convert_to_count_sql($sql);
@@ -454,8 +457,8 @@ EOT;
         $result = [];
         foreach ($certifications as $certification) {
             $fullname = format_string($certification->fullname);
-            $url = new \moodle_url('/admin/tool/certify/catalogue/certification.php', ['id' => $certification->id]);
-            $icon = $OUTPUT->pix_icon('certification', '', 'tool_certify');
+            $url = new \moodle_url('/admin/tool/mucertify/catalogue/certification.php', ['id' => $certification->id]);
+            $icon = $OUTPUT->pix_icon('certification', '', 'tool_mucertify');
             $result[] = '<div class="certification-link">' . $icon . \html_writer::link($url, $fullname) . '</div>';
         }
 

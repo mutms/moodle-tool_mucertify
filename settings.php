@@ -1,24 +1,28 @@
 <?php
-// This file is part of Moodle - https://moodle.org/
+// This file is part of Certifications for Moodle™.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+// phpcs:disable moodle.Files.BoilerplateComment.CommentEndedTooSoon
+// phpcs:disable moodle.Files.LineLength.TooLong
 
 /**
- * certification management interface.
+ * Certification settings.
  *
- * @package    tool_certify
+ * @package    tool_mucertify
  * @copyright  2023 Open LMS (https://www.openlms.net/)
+ * @copyright  2025 Petr Skoda
  * @author     Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -28,52 +32,32 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-// Certifications require programs.
-if (enrol_is_enabled('programs')) {
-    $ADMIN->add('root', new admin_category('certifications', new lang_string('certifications', 'tool_certify')), 'analytics');
-    $ADMIN->add('certifications', new admin_externalpage('certificationsmanagement',
-        new lang_string('management', 'tool_certify'),
-        new moodle_url("/admin/tool/certify/management/index.php"),
-        'tool/certify:view'));
+$ADMIN->add('root', new admin_category('tool_mucertify', new lang_string('certifications', 'tool_mucertify')), 'competencies');
 
-    $settings = new admin_settingpage('certificationssettings',
-        new lang_string('settings', 'tool_certify'),
-        ['moodle/site:config', 'tool/certify:admin']);
-    $ADMIN->add('certifications', $settings);
-
-    if (!during_initial_install() && get_config('profilefield_relateduser', 'version')) {
-        $optionsfunction = function() {
-            global $DB;
-            $fields = $DB->get_records_menu('user_info_field', ['datatype' => 'relateduser'], 'name ASC', 'id, name');
-            return ['' => get_string('notset', 'tool_certify')] + $fields;
-        };
-        $settings->add(new admin_setting_configselect('tool_certify/notification_relateduserfield',
-            new lang_string('notification_relateduserfield', 'tool_certify'),
-            new lang_string('notification_relateduserfield_desc', 'tool_certify'), '', $optionsfunction));
-    }
-
-    $settings->add(new admin_setting_configcheckbox('tool_certify/source_approval_allownew',
-        new lang_string('source_approval_allownew', 'tool_certify'),
-        new lang_string('source_approval_allownew_desc', 'tool_certify'), 1));
-    $settings->add(new admin_setting_configcheckbox('tool_certify/source_cohort_allownew',
-        new lang_string('source_cohort_allownew', 'tool_certify'),
-        new lang_string('source_cohort_allownew_desc', 'tool_certify'), 1));
-    $settings->add(new admin_setting_configcheckbox('tool_certify/source_selfassignment_allownew',
-        new lang_string('source_selfassignment_allownew', 'tool_certify'),
-        new lang_string('source_selfassignment_allownew_desc', 'tool_certify'), 1));
-
-    if (\tool_certify\local\source\ecommerce::is_commerce_enabled()) {
-        $settings->add(new admin_setting_configcheckbox('tool_certify/source_ecommerce_allownew',
-            new lang_string('source_ecommerce_allownew', 'tool_certify'),
-            new lang_string('source_ecommerce_allownew_desc', 'tool_certify'), 0));
-    }
-
-    $ADMIN->add('certifications', new admin_externalpage('certification_customfield',
-        new lang_string('customfields', 'tool_certify'),
-        new moodle_url("/admin/tool/certify/customfield.php"),
-        'tool/certify:configurecustomfields'));
-
+$settings = new admin_settingpage('tool_mucertify_settings',
+    new lang_string('settings', 'tool_mucertify'),
+    'moodle/site:config');
+$ADMIN->add('tool_mucertify', $settings);
+if ($ADMIN->fulltree) {
+    $settings->add(new admin_setting_configcheckbox('tool_mucertify/source_approval_allownew',
+        new lang_string('source_approval_allownew', 'tool_mucertify'),
+        new lang_string('source_approval_allownew_desc', 'tool_mucertify'), 1));
+    $settings->add(new admin_setting_configcheckbox('tool_mucertify/source_cohort_allownew',
+        new lang_string('source_cohort_allownew', 'tool_mucertify'),
+        new lang_string('source_cohort_allownew_desc', 'tool_mucertify'), 1));
+    $settings->add(new admin_setting_configcheckbox('tool_mucertify/source_selfassignment_allownew',
+        new lang_string('source_selfassignment_allownew', 'tool_mucertify'),
+        new lang_string('source_selfassignment_allownew_desc', 'tool_mucertify'), 1));
 }
 
-// Do not use enrol plugin settings, create a top level management section.
+$ADMIN->add('tool_mucertify', new admin_externalpage('tool_mucertify_customfield',
+    new lang_string('customfields', 'tool_mucertify'),
+    new moodle_url("/admin/tool/mucertify/management/customfield.php"),
+    'tool/mucertify:configurecustomfields'));
+
+$ADMIN->add('tool_mucertify', new admin_externalpage('tool_mucertify_management',
+    new lang_string('management', 'tool_mucertify'),
+    new moodle_url("/admin/tool/mucertify/management/index.php"),
+    'tool/mucertify:view'));
+
 $settings = null;

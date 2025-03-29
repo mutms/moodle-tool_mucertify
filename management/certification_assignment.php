@@ -1,24 +1,27 @@
 <?php
-// This file is part of Moodle - https://moodle.org/
+// This file is part of Certifications for Moodle™.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+// phpcs:disable moodle.Files.BoilerplateComment.CommentEndedTooSoon
 
 /**
  * certification management interface.
  *
- * @package    tool_certify
+ * @package    tool_mucertify
  * @copyright  2023 Open LMS (https://www.openlms.net/)
+ * @copyright  2025 Petr Skoda
  * @author     Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -29,7 +32,7 @@
 /** @var stdClass $CFG */
 /** @var stdClass $COURSE */
 
-use tool_certify\local\management;
+use tool_mucertify\local\management;
 
 require('../../../../config.php');
 require_once($CFG->dirroot . '/lib/formslib.php');
@@ -38,25 +41,20 @@ $id = required_param('id', PARAM_INT);
 
 require_login();
 
-$certification = $DB->get_record('tool_certify_certifications', ['id' => $id], '*', MUST_EXIST);
+$certification = $DB->get_record('tool_mucertify_certification', ['id' => $id], '*', MUST_EXIST);
 $context = context::instance_by_id($certification->contextid);
-require_capability('tool/certify:view', $context);
+require_capability('tool/mucertify:view', $context);
 
-$currenturl = new moodle_url('/admin/tool/certify/management/certification_assignment.php', ['id' => $id]);
+$currenturl = new moodle_url('/admin/tool/mucertify/management/certification_assignment.php', ['id' => $id]);
 
-management::setup_certification_page($currenturl, $context, $certification);
-//$PAGE->set_docs_path("$CFG->wwwroot/admin/tool/certify/documentation.php/certification_assignment.md");
+management::setup_certification_page($currenturl, $context, $certification, 'certification_assignment');
 
-/** @var \local_openlms\output\dialog_form\renderer $dialogformoutput */
-$dialogformoutput = $PAGE->get_renderer('local_openlms', 'dialog_form');
-/** @var \tool_certify\output\management\renderer $managementoutput */
-$managementoutput = $PAGE->get_renderer('tool_certify', 'management');
+/** @var \tool_mucertify\output\management\renderer $managementoutput */
+$managementoutput = $PAGE->get_renderer('tool_mucertify', 'management');
 
 echo $OUTPUT->header();
 
-echo $managementoutput->render_management_certification_tabs($certification, 'assignment');
-
-echo $OUTPUT->heading(get_string('assignmentsources', 'tool_certify'), 2, ['h3']);
+echo $OUTPUT->heading(get_string('assignmentsources', 'tool_mucertify'), 2, ['h3']);
 echo $managementoutput->render_certification_sources($certification);
 
 echo $OUTPUT->footer();

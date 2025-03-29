@@ -1,26 +1,30 @@
 <?php
-// This file is part of Moodle - https://moodle.org/
+// This file is part of Certifications for Moodle™.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+// phpcs:disable moodle.Files.BoilerplateComment.CommentEndedTooSoon
+// phpcs:disable moodle.Files.LineLength.TooLong
 
 /**
  * Certification browsing for learners.
  *
- * @package    tool_certify
+ * @package    tool_mucertify
  * @copyright  2023 Open LMS (https://www.openlms.net/)
+ * @copyright  2025 Petr Skoda
  * @author     Petr Skoda
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 /** @var moodle_database $DB */
@@ -32,33 +36,33 @@
 require('../../../../config.php');
 require_once($CFG->dirroot . '/lib/formslib.php');
 
-$catalogue = new \tool_certify\local\catalogue($_REQUEST);
+$catalogue = new \tool_mucertify\local\catalogue($_REQUEST);
 $syscontext = context_system::instance();
 
 $PAGE->set_url($catalogue->get_current_url());
 $PAGE->set_context($syscontext);
 
 require_login();
-require_capability('tool/certify:viewcatalogue', $syscontext);
+require_capability('tool/mucertify:viewcatalogue', $syscontext);
 
-if (!enrol_is_enabled('programs')) {
+if (!enrol_is_enabled('muprog')) {
     redirect(new moodle_url('/'));
 }
 
 $buttons = [];
-$manageurl = \tool_certify\local\management::get_management_url();
+$manageurl = \tool_mucertify\local\management::get_management_url();
 if ($manageurl) {
-    $buttons[] = html_writer::link($manageurl, get_string('management', 'tool_certify'), ['class' => 'btn btn-secondary']);
+    $buttons[] = html_writer::link($manageurl, get_string('management', 'tool_mucertify'), ['class' => 'btn btn-secondary']);
 }
 if (!isguestuser()) {
-    $mycertificationsurl = new moodle_url('/admin/tool/certify/my/index.php');
-    $buttons[] = html_writer::link($mycertificationsurl, get_string('mycertifications', 'tool_certify'), ['class' => 'btn btn-secondary']);
+    $mycertificationsurl = new moodle_url('/admin/tool/mucertify/my/index.php');
+    $buttons[] = html_writer::link($mycertificationsurl, get_string('mycertifications', 'tool_mucertify'), ['class' => 'btn btn-secondary']);
 }
 $buttons = implode('&nbsp;', $buttons);
 $PAGE->set_button($buttons . $PAGE->button);
 
-$PAGE->set_heading(get_string('catalogue', 'tool_certify'));
-$PAGE->set_title(get_string('catalogue', 'tool_certify'));
+$PAGE->set_heading(get_string('catalogue', 'tool_mucertify'));
+$PAGE->set_title(get_string('catalogue', 'tool_mucertify'));
 $PAGE->set_pagelayout('report');
 
 echo $OUTPUT->header();
