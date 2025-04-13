@@ -108,6 +108,7 @@ Feature: Manual certification assignment tests
 
   @javascript @tool_mutenancy
   Scenario: Tenant manager may assign users manually to certification
+    Given I skip tests if "tool_mutenancy" is not installed
     Given the following "tool_mutenancy > tenants" exist:
       | name     | idnumber | category | assoccohort |
       | Tenant 1 | ten1     | CAT1     | CH1         |
