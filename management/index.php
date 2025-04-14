@@ -64,8 +64,8 @@ $buttons = [];
 $dropdown = new dropdown(get_string('extra_menu_management_index', 'tool_muprog'));
 
 if (has_capability('tool/mucertify:edit', $context)) {
-    $addurl = new moodle_url('/admin/tool/mucertify/management/certification_add.php', ['contextid' => $context->id]);
-    $addbutton = new tool_mulib\output\dialog_form\button($addurl, get_string('addcertification', 'tool_mucertify'));
+    $addurl = new moodle_url('/admin/tool/mucertify/management/certification_create.php', ['contextid' => $context->id]);
+    $addbutton = new tool_mulib\output\dialog_form\button($addurl, get_string('certification_create', 'tool_mucertify'));
     $addbutton->set_after_submit($addbutton::AFTER_SUBMIT_REDIRECT);
     $buttons[] = $OUTPUT->render($addbutton);
 }

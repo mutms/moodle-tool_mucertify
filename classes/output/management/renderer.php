@@ -372,8 +372,8 @@ class renderer extends \plugin_renderer_base {
                 }
             }
             if (!$certification->archived && !$assignment->archived && has_capability('tool/mucertify:admin', $context)) {
-                $addurl = new moodle_url('/admin/tool/mucertify/management/period_add.php', ['assignmentid' => $assignment->id]);
-                $addbutton = new \tool_mulib\output\dialog_form\button($addurl, get_string('addperiod', 'tool_mucertify'));
+                $addurl = new moodle_url('/admin/tool/mucertify/management/period_create.php', ['assignmentid' => $assignment->id]);
+                $addbutton = new \tool_mulib\output\dialog_form\button($addurl, get_string('period_create', 'tool_mucertify'));
                 $buttons[] = $this->output->render($addbutton);
             }
         }
@@ -462,12 +462,12 @@ class renderer extends \plugin_renderer_base {
 
         if (has_capability('tool/mucertify:admin', $context)) {
             $updateurl = new moodle_url('/admin/tool/mucertify/management/period_update.php', ['id' => $period->id]);
-            $updatebutton = new \tool_mulib\output\dialog_form\button($updateurl, get_string('updateperiod', 'tool_mucertify'));
+            $updatebutton = new \tool_mulib\output\dialog_form\button($updateurl, get_string('period_update', 'tool_mucertify'));
             $buttons[] = $this->output->render($updatebutton);
 
             if ($period->timerevoked) {
                 $deleteurl = new moodle_url('/admin/tool/mucertify/management/period_delete.php', ['id' => $period->id]);
-                $deletebutton = new \tool_mulib\output\dialog_form\button($deleteurl, get_string('deleteperiod', 'tool_mucertify'));
+                $deletebutton = new \tool_mulib\output\dialog_form\button($deleteurl, get_string('period_delete', 'tool_mucertify'));
                 $deletebutton->set_after_submit($deletebutton::AFTER_SUBMIT_REDIRECT);
                 $buttons[] = $this->output->render($deletebutton);
             }

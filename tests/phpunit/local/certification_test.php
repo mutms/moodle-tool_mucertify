@@ -56,7 +56,7 @@ final class certification_test extends \advanced_testcase {
         $this->assertSame(0, $result['subdirs']);
     }
 
-    public function test_add_certification(): void {
+    public function test_create(): void {
         global $DB;
 
         $syscontext = \context_system::instance();
@@ -75,7 +75,7 @@ final class certification_test extends \advanced_testcase {
             'contextid' => $syscontext->id,
         ];
         $this->setCurrentTimeStart();
-        $certification = certification::add_certification((object)$data);
+        $certification = certification::create((object)$data);
         $this->assertInstanceOf('stdClass', $certification);
         $this->assertSame((string)$syscontext->id, $certification->contextid);
         $this->assertSame('Certifikace 1', $certification->fullname);
@@ -108,7 +108,7 @@ final class certification_test extends \advanced_testcase {
             'recertify' => '98765',
         ];
         $this->setCurrentTimeStart();
-        $certification = certification::add_certification((object)$data);
+        $certification = certification::create((object)$data);
         $this->assertInstanceOf('stdClass', $certification);
         $this->assertSame((string)$catcontext->id, $certification->contextid);
         $this->assertSame('Certifikace 2', $certification->fullname);
@@ -132,13 +132,13 @@ final class certification_test extends \advanced_testcase {
             'programid2' => $program2->id,
             'recertify' => null,
         ];
-        $certification = certification::add_certification((object)$data);
+        $certification = certification::create((object)$data);
         $this->assertSame($program1->id, $certification->programid1);
         $this->assertSame(null, $certification->programid2);
         $this->assertSame(null, $certification->recertify);
     }
 
-    public function test_update_certification_general(): void {
+    public function test_update_general(): void {
         $syscontext = \context_system::instance();
 
         $category = $this->getDataGenerator()->create_category();
@@ -158,7 +158,7 @@ final class certification_test extends \advanced_testcase {
             'idnumber' => 'c1',
             'contextid' => $syscontext->id,
         ];
-        $certification = certification::add_certification((object)$data);
+        $certification = certification::create((object)$data);
 
         $data = [
             'id' => $certification->id,
@@ -172,7 +172,7 @@ final class certification_test extends \advanced_testcase {
             'programid2' => $program2->id,
             'recertify' => '98765',
         ];
-        $certification2 = certification::update_certification_general((object)$data);
+        $certification2 = certification::update_general((object)$data);
         $this->assertInstanceOf('stdClass', $certification2);
         $this->assertSame((string)$catcontext->id, $certification2->contextid);
         $this->assertSame('Certifikace 2', $certification2->fullname);
@@ -193,7 +193,7 @@ final class certification_test extends \advanced_testcase {
             'id' => $certification->id,
             'archived' => 1,
         ];
-        $certification = certification::update_certification_general($data);
+        $certification = certification::update_general($data);
         $this->assertDebuggingCalled('Use certification::archive() and certification::restore() to change archived flag');
         $this->assertSame('0', $certification->archived);
     }
@@ -206,7 +206,7 @@ final class certification_test extends \advanced_testcase {
             'idnumber' => 'c1',
             'contextid' => $syscontext->id,
         ];
-        $certification = certification::add_certification((object)$data);
+        $certification = certification::create((object)$data);
         $this->assertSame('0', $certification->archived);
 
         $certification = certification::archive($certification->id);
@@ -225,7 +225,7 @@ final class certification_test extends \advanced_testcase {
             'contextid' => $syscontext->id,
             'archived' => 1,
         ];
-        $certification = certification::add_certification((object)$data);
+        $certification = certification::create((object)$data);
         $this->assertSame('1', $certification->archived);
 
         $certification = certification::restore($certification->id);
@@ -235,7 +235,7 @@ final class certification_test extends \advanced_testcase {
         $this->assertSame('0', $certification->archived);
     }
 
-    public function test_update_certification_visibility(): void {
+    public function test_update_visibility(): void {
         global $DB;
 
         $syscontext = \context_system::instance();
@@ -264,7 +264,7 @@ final class certification_test extends \advanced_testcase {
             'contextid' => $syscontext->id,
             'public' => '0',
         ];
-        $certification = certification::add_certification((object)$data);
+        $certification = certification::create((object)$data);
 
         $data = [
             'id' => $certification->id,
@@ -279,7 +279,7 @@ final class certification_test extends \advanced_testcase {
             'programid2' => $program2->id,
             'recertify' => '98765',
         ];
-        $certification2 = certification::update_certification_visibility((object)$data);
+        $certification2 = certification::update_visibility((object)$data);
         $this->assertInstanceOf('stdClass', $certification2);
         $this->assertSame($certification->contextid, $certification2->contextid);
         $this->assertSame($certification->fullname, $certification2->fullname);
@@ -300,7 +300,7 @@ final class certification_test extends \advanced_testcase {
             'cohorts' => [$cohort2->id, $cohort1->id],
             'public' => 0,
         ];
-        $certification = certification::update_certification_visibility((object)$data);
+        $certification = certification::update_visibility((object)$data);
         $cs = $DB->get_records('tool_mucertify_cohort', ['certificationid' => $certification->id], 'cohortid ASC');
         $this->assertCount(2, $cs);
         $cs = array_values($cs);
@@ -312,7 +312,7 @@ final class certification_test extends \advanced_testcase {
             'cohorts' => [$cohort2->id, $cohort3->id],
             'public' => 0,
         ];
-        $certification = certification::update_certification_visibility((object)$data);
+        $certification = certification::update_visibility((object)$data);
         $cs = $DB->get_records('tool_mucertify_cohort', ['certificationid' => $certification->id], 'cohortid ASC');
         $this->assertCount(2, $cs);
         $cs = array_values($cs);
@@ -320,7 +320,7 @@ final class certification_test extends \advanced_testcase {
         $this->assertSame($cohort3->id, $cs[1]->cohortid);
     }
 
-    public function test_update_certification_settings(): void {
+    public function test_update_settings(): void {
         $category = $this->getDataGenerator()->create_category();
         $catcontext = \context_coursecat::instance($category->id);
 
@@ -341,12 +341,12 @@ final class certification_test extends \advanced_testcase {
             'contextid' => $catcontext->id,
             'public' => '0',
         ];
-        $certification = certification::add_certification((object)$data);
+        $certification = certification::create((object)$data);
 
         $data = [
             'id' => $certification->id,
         ];
-        $certification = certification::update_certification_settings((object)$data);
+        $certification = certification::update_settings((object)$data);
         $this->assertInstanceOf('stdClass', $certification);
         $this->assertSame(null, $certification->programid1);
         $this->assertSame(null, $certification->programid2);
@@ -362,7 +362,7 @@ final class certification_test extends \advanced_testcase {
             'windowend1' => \tool_mucertify\local\util::get_delay_form_value(['since' => certification::SINCE_WINDOWSTART, 'delay' => 'P7D'], 'days'),
             'expiration1' => \tool_mucertify\local\util::get_delay_form_value(['since' => certification::SINCE_CERTIFIED, 'delay' => 'P1Y'], 'days'),
         ];
-        $certification = certification::update_certification_settings((object)$data);
+        $certification = certification::update_settings((object)$data);
         $this->assertInstanceOf('stdClass', $certification);
         $this->assertSame($program1->id, $certification->programid1);
         $this->assertSame(null, $certification->programid2);
@@ -378,7 +378,7 @@ final class certification_test extends \advanced_testcase {
             'id' => (string)$certification->id,
             'recertify' => (string)DAYSECS,
         ];
-        $certification = certification::update_certification_settings((object)$data2);
+        $certification = certification::update_settings((object)$data2);
         $this->assertInstanceOf('stdClass', $certification);
         $this->assertSame($program1->id, $certification->programid1);
         $this->assertSame($program1->id, $certification->programid2);
@@ -404,7 +404,7 @@ final class certification_test extends \advanced_testcase {
             'windowend2' => \tool_mucertify\local\util::get_delay_form_value(['since' => certification::SINCE_WINDOWSTART, 'delay' => 'P7D'], 'days'),
             'expiration2' => \tool_mucertify\local\util::get_delay_form_value(['since' => certification::SINCE_WINDOWSTART, 'delay' => 'P1Y'], 'days'),
         ];
-        $certification = certification::update_certification_settings((object)$data3);
+        $certification = certification::update_settings((object)$data3);
         $this->assertInstanceOf('stdClass', $certification);
         $this->assertSame($program1->id, $certification->programid1);
         $this->assertSame($program2->id, $certification->programid2);
@@ -427,7 +427,7 @@ final class certification_test extends \advanced_testcase {
             'windowend1' => \tool_mucertify\local\util::get_delay_form_value(['since' => certification::SINCE_NEVER, 'delay' => null], 'days'),
             'expiration1' => \tool_mucertify\local\util::get_delay_form_value(['since' => certification::SINCE_NEVER, 'delay' => null], 'days'),
         ];
-        $certification = certification::update_certification_settings((object)$data4);
+        $certification = certification::update_settings((object)$data4);
         $this->assertInstanceOf('stdClass', $certification);
         $this->assertSame($program1->id, $certification->programid1);
         $this->assertSame(null, $certification->programid2);
@@ -452,7 +452,7 @@ final class certification_test extends \advanced_testcase {
             'windowend2' => ['since' => certification::SINCE_WINDOWDUE, 'delay' => 'P7D'],
             'expiration2' => ['since' => certification::SINCE_WINDOWSTART, 'delay' => 'P2Y'],
         ];
-        $certification = certification::update_certification_settings((object)$data5);
+        $certification = certification::update_settings((object)$data5);
         $this->assertInstanceOf('stdClass', $certification);
         $this->assertSame($program1->id, $certification->programid1);
         $this->assertSame($program1->id, $certification->programid2);
@@ -497,7 +497,7 @@ final class certification_test extends \advanced_testcase {
         $this->assertSame(null, $certification->templateid);
     }
 
-    public function test_delete_certification(): void {
+    public function test_delete(): void {
         global $DB;
 
         /** @var \tool_mucertify_generator $generator */
@@ -532,7 +532,7 @@ final class certification_test extends \advanced_testcase {
         ];
         $certification2 = $generator->create_certification($data);
 
-        certification::delete_certification($certification2->id);
+        certification::delete($certification2->id);
         $this->assertSame(false, $DB->record_exists('tool_mucertify_certification', ['id' => $certification2->id]));
         $this->assertSame(true, $DB->record_exists('tool_mucertify_certification', ['id' => $certification1->id]));
     }
@@ -546,7 +546,7 @@ final class certification_test extends \advanced_testcase {
             'idnumber' => 'SP1',
             'contextid' => $syscontext->id,
         ];
-        $certification = certification::add_certification($data);
+        $certification = certification::create($data);
         $this->setAdminUser();
         $admin = get_admin();
 
@@ -564,7 +564,7 @@ final class certification_test extends \advanced_testcase {
         $this->assertSame($admin->id, $record->snapshotby);
         $this->assertSame('some explanation', $record->explanation);
 
-        certification::delete_certification($certification->id);
+        certification::delete($certification->id);
         $this->setCurrentTimeStart();
         $DB->delete_records('tool_mucertify_crt_snapshot', []);
         certification::make_snapshot($certification->id, 'delete', 'some explanation');
@@ -760,12 +760,12 @@ final class certification_test extends \advanced_testcase {
         $this->assertEquals('pocus', $customfieldsdata->testfield2);
 
         $certification2->customfield_testfield1 = 'hocus-pocus';
-        certification::update_certification_general($certification2);
+        certification::update_general($certification2);
 
         $customfieldsdata = $handler->export_instance_data_object($certification2->id);
         $this->assertEquals('hocus-pocus', $customfieldsdata->testfield1);
 
-        certification::delete_certification($certification1->id);
+        certification::delete($certification1->id);
 
         $this->assertFalse($DB->record_exists('customfield_data', ['instanceid' => $certification1->id, 'fieldid' => $field1->get('id')]));
     }

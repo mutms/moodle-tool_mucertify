@@ -39,7 +39,7 @@ final class certification_deleted_test extends \advanced_testcase {
         $this->resetAfterTest();
     }
 
-    public function test_add_certification(): void {
+    public function test_create(): void {
         $syscontext = \context_system::instance();
         $data = (object)[
             'fullname' => 'Some certification',
@@ -47,11 +47,11 @@ final class certification_deleted_test extends \advanced_testcase {
             'contextid' => $syscontext->id,
         ];
         $admin = get_admin();
-        $certification = certification::add_certification($data);
+        $certification = certification::create($data);
 
         $this->setAdminUser();
         $sink = $this->redirectEvents();
-        certification::delete_certification($certification->id);
+        certification::delete($certification->id);
         $events = $sink->get_events();
         $sink->close();
 

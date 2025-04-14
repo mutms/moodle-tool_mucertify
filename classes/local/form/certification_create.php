@@ -28,7 +28,7 @@ namespace tool_mucertify\local\form;
  * @author     Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-final class certification_add extends \tool_mulib\local\dialog_form {
+final class certification_create extends \tool_mulib\local\dialog_form {
     #[\Override]
     protected function definition() {
         global $CFG;
@@ -62,7 +62,7 @@ final class certification_add extends \tool_mulib\local\dialog_form {
         $handler = \tool_mucertify\customfield\fields_handler::create();
         $handler->instance_form_definition($mform);
 
-        $this->add_action_buttons(true, get_string('addcertification', 'tool_mucertify'));
+        $this->add_action_buttons(true, get_string('certification_create', 'tool_mucertify'));
         // Prepare custom fields data.
         $handler->instance_form_before_set_data($data);
         $this->set_data($data);

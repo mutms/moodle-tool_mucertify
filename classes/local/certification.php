@@ -72,7 +72,7 @@ final class certification {
      * @param stdClass $data
      * @return stdClass certification record
      */
-    public static function add_certification(stdClass $data): stdClass {
+    public static function create(stdClass $data): stdClass {
         global $DB, $CFG;
         $data = clone($data);
 
@@ -140,7 +140,7 @@ final class certification {
         $data->timecreated = time();
         $data->id = $DB->insert_record('tool_mucertify_certification', $data);
 
-        self::update_certification_image($data);
+        self::update_image($data);
 
         if ($CFG->usetags && isset($data->tags)) {
             \core_tag_tag::set_item_tags('tool_mucertify', 'certification', $data->id, $context, $data->tags);
@@ -176,7 +176,7 @@ final class certification {
      * @param stdClass $data
      * @return stdClass certification record
      */
-    public static function update_certification_general(stdClass $data): stdClass {
+    public static function update_general(stdClass $data): stdClass {
         global $DB, $CFG;
 
         $data = clone($data);
@@ -248,7 +248,7 @@ final class certification {
             \core_tag_tag::set_item_tags('tool_mucertify', 'certification', $data->id, $context, $data->tags);
         }
 
-        $certification = self::update_certification_image($data);
+        $certification = self::update_image($data);
 
         $certification = self::make_snapshot($certification->id, 'update_general');
 
@@ -273,7 +273,7 @@ final class certification {
      * @param stdClass $data
      * @return stdClass certification record
      */
-    private static function update_certification_image(stdClass $data): stdClass {
+    private static function update_image(stdClass $data): stdClass {
         global $DB;
 
         $certification = $DB->get_record('tool_mucertify_certification', ['id' => $data->id], '*', MUST_EXIST);
@@ -364,7 +364,7 @@ final class certification {
      * @param stdClass $data
      * @return stdClass certification record
      */
-    public static function update_certification_visibility(stdClass $data): stdClass {
+    public static function update_visibility(stdClass $data): stdClass {
         global $DB;
 
         if ((isset($data->cohorts) && !is_array($data->cohorts))
@@ -417,7 +417,7 @@ final class certification {
      * @param stdClass $data
      * @return stdClass certification record
      */
-    public static function update_certification_settings(stdClass $data): stdClass {
+    public static function update_settings(stdClass $data): stdClass {
         global $DB;
 
         if (empty($data->id)) {
@@ -628,7 +628,7 @@ final class certification {
      * @param int $id
      * @return void
      */
-    public static function delete_certification(int $id): void {
+    public static function delete(int $id): void {
         global $DB;
 
         $trans = $DB->start_delegated_transaction();
@@ -728,7 +728,7 @@ final class certification {
                 'id' => $certification->id,
                 'contextid' => $parentcontext->id,
             ];
-            self::update_certification_general($data);
+            self::update_general($data);
         }
     }
 

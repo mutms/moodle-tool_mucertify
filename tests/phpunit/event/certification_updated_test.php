@@ -48,7 +48,7 @@ final class certification_updated_test extends \advanced_testcase {
         ];
         $admin = get_admin();
         $this->setAdminUser();
-        $certification = certification::add_certification($data);
+        $certification = certification::create($data);
 
         $sink = $this->redirectEvents();
         $data = (object)[
@@ -56,7 +56,7 @@ final class certification_updated_test extends \advanced_testcase {
             'fullname' => 'Some certification X',
             'idnumber' => 'SPX',
         ];
-        $certification = certification::update_certification_general($data);
+        $certification = certification::update_general($data);
         $events = $sink->get_events();
         $sink->close();
 
@@ -78,7 +78,7 @@ final class certification_updated_test extends \advanced_testcase {
             'id' => $certification->id,
             'recertify' => '123',
         ];
-        $certification = certification::update_certification_settings($data);
+        $certification = certification::update_settings($data);
         $events = $sink->get_events();
         $sink->close();
 
@@ -100,7 +100,7 @@ final class certification_updated_test extends \advanced_testcase {
             'id' => $certification->id,
             'public' => '1',
         ];
-        $certification = certification::update_certification_visibility($data);
+        $certification = certification::update_visibility($data);
         $events = $sink->get_events();
         $sink->close();
 

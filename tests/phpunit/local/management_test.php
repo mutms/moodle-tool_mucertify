@@ -240,12 +240,12 @@ final class management_test extends \advanced_testcase {
         $certification2 = $generator->create_certification();
         $certification3 = $generator->create_certification();
 
-        \tool_mucertify\local\certification::update_certification_visibility((object)[
+        \tool_mucertify\local\certification::update_visibility((object)[
             'id' => $certification1->id,
             'public' => 0,
             'cohorts' => [$cohort1->id, $cohort2->id],
         ]);
-        \tool_mucertify\local\certification::update_certification_visibility((object)[
+        \tool_mucertify\local\certification::update_visibility((object)[
             'id' => $certification2->id,
             'public' => 1,
             'cohorts' => [$cohort3->id],

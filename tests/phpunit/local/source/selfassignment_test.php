@@ -98,19 +98,19 @@ final class selfassignment_test extends \advanced_testcase {
 
         // Must be visible.
 
-        $certification1 = certification::update_certification_visibility((object)['id' => $certification1->id,
+        $certification1 = certification::update_visibility((object)['id' => $certification1->id,
             'public' => 1]);
         $this->assertTrue(\tool_mucertify\local\source\selfassignment::can_user_request($certification1, $source1a, $user1->id));
 
-        $certification1 = certification::update_certification_visibility((object)['id' => $certification1->id,
+        $certification1 = certification::update_visibility((object)['id' => $certification1->id,
             'public' => 0, 'cohorts' => [$cohort1->id]]);
         $this->assertTrue(\tool_mucertify\local\source\selfassignment::can_user_request($certification1, $source1a, $user1->id));
 
-        $certification1 = certification::update_certification_visibility((object)['id' => $certification1->id,
+        $certification1 = certification::update_visibility((object)['id' => $certification1->id,
             'public' => 0, 'cohorts' => []]);
         $this->assertFalse(\tool_mucertify\local\source\selfassignment::can_user_request($certification1, $source1a, $user1->id));
 
-        $certification1 = certification::update_certification_visibility((object)['id' => $certification1->id,
+        $certification1 = certification::update_visibility((object)['id' => $certification1->id,
             'public' => 1, 'cohorts' => [$cohort1->id]]);
         $this->assertTrue(\tool_mucertify\local\source\selfassignment::can_user_request($certification1, $source1a, $user1->id));
 

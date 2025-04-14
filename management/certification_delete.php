@@ -17,7 +17,7 @@
 // phpcs:disable moodle.Files.BoilerplateComment.CommentEndedTooSoon
 
 /**
- * certification management interface.
+ * Delete certification.
  *
  * @package    tool_mucertify
  * @copyright  2022 Open LMS (https://www.openlms.net/)
@@ -64,13 +64,13 @@ if ($form->is_cancelled()) {
 }
 
 if ($data = $form->get_data()) {
-    certification::delete_certification($certification->id);
+    certification::delete($certification->id);
     $returnurl = new moodle_url('/admin/tool/mucertify/management/index.php', ['contextid' => $certification->contextid]);
     $form->redirect_submitted($returnurl);
 }
 
 echo $OUTPUT->header();
-echo $OUTPUT->heading(get_string('deletecertification', 'tool_mucertify'));
+echo $OUTPUT->heading(get_string('certification_delete', 'tool_mucertify'));
 
 echo $form->render();
 

@@ -39,7 +39,7 @@ final class certification_created_test extends \advanced_testcase {
         $this->resetAfterTest();
     }
 
-    public function test_add_certification(): void {
+    public function test_create(): void {
         $syscontext = \context_system::instance();
         $data = (object)[
             'fullname' => 'Some certification',
@@ -50,7 +50,7 @@ final class certification_created_test extends \advanced_testcase {
 
         $this->setAdminUser();
         $sink = $this->redirectEvents();
-        $certification = certification::add_certification($data);
+        $certification = certification::create($data);
         $events = $sink->get_events();
         $sink->close();
 

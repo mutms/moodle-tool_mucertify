@@ -63,7 +63,7 @@ if ($form->is_cancelled()) {
 }
 
 if ($data = $form->get_data()) {
-    certification::update_certification_settings($data);
+    certification::update_settings($data);
     $form->redirect_submitted($returnurl);
 }
 

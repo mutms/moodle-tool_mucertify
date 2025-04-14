@@ -17,7 +17,7 @@
 // phpcs:disable moodle.Files.BoilerplateComment.CommentEndedTooSoon
 
 /**
- * Certification archive.
+ * Archive certification.
  *
  * @package    tool_mucertify
  * @copyright  2022 Open LMS (https://www.openlms.net/)

@@ -68,7 +68,7 @@ if ($form->is_cancelled()) {
 }
 
 if ($data = $form->get_data()) {
-    certification::update_certification_visibility($data);
+    certification::update_visibility($data);
     $form->redirect_submitted($returnurl);
 }
 

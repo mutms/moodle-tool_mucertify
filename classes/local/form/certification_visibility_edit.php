@@ -57,7 +57,7 @@ final class certification_visibility_edit extends \tool_mulib\local\dialog_form 
         $mform->setType('id', PARAM_INT);
         $mform->setDefault('id', $data->id);
 
-        $this->add_action_buttons(true, get_string('updatecertification', 'tool_mucertify'));
+        $this->add_action_buttons(true, get_string('certification_update', 'tool_mucertify'));
     }
 
     #[\Override]

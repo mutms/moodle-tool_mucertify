@@ -46,6 +46,6 @@ final class certification_delete extends \tool_mulib\local\dialog_form {
         $mform->setType('id', PARAM_INT);
         $mform->setDefault('id', $certification->id);
 
-        $this->add_action_buttons(true, get_string('deletecertification', 'tool_mucertify'));
+        $this->add_action_buttons(true, get_string('certification_delete', 'tool_mucertify'));
     }
 }

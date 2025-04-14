@@ -76,7 +76,7 @@ final class period_update extends \tool_mulib\local\dialog_form {
         $mform->setType('id', PARAM_INT);
         $mform->setDefault('id', $period->id);
 
-        $this->add_action_buttons(true, get_string('updateperiod', 'tool_mucertify'));
+        $this->add_action_buttons(true, get_string('period_update', 'tool_mucertify'));
     }
 
     #[\Override]

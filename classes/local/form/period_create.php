@@ -30,7 +30,7 @@ use tool_mucertify\local\period;
  * @author     Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-final class period_add extends \tool_mulib\local\dialog_form {
+final class period_create extends \tool_mulib\local\dialog_form {
     /** @var array autocompletion arguments */
     protected $arguments;
 
@@ -82,7 +82,7 @@ final class period_add extends \tool_mulib\local\dialog_form {
         $mform->setType('assignmentid', PARAM_INT);
         $mform->setDefault('assignmentid', $assignment->id);
 
-        $this->add_action_buttons(true, get_string('addperiod', 'tool_mucertify'));
+        $this->add_action_buttons(true, get_string('period_create', 'tool_mucertify'));
     }
 
     #[\Override]

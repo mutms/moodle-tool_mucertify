@@ -58,7 +58,7 @@ echo $OUTPUT->header();
 $updateicon = '';
 if (has_capability('tool/mucertify:edit', $context)) {
     $editurl = new moodle_url('/admin/tool/mucertify/management/certification_settings_edit1.php', ['id' => $certification->id]);
-    $editicon = new tool_mulib\output\dialog_form\icon($editurl, get_string('updatecertification', 'tool_mucertify'), 'i/settings');
+    $editicon = new tool_mulib\output\dialog_form\icon($editurl, get_string('certification_update', 'tool_mucertify'), 'i/settings');
     $updateicon = $OUTPUT->render($editicon);
 }
 echo $OUTPUT->heading(get_string('certification', 'tool_mucertify') . $updateicon, 3);

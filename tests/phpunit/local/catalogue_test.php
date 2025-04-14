@@ -249,17 +249,17 @@ final class catalogue_test extends \advanced_testcase {
         $this->assertSame(4, $catalogue->count_certifications());
 
         $certification1->contextid = $catcontext1->id;
-        $certification1 = \tool_mucertify\local\certification::update_certification_general($certification1);
+        $certification1 = \tool_mucertify\local\certification::update_general($certification1);
         $certification2->contextid = $catcontext1->id;
-        $certification2 = \tool_mucertify\local\certification::update_certification_general($certification2);
+        $certification2 = \tool_mucertify\local\certification::update_general($certification2);
         $certification3->contextid = $catcontext1->id;
-        $certification3 = \tool_mucertify\local\certification::update_certification_general($certification3);
+        $certification3 = \tool_mucertify\local\certification::update_general($certification3);
         $certification4->contextid = $catcontext1->id;
-        $certification4 = \tool_mucertify\local\certification::update_certification_general($certification4);
+        $certification4 = \tool_mucertify\local\certification::update_general($certification4);
         $certification5->contextid = $catcontext1->id;
-        $certification5 = \tool_mucertify\local\certification::update_certification_general($certification5);
+        $certification5 = \tool_mucertify\local\certification::update_general($certification5);
         $certification6->contextid = $catcontext1->id;
-        $certification6 = \tool_mucertify\local\certification::update_certification_general($certification6);
+        $certification6 = \tool_mucertify\local\certification::update_general($certification6);
 
         $this->setUser($user1);
         $catalogue = new \tool_mucertify\local\catalogue([]);
@@ -296,17 +296,17 @@ final class catalogue_test extends \advanced_testcase {
         $this->assertSame(4, $catalogue->count_certifications());
 
         $certification1->contextid = $catcontext2->id;
-        $certification1 = \tool_mucertify\local\certification::update_certification_general($certification1);
+        $certification1 = \tool_mucertify\local\certification::update_general($certification1);
         $certification2->contextid = $catcontext2->id;
-        $certification2 = \tool_mucertify\local\certification::update_certification_general($certification2);
+        $certification2 = \tool_mucertify\local\certification::update_general($certification2);
         $certification3->contextid = $catcontext2->id;
-        $certification3 = \tool_mucertify\local\certification::update_certification_general($certification3);
+        $certification3 = \tool_mucertify\local\certification::update_general($certification3);
         $certification4->contextid = $catcontext2->id;
-        $certification4 = \tool_mucertify\local\certification::update_certification_general($certification4);
+        $certification4 = \tool_mucertify\local\certification::update_general($certification4);
         $certification5->contextid = $catcontext2->id;
-        $certification5 = \tool_mucertify\local\certification::update_certification_general($certification5);
+        $certification5 = \tool_mucertify\local\certification::update_general($certification5);
         $certification6->contextid = $catcontext2->id;
-        $certification6 = \tool_mucertify\local\certification::update_certification_general($certification6);
+        $certification6 = \tool_mucertify\local\certification::update_general($certification6);
 
         $this->setUser($user1);
         $catalogue = new \tool_mucertify\local\catalogue([]);
@@ -491,17 +491,17 @@ final class catalogue_test extends \advanced_testcase {
         $this->assertTrue(\tool_mucertify\local\catalogue::is_certification_visible($certification6, $user3->id));
 
         $certification1->contextid = $catcontext1->id;
-        $certification1 = \tool_mucertify\local\certification::update_certification_general($certification1);
+        $certification1 = \tool_mucertify\local\certification::update_general($certification1);
         $certification2->contextid = $catcontext1->id;
-        $certification2 = \tool_mucertify\local\certification::update_certification_general($certification2);
+        $certification2 = \tool_mucertify\local\certification::update_general($certification2);
         $certification3->contextid = $catcontext1->id;
-        $certification3 = \tool_mucertify\local\certification::update_certification_general($certification3);
+        $certification3 = \tool_mucertify\local\certification::update_general($certification3);
         $certification4->contextid = $catcontext1->id;
-        $certification4 = \tool_mucertify\local\certification::update_certification_general($certification4);
+        $certification4 = \tool_mucertify\local\certification::update_general($certification4);
         $certification5->contextid = $catcontext1->id;
-        $certification5 = \tool_mucertify\local\certification::update_certification_general($certification5);
+        $certification5 = \tool_mucertify\local\certification::update_general($certification5);
         $certification6->contextid = $catcontext1->id;
-        $certification6 = \tool_mucertify\local\certification::update_certification_general($certification6);
+        $certification6 = \tool_mucertify\local\certification::update_general($certification6);
 
         $this->setUser($user1);
         $this->assertTrue(\tool_mucertify\local\catalogue::is_certification_visible($certification1, $user1->id));
@@ -546,17 +546,17 @@ final class catalogue_test extends \advanced_testcase {
         $this->assertTrue(\tool_mucertify\local\catalogue::is_certification_visible($certification6, $user3->id));
 
         $certification1->contextid = $catcontext2->id;
-        $certification1 = \tool_mucertify\local\certification::update_certification_general($certification1);
+        $certification1 = \tool_mucertify\local\certification::update_general($certification1);
         $certification2->contextid = $catcontext2->id;
-        $certification2 = \tool_mucertify\local\certification::update_certification_general($certification2);
+        $certification2 = \tool_mucertify\local\certification::update_general($certification2);
         $certification3->contextid = $catcontext2->id;
-        $certification3 = \tool_mucertify\local\certification::update_certification_general($certification3);
+        $certification3 = \tool_mucertify\local\certification::update_general($certification3);
         $certification4->contextid = $catcontext2->id;
-        $certification4 = \tool_mucertify\local\certification::update_certification_general($certification4);
+        $certification4 = \tool_mucertify\local\certification::update_general($certification4);
         $certification5->contextid = $catcontext2->id;
-        $certification5 = \tool_mucertify\local\certification::update_certification_general($certification5);
+        $certification5 = \tool_mucertify\local\certification::update_general($certification5);
         $certification6->contextid = $catcontext2->id;
-        $certification6 = \tool_mucertify\local\certification::update_certification_general($certification6);
+        $certification6 = \tool_mucertify\local\certification::update_general($certification6);
 
         $this->setUser($user1);
         $this->assertFalse(\tool_mucertify\local\catalogue::is_certification_visible($certification1, $user1->id));

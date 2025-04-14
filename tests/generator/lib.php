@@ -125,7 +125,7 @@ class tool_mucertify_generator extends component_generator_base {
             }
             $periods[$k] = $value;
         }
-        $certification = certification::add_certification($record);
+        $certification = certification::create($record);
 
         if ($cohorts) {
             $cohortids = [];
@@ -142,12 +142,12 @@ class tool_mucertify_generator extends component_generator_base {
                 }
 
             }
-            certification::update_certification_visibility((object)['id' => $certification->id, 'public' => $certification->public, 'cohorts' => $cohortids]);
+            certification::update_visibility((object)['id' => $certification->id, 'public' => $certification->public, 'cohorts' => $cohortids]);
         }
 
         if ($periods) {
             $periods['id'] = $certification->id;
-            $certification = certification::update_certification_settings((object)$periods);
+            $certification = certification::update_settings((object)$periods);
         }
 
         foreach ($sources as $source => $data) {

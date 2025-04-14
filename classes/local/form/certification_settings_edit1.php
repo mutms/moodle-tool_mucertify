@@ -95,7 +95,7 @@ final class certification_settings_edit1 extends \tool_mulib\local\dialog_form {
         $mform->setType('id', PARAM_INT);
         $mform->setDefault('id', $certification->id);
 
-        $this->add_action_buttons(true, get_string('updatecertification', 'tool_mucertify'));
+        $this->add_action_buttons(true, get_string('certification_update', 'tool_mucertify'));
     }
 
     #[\Override]

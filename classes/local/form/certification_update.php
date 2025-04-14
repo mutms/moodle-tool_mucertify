@@ -69,7 +69,7 @@ final class certification_update extends \tool_mulib\local\dialog_form {
         $handler = \tool_mucertify\customfield\fields_handler::create();
         $handler->instance_form_definition($mform, $data->id);
 
-        $this->add_action_buttons(true, get_string('updatecertification', 'tool_mucertify'));
+        $this->add_action_buttons(true, get_string('certification_update', 'tool_mucertify'));
 
         // Prepare custom fields data.
         $handler->instance_form_before_set_data($data);

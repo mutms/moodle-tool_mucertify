@@ -81,7 +81,7 @@ final class period_test extends \advanced_testcase {
             'valid1' => \tool_mucertify\local\certification::SINCE_CERTIFIED,
             'expires1' => ['since' => \tool_mucertify\local\certification::SINCE_CERTIFIED, 'delay' => 'P1Y'],
         ];
-        $certification = \tool_mucertify\local\certification::update_certification_settings((object)$data);
+        $certification = \tool_mucertify\local\certification::update_settings((object)$data);
         $dateoverrides = [
             'timewindowstart' => $now,
         ];
@@ -100,7 +100,7 @@ final class period_test extends \advanced_testcase {
             'valid1' => \tool_mucertify\local\certification::SINCE_WINDOWSTART,
             'expiration1' => ['since' => \tool_mucertify\local\certification::SINCE_WINDOWSTART, 'delay' => 'P90D'],
         ];
-        $certification = \tool_mucertify\local\certification::update_certification_settings((object)$data);
+        $certification = \tool_mucertify\local\certification::update_settings((object)$data);
         $dateoverrides = [
             'timewindowstart' => $now,
         ];
@@ -119,7 +119,7 @@ final class period_test extends \advanced_testcase {
             'valid1' => \tool_mucertify\local\certification::SINCE_WINDOWDUE,
             'expiration1' => ['since' => \tool_mucertify\local\certification::SINCE_WINDOWDUE, 'delay' => 'P90D'],
         ];
-        $certification = \tool_mucertify\local\certification::update_certification_settings((object)$data);
+        $certification = \tool_mucertify\local\certification::update_settings((object)$data);
         $dateoverrides = [
             'timewindowstart' => $now,
         ];
@@ -138,7 +138,7 @@ final class period_test extends \advanced_testcase {
             'valid1' => \tool_mucertify\local\certification::SINCE_WINDOWEND,
             'expiration1' => ['since' => \tool_mucertify\local\certification::SINCE_WINDOWEND, 'delay' => 'P90D'],
         ];
-        $certification = \tool_mucertify\local\certification::update_certification_settings((object)$data);
+        $certification = \tool_mucertify\local\certification::update_settings((object)$data);
         $dateoverrides = [
             'timewindowstart' => $now,
         ];
@@ -157,7 +157,7 @@ final class period_test extends \advanced_testcase {
             'valid1' => \tool_mucertify\local\certification::SINCE_WINDOWSTART,
             'expiration1' => ['since' => \tool_mucertify\local\certification::SINCE_NEVER],
         ];
-        $certification = \tool_mucertify\local\certification::update_certification_settings((object)$data);
+        $certification = \tool_mucertify\local\certification::update_settings((object)$data);
         $dateoverrides = [
             'timewindowstart' => $now,
         ];
@@ -198,7 +198,7 @@ final class period_test extends \advanced_testcase {
             'valid2' => \tool_mucertify\local\certification::SINCE_CERTIFIED,
             'expiration2' => ['since' => \tool_mucertify\local\certification::SINCE_CERTIFIED, 'delay' => 'P60D'],
         ];
-        $certification = \tool_mucertify\local\certification::update_certification_settings((object)$data);
+        $certification = \tool_mucertify\local\certification::update_settings((object)$data);
         manual::assign_users($certification->id, $source->id, [$user1->id], [
             'timewindowstart' => $now - 100,
             'timewindowdue' => $now + DAYSECS,
@@ -611,7 +611,7 @@ final class period_test extends \advanced_testcase {
             'due1' => DAYSECS,
             'windowend1' => \tool_mucertify\local\util::get_delay_form_value(['since' => \tool_mucertify\local\certification::SINCE_WINDOWSTART, 'delay' => 'P7D'], 'days'),
         ];
-        $certification = \tool_mucertify\local\certification::update_certification_settings((object)$data);
+        $certification = \tool_mucertify\local\certification::update_settings((object)$data);
         $period1 = \tool_mucertify\local\period::add_first($assignment, []);
         $this->assertSame($certification->id, $period1->certificationid);
         $this->assertSame($user1->id, $period1->userid);
@@ -1028,7 +1028,7 @@ final class period_test extends \advanced_testcase {
             'valid1' => \tool_mucertify\local\certification::SINCE_WINDOWSTART,
             'expiration1' => ['since' => \tool_mucertify\local\certification::SINCE_CERTIFIED, 'delay' => 'P30D'],
         ];
-        $certification = \tool_mucertify\local\certification::update_certification_settings((object)$data);
+        $certification = \tool_mucertify\local\certification::update_settings((object)$data);
         $this->setCurrentTimeStart();
         \tool_muprog\local\allocation::update_item_completion((object)[
             'allocationid' => $allocation2->id,
@@ -1049,7 +1049,7 @@ final class period_test extends \advanced_testcase {
             'valid1' => \tool_mucertify\local\certification::SINCE_WINDOWDUE,
             'expiration1' => ['since' => \tool_mucertify\local\certification::SINCE_WINDOWDUE, 'delay' => 'P30D'],
         ];
-        $certification = \tool_mucertify\local\certification::update_certification_settings((object)$data);
+        $certification = \tool_mucertify\local\certification::update_settings((object)$data);
         $period2->timewindowdue = $now + 200;
         $period2->timewindowend = $now + 3000;
         $period2->timecertified = null;
@@ -1070,7 +1070,7 @@ final class period_test extends \advanced_testcase {
             'valid1' => \tool_mucertify\local\certification::SINCE_WINDOWEND,
             'expiration1' => ['since' => \tool_mucertify\local\certification::SINCE_WINDOWEND, 'delay' => 'P30D'],
         ];
-        $certification = \tool_mucertify\local\certification::update_certification_settings((object)$data);
+        $certification = \tool_mucertify\local\certification::update_settings((object)$data);
         $period2->timewindowdue = $now + 200;
         $period2->timewindowend = $now + 3000;
         $period2->timecertified = null;
@@ -1212,7 +1212,7 @@ final class period_test extends \advanced_testcase {
             'programid2' => $program1->id,
             'valid2' => \tool_mucertify\local\certification::SINCE_WINDOWDUE,
         ];
-        $certification = \tool_mucertify\local\certification::update_certification_settings((object)$data);
+        $certification = \tool_mucertify\local\certification::update_settings((object)$data);
         $source = $DB->get_record('tool_mucertify_source',
             ['type' => 'manual', 'certificationid' => $certification->id], '*', MUST_EXIST);
         manual::assign_users($certification->id, $source->id, [$user1->id]);
@@ -1267,7 +1267,7 @@ final class period_test extends \advanced_testcase {
             'valid2' => \tool_mucertify\local\certification::SINCE_CERTIFIED,
             'expiration2' => ['since' => \tool_mucertify\local\certification::SINCE_WINDOWDUE, 'delay' => 'P31D'],
         ];
-        $certification = \tool_mucertify\local\certification::update_certification_settings((object)$data);
+        $certification = \tool_mucertify\local\certification::update_settings((object)$data);
         $source = $DB->get_record('tool_mucertify_source',
             ['type' => 'manual', 'certificationid' => $certification->id], '*', MUST_EXIST);
         manual::assign_users($certification->id, $source->id, [$user1->id]);
@@ -1301,7 +1301,7 @@ final class period_test extends \advanced_testcase {
             'id' => $certification->id,
             'expiration2' => ['since' => \tool_mucertify\local\certification::SINCE_NEVER],
         ];
-        $certification = \tool_mucertify\local\certification::update_certification_settings((object)$data);
+        $certification = \tool_mucertify\local\certification::update_settings((object)$data);
         $period->timecertified = null;
         $period->timeuntil = null;
         $period->first = '0';
@@ -1481,7 +1481,7 @@ final class period_test extends \advanced_testcase {
         $DB->set_field('tool_mucertify_period', 'timecertified', $now - YEARSECS + 10, ['id' => $period2x1->id]);
 
         // Check we could actually certify if there were no problems above.
-        $certification1 = \tool_mucertify\local\certification::update_certification_settings((object)[
+        $certification1 = \tool_mucertify\local\certification::update_settings((object)[
             'id' => $certification1->id,
             'grace2' => null,
         ]);

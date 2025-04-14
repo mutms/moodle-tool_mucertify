@@ -20,7 +20,7 @@
  * certification management interface.
  *
  * @package    tool_mucertify
- * @copyright  2022 Open LMS (https://www.openlms.net/)
+ * @copyright  2023 Open LMS (https://www.openlms.net/)
  * @copyright  2025 Petr Skoda
  * @author     Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -32,8 +32,8 @@
 /** @var stdClass $CFG */
 /** @var stdClass $COURSE */
 
-use tool_mucertify\local\certification;
 use tool_mucertify\local\management;
+use tool_mucertify\local\period;
 
 // phpcs:ignoreFile moodle.Files.MoodleInternal.MoodleInternalGlobalState
 if (!empty($_SERVER['HTTP_X_MULIB_DIALOG_FORM_REQUEST'])) {
@@ -42,42 +42,40 @@ if (!empty($_SERVER['HTTP_X_MULIB_DIALOG_FORM_REQUEST'])) {
 require('../../../../config.php');
 require_once($CFG->dirroot . '/lib/formslib.php');
 
-$contextid = required_param('contextid', PARAM_INT);
-$context = context::instance_by_id($contextid);
+$assignmentid = required_param('assignmentid', PARAM_INT);
 
 require_login();
-require_capability('tool/mucertify:edit', $context);
 
-if ($context->contextlevel != CONTEXT_SYSTEM && $context->contextlevel != CONTEXT_COURSECAT) {
-    throw new moodle_exception('invalidcontext');
-}
+$assignment = $DB->get_record('tool_mucertify_assignment', ['id' => $assignmentid], '*', MUST_EXIST);
+$certification = $DB->get_record('tool_mucertify_certification', ['id' => $assignment->certificationid], '*', MUST_EXIST);
+$source = $DB->get_record('tool_mucertify_source', ['id' => $assignment->sourceid], '*', MUST_EXIST);
 
-$currenturl = new moodle_url('/admin/tool/mucertify/management/certification_add.php', ['contextid' => $context->id]);
-management::setup_index_page($currenturl, $context);
+$context = context::instance_by_id($certification->contextid);
+require_capability('tool/mucertify:admin', $context);
 
-$certification = new stdClass();
-$certification->contextid = $context->id;
-$certification->fullname = '';
-$certification->idnumber = '';
-$certification->description = '';
-$certification->descriptionformat = FORMAT_HTML;
+$returnurl = new moodle_url('/admin/tool/mucertify/management/user_assignment.php', ['id' => $assignment->id]);
 
-$editoroptions = certification::get_description_editor_options($context->id);
+$user = $DB->get_record('user', ['id' => $assignment->userid], '*', MUST_EXIST);
 
-$form = new \tool_mucertify\local\form\certification_add(null, ['data' => $certification, 'editoroptions' => $editoroptions]);
+$currenturl = new moodle_url('/admin/tool/mucertify/management/period_create.php', ['id' => $assignment->id]);
+
+management::setup_certification_page($currenturl, $context, $certification, 'certification_users');
+
+$form = new \tool_mucertify\local\form\period_create(null,
+    ['assignment' => $assignment, 'certification' => $certification, 'user' => $user, 'context' => $context]);
 
 if ($form->is_cancelled()) {
-    redirect(new moodle_url('/admin/tool/mucertify/management/index.php', ['contextid' => $context->id]));
+    redirect($returnurl);
 }
 
 if ($data = $form->get_data()) {
-    $certification = certification::add_certification($data);
-    $returlurl = new moodle_url('/admin/tool/mucertify/management/certification.php', ['id' => $certification->id]);
-    $form->redirect_submitted($returlurl);
+    $period = period::add($data);
+    $form->redirect_submitted($returnurl);
 }
 
 echo $OUTPUT->header();
-echo $OUTPUT->heading(get_string('addcertification', 'tool_mucertify'));
+
+echo $OUTPUT->heading(fullname($user), 3);
 
 echo $form->render();
 

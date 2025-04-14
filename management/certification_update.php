@@ -17,7 +17,7 @@
 // phpcs:disable moodle.Files.BoilerplateComment.CommentEndedTooSoon
 
 /**
- * Certification management interface.
+ * Update certification.
  *
  * @package    tool_mucertify
  * @copyright  2023 Open LMS (https://www.openlms.net/)
@@ -70,12 +70,12 @@ if ($form->is_cancelled()) {
 }
 
 if ($data = $form->get_data()) {
-    $certification = certification::update_certification_general($data);
+    $certification = certification::update_general($data);
     $form->redirect_submitted($returnurl);
 }
 
 echo $OUTPUT->header();
-echo $OUTPUT->heading(get_string('updatecertification', 'tool_mucertify'));
+echo $OUTPUT->heading(get_string('certification_update', 'tool_mucertify'));
 
 echo $form->render();
 
