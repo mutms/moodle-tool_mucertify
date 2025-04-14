@@ -77,8 +77,22 @@ class renderer extends \plugin_renderer_base {
             $description = '&nbsp;';
         }
         $result .= '<dt class="col-3">' . get_string('description') . '</dt><dd class="col-9">' . $description . '</dd>';
-        $result .= '<dt class="col-3">' . get_string('archived', 'tool_mucertify') . '</dt><dd class="col-9">'
-            . ($certification->archived ? get_string('yes') : get_string('no')) . '</dd>';
+
+        $archived = $certification->archived ? get_string('yes') : get_string('no');
+        if (has_capability('tool/mucertify:edit', $context)) {
+            if ($certification->archived) {
+                $url = new moodle_url('/admin/tool/mucertify/management/certification_restore.php', ['id' => $certification->id]);
+                $action = new \tool_mulib\output\dialog_form\icon($url, get_string('certification_restore', 'tool_mucertify'), 'i/settings');
+            } else {
+                $url = new moodle_url('/admin/tool/mucertify/management/certification_archive.php', ['id' => $certification->id]);
+                $action = new \tool_mulib\output\dialog_form\icon($url, get_string('certification_archive', 'tool_mucertify'), 'i/settings');
+            }
+            $action->set_dialog_size('');
+            $archived .= $this->output->render($action);
+        }
+        $result .= '<dt class="col-3">' . get_string('archived', 'tool_mucertify') . '</dt><dd class="col-9">' . $archived . '</dd>';
+
+        /** @var \tool_mucertify\output\customfield\renderer $customfieldoutput */
         $customfieldoutput = $this->page->get_renderer('tool_mucertify', 'customfield');
         $result .= $customfieldoutput->render_customfields($certification->id);
         $result .= '</dl>';

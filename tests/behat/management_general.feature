@@ -165,3 +165,39 @@ Feature: General certification management tests
       | Certification ID   | CT02              |
       | Test field         | Test value        |
     And I press dialog form button "Add certification"
+
+  @javascript
+  Scenario: Manager may archive and restore certification
+    Given I log in as "manager1"
+    And I am on the "tool_mucertify > All certifications management" page
+    And I click on "Add certification" "button"
+    And I set the following fields in the ".modal-dialog" "css_element" to these values:
+      | Certification name  | Certification 001 |
+      | Certification ID    | C01               |
+    And I press dialog form button "Add certification"
+
+    When I click on "Archive certification" "link"
+    And I press dialog form button "Archive certification"
+    Then I should see "Yes" in the "Archived" definition list item
+
+    When I click on "Restore certification" "link"
+    And I press dialog form button "Restore certification"
+    Then I should see "No" in the "Archived" definition list item
+
+  @javascript
+  Scenario: Manager may delete certification
+    Given I log in as "manager1"
+    And I am on the "tool_mucertify > All certifications management" page
+    And I click on "Add certification" "button"
+    And I set the following fields in the ".modal-dialog" "css_element" to these values:
+      | Certification name  | Certification 001 |
+      | Certification ID    | C01               |
+    And I press dialog form button "Add certification"
+    And I click on "Archive certification" "link"
+    And I press dialog form button "Archive certification"
+    And I should see "Yes" in the "Archived" definition list item
+
+    When I click on "Certification actions" "link"
+    And I click on "Delete certification" "link"
+    And I press dialog form button "Delete certification"
+    Then I should see "No certifications found"

@@ -301,7 +301,7 @@ final class assignment_test extends \advanced_testcase {
         $this->assertFalse(\tool_mucertify\local\assignment::has_active_assignments($user1->id));
 
         $assignment = \tool_mucertify\local\assignment::update_user((object)['id' => $assignment->id, 'archived' => 0]);
-        $certification = \tool_mucertify\local\certification::update_certification_general((object)['id' => $certification->id, 'archived' => 1]);
+        $certification = \tool_mucertify\local\certification::archive($certification->id);
         $this->assertFalse(\tool_mucertify\local\assignment::has_active_assignments($user1->id));
     }
 

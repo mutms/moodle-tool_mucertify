@@ -60,6 +60,7 @@ final class certification_update extends \tool_mulib\local\dialog_form {
         $mform->setType('description_editor', PARAM_RAW);
 
         $mform->addElement('select', 'archived', get_string('archived', 'tool_mucertify'), [0 => get_string('no'), 1 => get_string('yes')]);
+        $mform->hardFreeze('archived');
 
         $mform->addElement('hidden', 'id');
         $mform->setType('id', PARAM_INT);

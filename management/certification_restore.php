@@ -17,7 +17,7 @@
 // phpcs:disable moodle.Files.BoilerplateComment.CommentEndedTooSoon
 
 /**
- * Certification management interface.
+ * Certification restore.
  *
  * @package    tool_mucertify
  * @copyright  2022 Open LMS (https://www.openlms.net/)
@@ -33,8 +33,12 @@
 /** @var stdClass $COURSE */
 
 use tool_mucertify\local\management;
-use tool_mulib\output\action_menu\dropdown;
+use tool_mucertify\local\certification;
 
+// phpcs:ignoreFile moodle.Files.MoodleInternal.MoodleInternalGlobalState
+if (!empty($_SERVER['HTTP_X_MULIB_DIALOG_FORM_REQUEST'])) {
+    define('AJAX_SCRIPT', true);
+}
 require('../../../../config.php');
 require_once($CFG->dirroot . '/lib/formslib.php');
 
@@ -44,40 +48,30 @@ require_login();
 
 $certification = $DB->get_record('tool_mucertify_certification', ['id' => $id], '*', MUST_EXIST);
 $context = context::instance_by_id($certification->contextid);
-require_capability('tool/mucertify:view', $context);
+require_capability('tool/mucertify:edit', $context);
 
-$currenturl = new moodle_url('/admin/tool/mucertify/management/certification.php', ['id' => $id]);
-
+$currenturl = new moodle_url('/admin/tool/mucertify/management/certification_restore.php', ['id' => $certification->id]);
 management::setup_certification_page($currenturl, $context, $certification, 'certification_general');
 
-/** @var \tool_mucertify\output\management\renderer $managementoutput */
-$managementoutput = $PAGE->get_renderer('tool_mucertify', 'management');
+$form = new \tool_mucertify\local\form\certification_restore(null, ['certification' => $certification]);
+$returnurl = new moodle_url('/admin/tool/mucertify/management/certification.php', ['id' => $certification->id]);
 
-$dropdown = new dropdown(get_string('extra_menu_management_certification_general', 'tool_mucertify'));
-if ($certification->archived && has_capability('tool/mucertify:delete', $context)) {
-    $url = new moodle_url('/admin/tool/mucertify/management/certification_delete.php', ['id' => $certification->id]);
-    $link = new tool_mulib\output\dialog_form\link($url, get_string('deletecertification', 'tool_mucertify'));
-    $link->set_after_submit($link::AFTER_SUBMIT_REDIRECT);
-    $dropdown->add_dialog_form($link);
+if (!$certification->archived) {
+    redirect($returnurl);
 }
-if ($dropdown->has_items()) {
-    $PAGE->add_header_action($OUTPUT->render($dropdown));
+
+if ($form->is_cancelled()) {
+    redirect($returnurl);
+}
+
+if ($data = $form->get_data()) {
+    certification::restore($certification->id);
+    $form->redirect_submitted($returnurl);
 }
 
 echo $OUTPUT->header();
+echo $OUTPUT->heading(get_string('certification_restore', 'tool_mucertify'));
 
-$buttons = [];
-if (has_capability('tool/mucertify:edit', $context)) {
-    $url = new moodle_url('/admin/tool/mucertify/management/certification_update.php', ['id' => $certification->id]);
-    $editbutton = new tool_mulib\output\dialog_form\button($url, get_string('edit'));
-    $buttons[] = $OUTPUT->render($editbutton);
-}
-
-echo $managementoutput->render_certification_general($certification);
-
-if ($buttons) {
-    $buttons = implode(' ', $buttons);
-    echo $OUTPUT->box($buttons, 'buttons');
-}
+echo $form->render();
 
 echo $OUTPUT->footer();

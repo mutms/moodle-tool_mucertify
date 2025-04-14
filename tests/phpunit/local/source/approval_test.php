@@ -82,9 +82,9 @@ final class approval_test extends \advanced_testcase {
 
         // Must not be archived.
 
-        $certification1 = certification::update_certification_general((object)['id' => $certification1->id, 'archived' => 1]);
+        $certification1 = certification::archive($certification1->id);
         $this->assertFalse(approval::can_user_request($certification1, $source1a, $user1->id));
-        $certification1 = certification::update_certification_general((object)['id' => $certification1->id, 'archived' => 0]);
+        $certification1 = certification::restore($certification1->id);
 
         // Real user required.
 

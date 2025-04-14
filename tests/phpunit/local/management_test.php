@@ -101,8 +101,8 @@ final class management_test extends \advanced_testcase {
         $certification5 = $generator->create_certification(['contextid' => $catcontext1->id]);
         $certification6 = $generator->create_certification(['contextid' => $catcontext2->id]);
 
-        $certification3 = \tool_mucertify\local\certification::update_certification_general((object)['id' => $certification3->id, 'archived' => 1]);
-        $certification5 = \tool_mucertify\local\certification::update_certification_general((object)['id' => $certification5->id, 'archived' => 1]);
+        $certification3 = \tool_mucertify\local\certification::archive($certification3->id);
+        $certification5 = \tool_mucertify\local\certification::archive($certification5->id);
 
         $result = \tool_mucertify\local\management::fetch_certifications(null, false, '', 0, 100, 'id ASC');
         $this->assertCount(2, $result);

@@ -237,8 +237,9 @@ final class certification {
         if (isset($data->descriptionformat)) {
             $record->descriptionformat = $data->descriptionformat;
         }
-        if (isset($data->archived)) {
-            $record->archived = (int)(bool)$data->archived;
+        // Do not change archived flag here!
+        if (isset($data->archived) && $data->archived != $oldcertification->archived) {
+            debugging('Use certification::archive() and certification::restore() to change archived flag', DEBUG_DEVELOPER);
         }
 
         $DB->update_record('tool_mucertify_certification', $record);
@@ -291,6 +292,68 @@ final class certification {
             $DB->set_field('tool_mucertify_certification', 'presentationjson', util::json_encode($presenation), ['id' => $certification->id]);
             $certification = $DB->get_record('tool_mucertify_certification', ['id' => $data->id], '*', MUST_EXIST);
         }
+
+        return $certification;
+    }
+
+    /**
+     * Archive certification.
+     *
+     * @param int $certificationid
+     * @return stdClass
+     */
+    public static function archive(int $certificationid): stdClass {
+        global $DB;
+
+        $certification = $DB->get_record('tool_mucertify_certification', ['id' => $certificationid], '*', MUST_EXIST);
+
+        if ($certification->archived) {
+            return $certification;
+        }
+
+        $trans = $DB->start_delegated_transaction();
+
+        $DB->set_field('tool_mucertify_certification', 'archived', '1', ['id' => $certification->id]);
+        $certification = self::make_snapshot($certification->id, 'archive');
+
+        $trans->allow_commit();
+
+        $event = \tool_mucertify\event\certification_updated::create_from_certification($certification);
+        $event->trigger();
+
+        \tool_mucertify\local\assignment::fix_assignment_sources($certification->id, null);
+        \tool_muprog\local\source\mucertify::sync_certifications($certification->id, null);
+
+        return $certification;
+    }
+
+    /**
+     * Restore certification.
+     *
+     * @param int $certificationid
+     * @return stdClass
+     */
+    public static function restore(int $certificationid): stdClass {
+        global $DB;
+
+        $certification = $DB->get_record('tool_mucertify_certification', ['id' => $certificationid], '*', MUST_EXIST);
+
+        if (!$certification->archived) {
+            return $certification;
+        }
+
+        $trans = $DB->start_delegated_transaction();
+
+        $DB->set_field('tool_mucertify_certification', 'archived', '0', ['id' => $certification->id]);
+        $certification = self::make_snapshot($certification->id, 'restore');
+
+        $trans->allow_commit();
+
+        $event = \tool_mucertify\event\certification_updated::create_from_certification($certification);
+        $event->trigger();
+
+        \tool_mucertify\local\assignment::fix_assignment_sources($certification->id, null);
+        \tool_muprog\local\source\mucertify::sync_certifications($certification->id, null);
 
         return $certification;
     }

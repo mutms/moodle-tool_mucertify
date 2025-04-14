@@ -403,7 +403,7 @@ final class certificate_test extends \advanced_testcase {
             'timecertified' => (string)$now,
         ];
         $period6 = \tool_mucertify\local\period::override_dates((object)$dateoverrides);
-        $certification2 = \tool_mucertify\local\certification::update_certification_general((object)['id' => $certification2->id, 'archived' => 1]);
+        $certification2 = \tool_mucertify\local\certification::archive($certification2->id);
 
         \tool_mucertify\local\certificate::cron();
 

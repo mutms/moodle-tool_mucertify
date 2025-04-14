@@ -198,7 +198,7 @@ final class valid_test extends \advanced_testcase {
             'timecertified' => (string)$now,
         ];
         $period6 = period::override_dates((object)$dateoverrides);
-        $certification2 = certification::update_certification_general((object)['id' => $certification2->id, 'archived' => 1]);
+        $certification2 = certification::archive($certification2->id);
 
         $sink = $this->redirectMessages();
         \tool_mucertify\local\notification\valid::notify_users(null, null);

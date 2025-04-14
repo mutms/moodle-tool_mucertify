@@ -20,6 +20,7 @@
 namespace tool_mucertify\phpunit\local;
 
 use tool_muprog\local\course_reset;
+use tool_mucertify\local\certification;
 
 /**
  * Certification helper test.
@@ -42,14 +43,14 @@ final class certification_test extends \advanced_testcase {
     public function test_get_description_editor_options(): void {
         $syscontext = \context_system::instance();
 
-        $result = \tool_mucertify\local\certification::get_description_editor_options($syscontext->id);
+        $result = certification::get_description_editor_options($syscontext->id);
         $this->assertIsArray($result);
         $this->assertSame(-1, $result['maxfiles']);
         $this->assertSame($syscontext, $result['context']);
     }
 
     public function test_get_image_filemanager_options(): void {
-        $result = \tool_mucertify\local\certification::get_image_filemanager_options();
+        $result = certification::get_image_filemanager_options();
         $this->assertIsArray($result);
         $this->assertSame(1, $result['maxfiles']);
         $this->assertSame(0, $result['subdirs']);
@@ -63,12 +64,10 @@ final class certification_test extends \advanced_testcase {
         $category = $this->getDataGenerator()->create_category();
         $catcontext = \context_coursecat::instance($category->id);
 
-        /** @var \tool_mucertify_generator $generator */
-        $generator = $this->getDataGenerator()->get_plugin_generator('tool_mucertify');
         /** @var \tool_muprog_generator $programgenerator */
         $programgenerator = $this->getDataGenerator()->get_plugin_generator('tool_muprog');
 
-        $expectedperiods = (array)\tool_mucertify\local\certification::get_periods_defaults();
+        $expectedperiods = (array)certification::get_periods_defaults();
 
         $data = [
             'fullname' => 'Certifikace 1',
@@ -76,7 +75,7 @@ final class certification_test extends \advanced_testcase {
             'contextid' => $syscontext->id,
         ];
         $this->setCurrentTimeStart();
-        $certification = \tool_mucertify\local\certification::add_certification((object)$data);
+        $certification = certification::add_certification((object)$data);
         $this->assertInstanceOf('stdClass', $certification);
         $this->assertSame((string)$syscontext->id, $certification->contextid);
         $this->assertSame('Certifikace 1', $certification->fullname);
@@ -109,7 +108,7 @@ final class certification_test extends \advanced_testcase {
             'recertify' => '98765',
         ];
         $this->setCurrentTimeStart();
-        $certification = \tool_mucertify\local\certification::add_certification((object)$data);
+        $certification = certification::add_certification((object)$data);
         $this->assertInstanceOf('stdClass', $certification);
         $this->assertSame((string)$catcontext->id, $certification->contextid);
         $this->assertSame('Certifikace 2', $certification->fullname);
@@ -133,7 +132,7 @@ final class certification_test extends \advanced_testcase {
             'programid2' => $program2->id,
             'recertify' => null,
         ];
-        $certification = \tool_mucertify\local\certification::add_certification((object)$data);
+        $certification = certification::add_certification((object)$data);
         $this->assertSame($program1->id, $certification->programid1);
         $this->assertSame(null, $certification->programid2);
         $this->assertSame(null, $certification->recertify);
@@ -145,12 +144,10 @@ final class certification_test extends \advanced_testcase {
         $category = $this->getDataGenerator()->create_category();
         $catcontext = \context_coursecat::instance($category->id);
 
-        /** @var \tool_mucertify_generator $generator */
-        $generator = $this->getDataGenerator()->get_plugin_generator('tool_mucertify');
         /** @var \tool_muprog_generator $programgenerator */
         $programgenerator = $this->getDataGenerator()->get_plugin_generator('tool_muprog');
 
-        $expectedperiods = (array)\tool_mucertify\local\certification::get_periods_defaults();
+        $expectedperiods = (array)certification::get_periods_defaults();
 
         $program1 = $programgenerator->create_program();
         $program2 = $programgenerator->create_program();
@@ -161,13 +158,12 @@ final class certification_test extends \advanced_testcase {
             'idnumber' => 'c1',
             'contextid' => $syscontext->id,
         ];
-        $certification = \tool_mucertify\local\certification::add_certification((object)$data);
+        $certification = certification::add_certification((object)$data);
 
         $data = [
             'id' => $certification->id,
             'fullname' => 'Certifikace 2',
             'idnumber' => 'c2',
-            'archived' => '1',
             'public' => '1',
             'description' => 'some desc',
             'descriptionformat' => \FORMAT_MARKDOWN,
@@ -176,7 +172,7 @@ final class certification_test extends \advanced_testcase {
             'programid2' => $program2->id,
             'recertify' => '98765',
         ];
-        $certification2 = \tool_mucertify\local\certification::update_certification_general((object)$data);
+        $certification2 = certification::update_certification_general((object)$data);
         $this->assertInstanceOf('stdClass', $certification2);
         $this->assertSame((string)$catcontext->id, $certification2->contextid);
         $this->assertSame('Certifikace 2', $certification2->fullname);
@@ -185,12 +181,58 @@ final class certification_test extends \advanced_testcase {
         $this->assertSame('4', $certification2->descriptionformat);
         $this->assertSame('[]', $certification2->presentationjson);
         $this->assertSame('0', $certification2->public);
-        $this->assertSame('1', $certification2->archived);
+        $this->assertSame('0', $certification2->archived);
         $this->assertSame(null, $certification2->programid1);
         $this->assertSame(null, $certification2->programid2);
         $this->assertSame(null, $certification2->recertify);
         $this->assertSame($expectedperiods, json_decode($certification2->periodsjson, true));
         $this->assertSame($certification->timecreated, $certification2->timecreated);
+
+        $this->assertDebuggingNotCalled();
+        $data = (object)[
+            'id' => $certification->id,
+            'archived' => 1,
+        ];
+        $certification = certification::update_certification_general($data);
+        $this->assertDebuggingCalled('Use certification::archive() and certification::restore() to change archived flag');
+        $this->assertSame('0', $certification->archived);
+    }
+
+    public function test_archive(): void {
+        $syscontext = \context_system::instance();
+
+        $data = [
+            'fullname' => 'Certifikace 1',
+            'idnumber' => 'c1',
+            'contextid' => $syscontext->id,
+        ];
+        $certification = certification::add_certification((object)$data);
+        $this->assertSame('0', $certification->archived);
+
+        $certification = certification::archive($certification->id);
+        $this->assertSame('1', $certification->archived);
+
+        $certification = certification::archive($certification->id);
+        $this->assertSame('1', $certification->archived);
+    }
+
+    public function test_restore(): void {
+        $syscontext = \context_system::instance();
+
+        $data = [
+            'fullname' => 'Certifikace 1',
+            'idnumber' => 'c1',
+            'contextid' => $syscontext->id,
+            'archived' => 1,
+        ];
+        $certification = certification::add_certification((object)$data);
+        $this->assertSame('1', $certification->archived);
+
+        $certification = certification::restore($certification->id);
+        $this->assertSame('0', $certification->archived);
+
+        $certification = certification::restore($certification->id);
+        $this->assertSame('0', $certification->archived);
     }
 
     public function test_update_certification_visibility(): void {
@@ -206,7 +248,7 @@ final class certification_test extends \advanced_testcase {
         /** @var \tool_muprog_generator $programgenerator */
         $programgenerator = $this->getDataGenerator()->get_plugin_generator('tool_muprog');
 
-        $expectedperiods = (array)\tool_mucertify\local\certification::get_periods_defaults();
+        $expectedperiods = (array)certification::get_periods_defaults();
 
         $program1 = $programgenerator->create_program();
         $program2 = $programgenerator->create_program();
@@ -222,7 +264,7 @@ final class certification_test extends \advanced_testcase {
             'contextid' => $syscontext->id,
             'public' => '0',
         ];
-        $certification = \tool_mucertify\local\certification::add_certification((object)$data);
+        $certification = certification::add_certification((object)$data);
 
         $data = [
             'id' => $certification->id,
@@ -237,7 +279,7 @@ final class certification_test extends \advanced_testcase {
             'programid2' => $program2->id,
             'recertify' => '98765',
         ];
-        $certification2 = \tool_mucertify\local\certification::update_certification_visibility((object)$data);
+        $certification2 = certification::update_certification_visibility((object)$data);
         $this->assertInstanceOf('stdClass', $certification2);
         $this->assertSame($certification->contextid, $certification2->contextid);
         $this->assertSame($certification->fullname, $certification2->fullname);
@@ -258,7 +300,7 @@ final class certification_test extends \advanced_testcase {
             'cohorts' => [$cohort2->id, $cohort1->id],
             'public' => 0,
         ];
-        $certification = \tool_mucertify\local\certification::update_certification_visibility((object)$data);
+        $certification = certification::update_certification_visibility((object)$data);
         $cs = $DB->get_records('tool_mucertify_cohort', ['certificationid' => $certification->id], 'cohortid ASC');
         $this->assertCount(2, $cs);
         $cs = array_values($cs);
@@ -270,7 +312,7 @@ final class certification_test extends \advanced_testcase {
             'cohorts' => [$cohort2->id, $cohort3->id],
             'public' => 0,
         ];
-        $certification = \tool_mucertify\local\certification::update_certification_visibility((object)$data);
+        $certification = certification::update_certification_visibility((object)$data);
         $cs = $DB->get_records('tool_mucertify_cohort', ['certificationid' => $certification->id], 'cohortid ASC');
         $this->assertCount(2, $cs);
         $cs = array_values($cs);
@@ -291,7 +333,7 @@ final class certification_test extends \advanced_testcase {
         $program2 = $programgenerator->create_program();
         $program3 = $programgenerator->create_program();
 
-        $defaultperiods = (array)\tool_mucertify\local\certification::get_periods_defaults();
+        $defaultperiods = (array)certification::get_periods_defaults();
 
         $data = [
             'fullname' => 'Certifikace 1',
@@ -299,12 +341,12 @@ final class certification_test extends \advanced_testcase {
             'contextid' => $catcontext->id,
             'public' => '0',
         ];
-        $certification = \tool_mucertify\local\certification::add_certification((object)$data);
+        $certification = certification::add_certification((object)$data);
 
         $data = [
             'id' => $certification->id,
         ];
-        $certification = \tool_mucertify\local\certification::update_certification_settings((object)$data);
+        $certification = certification::update_certification_settings((object)$data);
         $this->assertInstanceOf('stdClass', $certification);
         $this->assertSame(null, $certification->programid1);
         $this->assertSame(null, $certification->programid2);
@@ -316,11 +358,11 @@ final class certification_test extends \advanced_testcase {
             'programid1' => $program1->id,
             'resettype1' => course_reset::RESETTYPE_FULL,
             'due1' => '9876',
-            'valid1' => \tool_mucertify\local\certification::SINCE_WINDOWDUE,
-            'windowend1' => \tool_mucertify\local\util::get_delay_form_value(['since' => \tool_mucertify\local\certification::SINCE_WINDOWSTART, 'delay' => 'P7D'], 'days'),
-            'expiration1' => \tool_mucertify\local\util::get_delay_form_value(['since' => \tool_mucertify\local\certification::SINCE_CERTIFIED, 'delay' => 'P1Y'], 'days'),
+            'valid1' => certification::SINCE_WINDOWDUE,
+            'windowend1' => \tool_mucertify\local\util::get_delay_form_value(['since' => certification::SINCE_WINDOWSTART, 'delay' => 'P7D'], 'days'),
+            'expiration1' => \tool_mucertify\local\util::get_delay_form_value(['since' => certification::SINCE_CERTIFIED, 'delay' => 'P1Y'], 'days'),
         ];
-        $certification = \tool_mucertify\local\certification::update_certification_settings((object)$data);
+        $certification = certification::update_certification_settings((object)$data);
         $this->assertInstanceOf('stdClass', $certification);
         $this->assertSame($program1->id, $certification->programid1);
         $this->assertSame(null, $certification->programid2);
@@ -329,14 +371,14 @@ final class certification_test extends \advanced_testcase {
         $this->assertSame($data['resettype1'], $periods->resettype1);
         $this->assertSame($data['due1'], $periods->due1);
         $this->assertSame($data['valid1'], $periods->valid1);
-        $this->assertSame(['since' => \tool_mucertify\local\certification::SINCE_WINDOWSTART, 'delay' => 'P7D'], $periods->windowend1);
-        $this->assertSame(['since' => \tool_mucertify\local\certification::SINCE_CERTIFIED, 'delay' => 'P1Y'], $periods->expiration1);
+        $this->assertSame(['since' => certification::SINCE_WINDOWSTART, 'delay' => 'P7D'], $periods->windowend1);
+        $this->assertSame(['since' => certification::SINCE_CERTIFIED, 'delay' => 'P1Y'], $periods->expiration1);
 
         $data2 = [
             'id' => (string)$certification->id,
             'recertify' => (string)DAYSECS,
         ];
-        $certification = \tool_mucertify\local\certification::update_certification_settings((object)$data2);
+        $certification = certification::update_certification_settings((object)$data2);
         $this->assertInstanceOf('stdClass', $certification);
         $this->assertSame($program1->id, $certification->programid1);
         $this->assertSame($program1->id, $certification->programid2);
@@ -345,8 +387,8 @@ final class certification_test extends \advanced_testcase {
         $this->assertSame($data['resettype1'], $periods->resettype1);
         $this->assertSame($data['due1'], $periods->due1);
         $this->assertSame($data['valid1'], $periods->valid1);
-        $this->assertSame(['since' => \tool_mucertify\local\certification::SINCE_WINDOWSTART, 'delay' => 'P7D'], $periods->windowend1);
-        $this->assertSame(['since' => \tool_mucertify\local\certification::SINCE_CERTIFIED, 'delay' => 'P1Y'], $periods->expiration1);
+        $this->assertSame(['since' => certification::SINCE_WINDOWSTART, 'delay' => 'P7D'], $periods->windowend1);
+        $this->assertSame(['since' => certification::SINCE_CERTIFIED, 'delay' => 'P1Y'], $periods->expiration1);
         $this->assertSame(null, $periods->grace2);
         $this->assertSame($defaultperiods['resettype2'], $periods->resettype2);
         $this->assertSame($defaultperiods['valid2'], $periods->valid2);
@@ -358,11 +400,11 @@ final class certification_test extends \advanced_testcase {
             'programid2' => $program2->id,
             'grace2' => '12345',
             'resettype2' => course_reset::RESETTYPE_STANDARD,
-            'valid2' => \tool_mucertify\local\certification::SINCE_CERTIFIED,
-            'windowend2' => \tool_mucertify\local\util::get_delay_form_value(['since' => \tool_mucertify\local\certification::SINCE_WINDOWSTART, 'delay' => 'P7D'], 'days'),
-            'expiration2' => \tool_mucertify\local\util::get_delay_form_value(['since' => \tool_mucertify\local\certification::SINCE_WINDOWSTART, 'delay' => 'P1Y'], 'days'),
+            'valid2' => certification::SINCE_CERTIFIED,
+            'windowend2' => \tool_mucertify\local\util::get_delay_form_value(['since' => certification::SINCE_WINDOWSTART, 'delay' => 'P7D'], 'days'),
+            'expiration2' => \tool_mucertify\local\util::get_delay_form_value(['since' => certification::SINCE_WINDOWSTART, 'delay' => 'P1Y'], 'days'),
         ];
-        $certification = \tool_mucertify\local\certification::update_certification_settings((object)$data3);
+        $certification = certification::update_certification_settings((object)$data3);
         $this->assertInstanceOf('stdClass', $certification);
         $this->assertSame($program1->id, $certification->programid1);
         $this->assertSame($program2->id, $certification->programid2);
@@ -371,21 +413,21 @@ final class certification_test extends \advanced_testcase {
         $this->assertSame($data['resettype1'], $periods->resettype1);
         $this->assertSame($data['due1'], $periods->due1);
         $this->assertSame($data['valid1'], $periods->valid1);
-        $this->assertSame(['since' => \tool_mucertify\local\certification::SINCE_WINDOWSTART, 'delay' => 'P7D'], $periods->windowend1);
-        $this->assertSame(['since' => \tool_mucertify\local\certification::SINCE_CERTIFIED, 'delay' => 'P1Y'], $periods->expiration1);
+        $this->assertSame(['since' => certification::SINCE_WINDOWSTART, 'delay' => 'P7D'], $periods->windowend1);
+        $this->assertSame(['since' => certification::SINCE_CERTIFIED, 'delay' => 'P1Y'], $periods->expiration1);
         $this->assertSame($data3['grace2'], (string)$periods->grace2);
         $this->assertSame($data3['resettype2'], $periods->resettype2);
         $this->assertSame($data3['valid2'], $periods->valid2);
-        $this->assertSame(['since' => \tool_mucertify\local\certification::SINCE_WINDOWSTART, 'delay' => 'P7D'], $periods->windowend2);
-        $this->assertSame(['since' => \tool_mucertify\local\certification::SINCE_WINDOWSTART, 'delay' => 'P1Y'], $periods->expiration2);
+        $this->assertSame(['since' => certification::SINCE_WINDOWSTART, 'delay' => 'P7D'], $periods->windowend2);
+        $this->assertSame(['since' => certification::SINCE_WINDOWSTART, 'delay' => 'P1Y'], $periods->expiration2);
 
         $data4 = [
             'id' => (string)$certification->id,
             'recertify' => null,
-            'windowend1' => \tool_mucertify\local\util::get_delay_form_value(['since' => \tool_mucertify\local\certification::SINCE_NEVER, 'delay' => null], 'days'),
-            'expiration1' => \tool_mucertify\local\util::get_delay_form_value(['since' => \tool_mucertify\local\certification::SINCE_NEVER, 'delay' => null], 'days'),
+            'windowend1' => \tool_mucertify\local\util::get_delay_form_value(['since' => certification::SINCE_NEVER, 'delay' => null], 'days'),
+            'expiration1' => \tool_mucertify\local\util::get_delay_form_value(['since' => certification::SINCE_NEVER, 'delay' => null], 'days'),
         ];
-        $certification = \tool_mucertify\local\certification::update_certification_settings((object)$data4);
+        $certification = certification::update_certification_settings((object)$data4);
         $this->assertInstanceOf('stdClass', $certification);
         $this->assertSame($program1->id, $certification->programid1);
         $this->assertSame(null, $certification->programid2);
@@ -394,8 +436,8 @@ final class certification_test extends \advanced_testcase {
         $this->assertSame($data['resettype1'], $periods->resettype1);
         $this->assertSame($data['due1'], $periods->due1);
         $this->assertSame($data['valid1'], $periods->valid1);
-        $this->assertSame(['since' => \tool_mucertify\local\certification::SINCE_NEVER, 'delay' => null], $periods->windowend1);
-        $this->assertSame(['since' => \tool_mucertify\local\certification::SINCE_NEVER, 'delay' => null], $periods->expiration1);
+        $this->assertSame(['since' => certification::SINCE_NEVER, 'delay' => null], $periods->windowend1);
+        $this->assertSame(['since' => certification::SINCE_NEVER, 'delay' => null], $periods->expiration1);
         $this->assertSame($data3['grace2'], (string)$periods->grace2);
         $this->assertSame($data3['resettype2'], $periods->resettype2);
         $this->assertSame($data3['valid2'], $periods->valid2);
@@ -405,12 +447,12 @@ final class certification_test extends \advanced_testcase {
         $data5 = [
             'id' => (string)$certification->id,
             'recertify' => (string)WEEKSECS,
-            'windowend1' => ['since' => \tool_mucertify\local\certification::SINCE_WINDOWSTART, 'delay' => 'P6D'],
-            'expiration1' => ['since' => \tool_mucertify\local\certification::SINCE_CERTIFIED, 'delay' => 'P1Y'],
-            'windowend2' => ['since' => \tool_mucertify\local\certification::SINCE_WINDOWDUE, 'delay' => 'P7D'],
-            'expiration2' => ['since' => \tool_mucertify\local\certification::SINCE_WINDOWSTART, 'delay' => 'P2Y'],
+            'windowend1' => ['since' => certification::SINCE_WINDOWSTART, 'delay' => 'P6D'],
+            'expiration1' => ['since' => certification::SINCE_CERTIFIED, 'delay' => 'P1Y'],
+            'windowend2' => ['since' => certification::SINCE_WINDOWDUE, 'delay' => 'P7D'],
+            'expiration2' => ['since' => certification::SINCE_WINDOWSTART, 'delay' => 'P2Y'],
         ];
-        $certification = \tool_mucertify\local\certification::update_certification_settings((object)$data5);
+        $certification = certification::update_certification_settings((object)$data5);
         $this->assertInstanceOf('stdClass', $certification);
         $this->assertSame($program1->id, $certification->programid1);
         $this->assertSame($program1->id, $certification->programid2);
@@ -419,13 +461,13 @@ final class certification_test extends \advanced_testcase {
         $this->assertSame($data['resettype1'], $periods->resettype1);
         $this->assertSame($data['due1'], $periods->due1);
         $this->assertSame($data['valid1'], $periods->valid1);
-        $this->assertSame(['since' => \tool_mucertify\local\certification::SINCE_WINDOWSTART, 'delay' => 'P6D'], $periods->windowend1);
-        $this->assertSame(['since' => \tool_mucertify\local\certification::SINCE_CERTIFIED, 'delay' => 'P1Y'], $periods->expiration1);
+        $this->assertSame(['since' => certification::SINCE_WINDOWSTART, 'delay' => 'P6D'], $periods->windowend1);
+        $this->assertSame(['since' => certification::SINCE_CERTIFIED, 'delay' => 'P1Y'], $periods->expiration1);
         $this->assertSame($data3['grace2'], (string)$periods->grace2);
         $this->assertSame($data3['resettype2'], $periods->resettype2);
         $this->assertSame($data3['valid2'], $periods->valid2);
-        $this->assertSame(['since' => \tool_mucertify\local\certification::SINCE_WINDOWDUE, 'delay' => 'P7D'], $periods->windowend2);
-        $this->assertSame(['since' => \tool_mucertify\local\certification::SINCE_WINDOWSTART, 'delay' => 'P2Y'], $periods->expiration2);
+        $this->assertSame(['since' => certification::SINCE_WINDOWDUE, 'delay' => 'P7D'], $periods->windowend2);
+        $this->assertSame(['since' => certification::SINCE_WINDOWSTART, 'delay' => 'P2Y'], $periods->expiration2);
     }
 
     public function test_update_certificate(): void {
@@ -444,14 +486,14 @@ final class certification_test extends \advanced_testcase {
 
         $template = $certificategenerator->create_template(['name' => 't1']);
 
-        $certification = \tool_mucertify\local\certification::update_certificate($certification->id, $template->get_id());
+        $certification = certification::update_certificate($certification->id, $template->get_id());
         $this->assertSame((string)$template->get_id(), $certification->templateid);
 
-        $certification = \tool_mucertify\local\certification::update_certificate($certification->id, null);
+        $certification = certification::update_certificate($certification->id, null);
         $this->assertSame(null, $certification->templateid);
 
-        $certification = \tool_mucertify\local\certification::update_certificate($certification->id, $template->get_id());
-        $certification = \tool_mucertify\local\certification::update_certificate($certification->id, 0);
+        $certification = certification::update_certificate($certification->id, $template->get_id());
+        $certification = certification::update_certificate($certification->id, 0);
         $this->assertSame(null, $certification->templateid);
     }
 
@@ -490,7 +532,7 @@ final class certification_test extends \advanced_testcase {
         ];
         $certification2 = $generator->create_certification($data);
 
-        \tool_mucertify\local\certification::delete_certification($certification2->id);
+        certification::delete_certification($certification2->id);
         $this->assertSame(false, $DB->record_exists('tool_mucertify_certification', ['id' => $certification2->id]));
         $this->assertSame(true, $DB->record_exists('tool_mucertify_certification', ['id' => $certification1->id]));
     }
@@ -504,13 +546,13 @@ final class certification_test extends \advanced_testcase {
             'idnumber' => 'SP1',
             'contextid' => $syscontext->id,
         ];
-        $certification = \tool_mucertify\local\certification::add_certification($data);
+        $certification = certification::add_certification($data);
         $this->setAdminUser();
         $admin = get_admin();
 
         $this->setCurrentTimeStart();
         $DB->delete_records('tool_mucertify_crt_snapshot', []);
-        \tool_mucertify\local\certification::make_snapshot($certification->id, 'test', 'some explanation');
+        certification::make_snapshot($certification->id, 'test', 'some explanation');
 
         $records = $DB->get_records('tool_mucertify_crt_snapshot', []);
         $this->assertCount(1, $records);
@@ -522,10 +564,10 @@ final class certification_test extends \advanced_testcase {
         $this->assertSame($admin->id, $record->snapshotby);
         $this->assertSame('some explanation', $record->explanation);
 
-        \tool_mucertify\local\certification::delete_certification($certification->id);
+        certification::delete_certification($certification->id);
         $this->setCurrentTimeStart();
         $DB->delete_records('tool_mucertify_crt_snapshot', []);
-        \tool_mucertify\local\certification::make_snapshot($certification->id, 'delete', 'some explanation');
+        certification::make_snapshot($certification->id, 'delete', 'some explanation');
 
         $records = $DB->get_records('tool_mucertify_crt_snapshot', []);
         $this->assertCount(1, $records);
@@ -555,7 +597,7 @@ final class certification_test extends \advanced_testcase {
         ];
         $certification = $generator->create_certification($data);
 
-        \tool_mucertify\local\certification::pre_course_category_delete($category->get_db_record());
+        certification::pre_course_category_delete($category->get_db_record());
         $certification = $DB->get_record('tool_mucertify_certification', ['id' => $certification->id], '*', MUST_EXIST);
         $this->assertSame((string)$syscontext->id, $certification->contextid);
 
@@ -584,7 +626,7 @@ final class certification_test extends \advanced_testcase {
             'windowend2' => ['since' => 'never', 'delay' => null],
             'expiration2' => ['since' => 'never', 'delay' => null],
         ];
-        $defaults = \tool_mucertify\local\certification::get_periods_defaults();
+        $defaults = certification::get_periods_defaults();
         $this->assertInstanceOf(\stdClass::class, $defaults);
         $this->assertSame($expected, (array)$defaults);
     }
@@ -596,7 +638,7 @@ final class certification_test extends \advanced_testcase {
         /** @var \tool_muprog_generator $programgenerator */
         $programgenerator = $this->getDataGenerator()->get_plugin_generator('tool_muprog');
 
-        $perioddefaults = \tool_mucertify\local\certification::get_periods_defaults();
+        $perioddefaults = certification::get_periods_defaults();
 
         $program1 = $programgenerator->create_program();
         $program2 = $programgenerator->create_program();
@@ -610,16 +652,16 @@ final class certification_test extends \advanced_testcase {
         ];
         $certification = $generator->create_certification($data);
 
-        $result = \tool_mucertify\local\certification::get_periods_settings($certification);
+        $result = certification::get_periods_settings($certification);
         $this->assertInstanceOf(\stdClass::class, $result);
-        $expected = \tool_mucertify\local\certification::get_periods_defaults();
+        $expected = certification::get_periods_defaults();
         $expected->programid1 = $program1->id;
         $expected->programid2 = $program2->id;
         $expected->recertify = $data->recertify;
         $this->assertEquals((array)$expected, (array)$result);
 
         $certification->programid2 = null;
-        $result = \tool_mucertify\local\certification::get_periods_settings($certification);
+        $result = certification::get_periods_settings($certification);
         $expected->programid2 = $program1->id;
         $this->assertEquals((array)$expected, (array)$result);
 
@@ -628,14 +670,14 @@ final class certification_test extends \advanced_testcase {
         $periods = json_decode($certification->periodsjson);
         $periods->resettype1 = 'xxxx';
         $certification->periodsjson = \tool_mucertify\local\util::json_encode($periods);
-        $result = \tool_mucertify\local\certification::get_periods_settings($certification);
+        $result = certification::get_periods_settings($certification);
         $expected->resettype1 = $perioddefaults->resettype1;
         $this->assertEquals((array)$expected, (array)$result);
         $this->assertDebuggingCalled("invalid resettype1 detected in $certification->id certification");
     }
 
     public function test_get_resettype_options(): void {
-        $result = \tool_mucertify\local\certification::get_resettype_options();
+        $result = certification::get_resettype_options();
         $this->assertIsArray($result);
         $this->assertArrayHasKey(course_reset::RESETTYPE_NONE, $result);
         $this->assertArrayHasKey(course_reset::RESETTYPE_DEALLOCATE, $result);
@@ -645,32 +687,32 @@ final class certification_test extends \advanced_testcase {
     }
 
     public function test_get_valid_options(): void {
-        $result = \tool_mucertify\local\certification::get_valid_options();
+        $result = certification::get_valid_options();
         $this->assertIsArray($result);
-        $this->assertArrayHasKey(\tool_mucertify\local\certification::SINCE_CERTIFIED, $result);
-        $this->assertArrayHasKey(\tool_mucertify\local\certification::SINCE_WINDOWSTART, $result);
-        $this->assertArrayHasKey(\tool_mucertify\local\certification::SINCE_WINDOWDUE, $result);
-        $this->assertArrayHasKey(\tool_mucertify\local\certification::SINCE_WINDOWEND, $result);
+        $this->assertArrayHasKey(certification::SINCE_CERTIFIED, $result);
+        $this->assertArrayHasKey(certification::SINCE_WINDOWSTART, $result);
+        $this->assertArrayHasKey(certification::SINCE_WINDOWDUE, $result);
+        $this->assertArrayHasKey(certification::SINCE_WINDOWEND, $result);
         $this->assertCount(4, $result);
     }
 
     public function test_get_windowend_options(): void {
-        $result = \tool_mucertify\local\certification::get_windowend_options();
+        $result = certification::get_windowend_options();
         $this->assertIsArray($result);
-        $this->assertArrayHasKey(\tool_mucertify\local\certification::SINCE_NEVER, $result);
-        $this->assertArrayHasKey(\tool_mucertify\local\certification::SINCE_WINDOWSTART, $result);
-        $this->assertArrayHasKey(\tool_mucertify\local\certification::SINCE_WINDOWDUE, $result);
+        $this->assertArrayHasKey(certification::SINCE_NEVER, $result);
+        $this->assertArrayHasKey(certification::SINCE_WINDOWSTART, $result);
+        $this->assertArrayHasKey(certification::SINCE_WINDOWDUE, $result);
         $this->assertCount(3, $result);
     }
 
     public function test_get_expiration_options(): void {
-        $result = \tool_mucertify\local\certification::get_expiration_options();
+        $result = certification::get_expiration_options();
         $this->assertIsArray($result);
-        $this->assertArrayHasKey(\tool_mucertify\local\certification::SINCE_NEVER, $result);
-        $this->assertArrayHasKey(\tool_mucertify\local\certification::SINCE_CERTIFIED, $result);
-        $this->assertArrayHasKey(\tool_mucertify\local\certification::SINCE_WINDOWSTART, $result);
-        $this->assertArrayHasKey(\tool_mucertify\local\certification::SINCE_WINDOWDUE, $result);
-        $this->assertArrayHasKey(\tool_mucertify\local\certification::SINCE_WINDOWEND, $result);
+        $this->assertArrayHasKey(certification::SINCE_NEVER, $result);
+        $this->assertArrayHasKey(certification::SINCE_CERTIFIED, $result);
+        $this->assertArrayHasKey(certification::SINCE_WINDOWSTART, $result);
+        $this->assertArrayHasKey(certification::SINCE_WINDOWDUE, $result);
+        $this->assertArrayHasKey(certification::SINCE_WINDOWEND, $result);
         $this->assertCount(5, $result);
     }
 
@@ -718,12 +760,12 @@ final class certification_test extends \advanced_testcase {
         $this->assertEquals('pocus', $customfieldsdata->testfield2);
 
         $certification2->customfield_testfield1 = 'hocus-pocus';
-        \tool_mucertify\local\certification::update_certification_general($certification2);
+        certification::update_certification_general($certification2);
 
         $customfieldsdata = $handler->export_instance_data_object($certification2->id);
         $this->assertEquals('hocus-pocus', $customfieldsdata->testfield1);
 
-        \tool_mucertify\local\certification::delete_certification($certification1->id);
+        certification::delete_certification($certification1->id);
 
         $this->assertFalse($DB->record_exists('customfield_data', ['instanceid' => $certification1->id, 'fieldid' => $field1->get('id')]));
     }
