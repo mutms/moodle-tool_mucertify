@@ -161,9 +161,10 @@ function tool_mucertify_extend_navigation_category_settings($navigation, $course
         return;
     }
 
+    // NOTE: catnav is added to unbreak breadcrums on management pages.
     $settingsnode = navigation_node::create(
         get_string('certifications', 'tool_mucertify'),
-        new moodle_url('/admin/tool/mucertify/management/index.php', ['contextid' => $coursecategorycontext->id]),
+        new moodle_url('/admin/tool/mucertify/management/index.php', ['contextid' => $coursecategorycontext->id, 'catnav' => 1]),
         navigation_node::TYPE_CUSTOM,
         null,
         'tool_mucertify_certifications'
