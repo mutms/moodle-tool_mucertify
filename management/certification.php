@@ -57,6 +57,7 @@ $dropdown = new dropdown(get_string('extra_menu_management_certification_general
 if ($certification->archived && has_capability('tool/mucertify:delete', $context)) {
     $url = new moodle_url('/admin/tool/mucertify/management/certification_delete.php', ['id' => $certification->id]);
     $link = new tool_mulib\output\dialog_form\link($url, get_string('certification_delete', 'tool_mucertify'));
+    $link->set_dialog_size('sm');
     $link->set_after_submit($link::AFTER_SUBMIT_REDIRECT);
     $dropdown->add_dialog_form($link);
 }
