@@ -315,7 +315,7 @@ final class certification {
 
         $trans->allow_commit();
 
-        \tool_mucertify\event\certification_updated::create_from_certification($certification)->trigger();
+        \tool_mucertify\event\certification_archived::create_from_certification($certification)->trigger();
 
         \tool_mucertify\local\assignment::fix_assignment_sources($certification->id, null);
         \tool_muprog\local\source\mucertify::sync_certifications($certification->id, null);
@@ -346,7 +346,7 @@ final class certification {
 
         $trans->allow_commit();
 
-        \tool_mucertify\event\certification_updated::create_from_certification($certification)->trigger();
+        \tool_mucertify\event\certification_restored::create_from_certification($certification)->trigger();
 
         \tool_mucertify\local\assignment::fix_assignment_sources($certification->id, null);
         \tool_muprog\local\source\mucertify::sync_certifications($certification->id, null);
