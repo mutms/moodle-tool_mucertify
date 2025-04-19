@@ -260,14 +260,12 @@ abstract class base {
         $record->id = $DB->insert_record('tool_mucertify_assignment', $record);
         $assignment = $DB->get_record('tool_mucertify_assignment', ['id' => $record->id], '*', MUST_EXIST);
 
-        $assignment = assignment::fix_caches($assignment->id);
-
         \tool_mucertify\event\assignment_created::create_from_assignment($certification, $assignment)->trigger();
 
         if (empty($dateoverrides['noperiod'])) {
             \tool_mucertify\local\period::add_first($assignment, $dateoverrides);
-            $assignment = assignment::fix_caches($assignment->id);
         }
+        $assignment = $DB->get_record('tool_mucertify_assignment', ['id' => $assignment->id], '*', MUST_EXIST);
 
         $trans->allow_commit();
 
@@ -301,23 +299,22 @@ abstract class base {
         }
 
         $DB->update_record('tool_mucertify_assignment', $record);
-        $record = $DB->get_record('tool_mucertify_assignment', ['id' => $record->id], '*', MUST_EXIST);
+        $assignment = period::fix_flags($record->certificationid, $record->userid);
 
         if (property_exists($data, 'stoprecertify')) {
-            period::update_recertifiable($record, (bool)$data->stoprecertify);
+            period::update_recertifiable($assignment, (bool)$data->stoprecertify);
+            $assignment = $DB->get_record('tool_mucertify_assignment', ['id' => $assignment->id], '*', MUST_EXIST);
         }
 
-        $record = assignment::fix_caches($record->id);
-
-        \tool_mucertify\event\assignment_updated::create_from_assignment($certification, $record)->trigger();
+        \tool_mucertify\event\assignment_updated::create_from_assignment($certification, $assignment)->trigger();
 
         $trans->allow_commit();
 
-        \tool_muprog\local\source\mucertify::sync_certifications($record->certificationid, $record->userid);
+        \tool_muprog\local\source\mucertify::sync_certifications($assignment->certificationid, $assignment->userid);
 
-        notification_manager::trigger_notifications($record->certificationid, $record->userid);
+        notification_manager::trigger_notifications($assignment->certificationid, $assignment->userid);
 
-        return $DB->get_record('tool_mucertify_assignment', ['id' => $record->id], '*', MUST_EXIST);
+        return $DB->get_record('tool_mucertify_assignment', ['id' => $assignment->id], '*', MUST_EXIST);
     }
 
     /**

@@ -398,11 +398,9 @@ final class manual_test extends \advanced_testcase {
         manual::update_assignment((object)$data);
         $assignment2 = $DB->get_record('tool_mucertify_assignment', ['userid' => $user1->id, 'certificationid' => $certification->id], '*', MUST_EXIST);
         $this->assertSame($data['timecertifiedtemp'], $assignment2->timecertifiedtemp);
-        $this->assertSame($assignment2->timecreated, $assignment2->timecertifiedfrom);
-        $this->assertSame($assignment2->timecertifiedtemp, $assignment2->timecertifieduntil);
+        $this->assertSame(null, $assignment2->timecertifiedfrom);
+        $this->assertSame(null, $assignment2->timecertifieduntil);
         $assignment->timecertifiedtemp = $assignment2->timecertifiedtemp;
-        $assignment->timecertifiedfrom = $assignment2->timecertifiedfrom;
-        $assignment->timecertifieduntil = $assignment2->timecertifieduntil;
         $this->assertSame((array)$assignment, (array)$assignment2);
 
         $data = [
@@ -424,8 +422,6 @@ final class manual_test extends \advanced_testcase {
         manual::update_assignment((object)$data);
         $assignment2 = $DB->get_record('tool_mucertify_assignment', ['userid' => $user1->id, 'certificationid' => $certification->id], '*', MUST_EXIST);
         $assignment->timecertifiedtemp = $assignment2->timecertifiedtemp;
-        $assignment->timecertifiedfrom = $assignment2->timecertifiedfrom;
-        $assignment->timecertifieduntil = $assignment2->timecertifieduntil;
         $this->assertSame((array)$assignment, (array)$assignment2);
 
         $period = $DB->get_record('tool_mucertify_period', ['userid' => $user1->id, 'certificationid' => $certification->id], '*', MUST_EXIST);
@@ -445,6 +441,31 @@ final class manual_test extends \advanced_testcase {
         manual::update_assignment((object)$data);
         $period = $DB->get_record('tool_mucertify_period', ['userid' => $user1->id, 'certificationid' => $certification->id], '*', MUST_EXIST);
         $this->assertSame('1', $period->recertifiable);
+
+        $period = \tool_mucertify\local\period::override_dates((object)[
+            'id' => $period->id,
+            'timecertified' => $now,
+            'timefrom' => (string)($now + 10),
+            'timeuntil' => (string)($now + DAYSECS * 10),
+        ]);
+        $data = [
+            'id' => $assignment->id,
+            'timecertifiedtemp' => (string)($now + DAYSECS * 12),
+        ];
+        manual::update_assignment((object)$data);
+        $assignment2 = $DB->get_record('tool_mucertify_assignment', ['userid' => $user1->id, 'certificationid' => $certification->id], '*', MUST_EXIST);
+        $this->assertSame($period->timefrom, $assignment2->timecertifiedfrom);
+        $this->assertSame($period->timeuntil, $assignment2->timecertifieduntil);
+        $this->assertSame($data['timecertifiedtemp'], $assignment2->timecertifiedtemp);
+
+        $data = [
+            'id' => $assignment->id,
+            'timecertifiedtemp' => (string)($now + DAYSECS * 9),
+        ];
+        $assignment2 = manual::update_assignment((object)$data);
+        $this->assertSame($period->timefrom, $assignment2->timecertifiedfrom);
+        $this->assertSame($period->timeuntil, $assignment2->timecertifieduntil);
+        $this->assertSame(null, $assignment2->timecertifiedtemp);
     }
 
     public function test_unassign_user(): void {
