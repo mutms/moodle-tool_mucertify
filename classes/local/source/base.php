@@ -115,8 +115,68 @@ abstract class base {
      * @param stdClass $assignment
      * @return bool
      */
-    public static function assignment_edit_supported(stdClass $certification, stdClass $source, stdClass $assignment): bool {
-        return false;
+    public static function is_assignment_update_possible(stdClass $certification, stdClass $source, stdClass $assignment): bool {
+        if ($certification->id != $source->certificationid
+            || $certification->id != $assignment->certificationid
+            || $source->id != $assignment->sourceid
+        ) {
+            throw new \coding_exception('invalid parameters');
+        }
+        if ($certification->archived) {
+            return false;
+        }
+        if ($assignment->archived) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Is it possible to manually archive user assignment?
+     *
+     * @param stdClass $certification
+     * @param stdClass $source
+     * @param stdClass $assignment
+     * @return bool
+     */
+    public static function is_assignment_archive_possible(stdClass $certification, stdClass $source, stdClass $assignment): bool {
+        if ($certification->id != $source->certificationid
+            || $certification->id != $assignment->certificationid
+            || $source->id != $assignment->sourceid
+        ) {
+            throw new \coding_exception('invalid parameters');
+        }
+        if ($certification->archived) {
+            return false;
+        }
+        if ($assignment->archived) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Is it possible to manually restore user assignment?
+     *
+     * @param stdClass $certification
+     * @param stdClass $source
+     * @param stdClass $assignment
+     * @return bool
+     */
+    public static function is_assignment_restore_possible(stdClass $certification, stdClass $source, stdClass $assignment): bool {
+        if ($certification->id != $source->certificationid
+            || $certification->id != $assignment->certificationid
+            || $source->id != $assignment->sourceid
+        ) {
+            throw new \coding_exception('invalid parameters');
+        }
+        if ($certification->archived) {
+            return false;
+        }
+        if (!$assignment->archived) {
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -127,8 +187,20 @@ abstract class base {
      * @param stdClass $assignment
      * @return bool
      */
-    public static function assignment_delete_supported(stdClass $certification, stdClass $source, stdClass $assignment): bool {
-        return false;
+    public static function is_assignment_delete_possible(stdClass $certification, stdClass $source, stdClass $assignment): bool {
+        if ($certification->id != $source->certificationid
+            || $certification->id != $assignment->certificationid
+            || $source->id != $assignment->sourceid
+        ) {
+            throw new \coding_exception('invalid parameters');
+        }
+        if ($certification->archived) {
+            return false;
+        }
+        if (!$assignment->archived) {
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -231,7 +303,7 @@ abstract class base {
      * @param array $dateoverrides if 'noperiod' non-empty then period is not created
      * @return stdClass user assignment record
      */
-    final protected static function assign_user(stdClass $certification, stdClass $source, int $userid, array $sourcedata, array $dateoverrides = []): stdClass {
+    final protected static function assignment_create(stdClass $certification, stdClass $source, int $userid, array $sourcedata, array $dateoverrides = []): stdClass {
         global $DB;
 
         if ($userid <= 0 || isguestuser($userid)) {
@@ -280,30 +352,52 @@ abstract class base {
      * @param stdClass $data
      * @return stdClass assignment record
      */
-    final public static function update_assignment(stdClass $data): stdClass {
+    final public static function assignment_update(stdClass $data): stdClass {
         global $DB;
 
-        $record = $DB->get_record('tool_mucertify_assignment', ['id' => $data->id], '*', MUST_EXIST);
-        $certification = $DB->get_record('tool_mucertify_certification', ['id' => $record->certificationid], '*', MUST_EXIST);
+        $assignment = $DB->get_record('tool_mucertify_assignment', ['id' => $data->id], '*', MUST_EXIST);
+        $certification = $DB->get_record('tool_mucertify_certification', ['id' => $assignment->certificationid], '*', MUST_EXIST);
 
         $trans = $DB->start_delegated_transaction();
 
+        $update = [];
+
         if (property_exists($data, 'timecertifiedtemp')) {
-            $record->timecertifiedtemp = $data->timecertifiedtemp;
-            if (!$record->timecertifiedtemp) {
-                $record->timecertifiedtemp = null;
+            if ($data->timecertifiedtemp != $assignment->timecertifiedtemp) {
+                $update['timecertifiedtemp'] = $data->timecertifiedtemp;
+                if ($update['timecertifiedtemp'] <= 0) {
+                    $update['timecertifiedtemp'] = null;
+                }
             }
         }
-        if (property_exists($data, 'archived')) {
-            $record->archived = (int)(bool)$data->archived;
+
+        // Do not change archived flag here!
+        if (isset($data->archived) && $data->archived != $assignment->archived) {
+            debugging('Use base::assignment_archive() and base::assignment_restore() to change archived flag', DEBUG_DEVELOPER);
         }
 
-        $DB->update_record('tool_mucertify_assignment', $record);
-        $assignment = period::fix_flags($record->certificationid, $record->userid);
+        if ($update) {
+            $update['id'] = $assignment->id;
+            $DB->update_record('tool_mucertify_assignment', (object)$update);
+            $assignment = period::fix_flags($assignment->certificationid, $assignment->userid);
+        }
 
-        if (property_exists($data, 'stoprecertify')) {
-            period::update_recertifiable($assignment, (bool)$data->stoprecertify);
-            $assignment = $DB->get_record('tool_mucertify_assignment', ['id' => $assignment->id], '*', MUST_EXIST);
+        if ($certification->recertify !== null && property_exists($data, 'stoprecertify')) {
+            $stoprecertify = !$DB->record_exists('tool_mucertify_period', [
+                'certificationid' => $assignment->certificationid,
+                'userid' => $assignment->userid,
+                'recertifiable' => 1,
+            ]);
+            if ($stoprecertify != $data->stoprecertify) {
+                $assignment = period::update_recertifiable($assignment, (bool)$data->stoprecertify);
+                $update['stoprecertify'] = $data->stoprecertify;
+            }
+        }
+
+        if (!$update) {
+            // Nothing changed.
+            $trans->allow_commit();
+            return $assignment;
         }
 
         \tool_mucertify\event\assignment_updated::create_from_assignment($certification, $assignment)->trigger();
@@ -318,6 +412,56 @@ abstract class base {
     }
 
     /**
+     * Archive user assignment.
+     *
+     * @param int $assignmentid
+     * @return stdClass
+     */
+    public static function assignment_archive(int $assignmentid): stdClass {
+        global $DB;
+
+        $assignment = $DB->get_record('tool_mucertify_assignment', ['id' => $assignmentid], '*', MUST_EXIST);
+        $certification = $DB->get_record('tool_mucertify_certification', ['id' => $assignment->certificationid], '*', MUST_EXIST);
+
+        if ($assignment->archived) {
+            return $assignment;
+        }
+
+        $DB->set_field('tool_mucertify_assignment', 'archived', 1, ['id' => $assignment->id]);
+
+        \tool_mucertify\event\assignment_archived::create_from_assignment($certification, $assignment)->trigger();
+
+        \tool_muprog\local\source\mucertify::sync_certifications($assignment->certificationid, $assignment->userid);
+
+        return $DB->get_record('tool_mucertify_assignment', ['id' => $assignment->id], '*', MUST_EXIST);
+    }
+
+    /**
+     * Restore user assignment.
+     *
+     * @param int $assignmentid
+     * @return stdClass
+     */
+    public static function assignment_restore(int $assignmentid): stdClass {
+        global $DB;
+
+        $assignment = $DB->get_record('tool_mucertify_assignment', ['id' => $assignmentid], '*', MUST_EXIST);
+        $certification = $DB->get_record('tool_mucertify_certification', ['id' => $assignment->certificationid], '*', MUST_EXIST);
+
+        if (!$assignment->archived) {
+            return $assignment;
+        }
+
+        $DB->set_field('tool_mucertify_assignment', 'archived', 0, ['id' => $assignment->id]);
+
+        \tool_mucertify\event\assignment_restored::create_from_assignment($certification, $assignment)->trigger();
+
+        \tool_muprog\local\source\mucertify::sync_certifications($assignment->certificationid, $assignment->userid);
+
+        return $DB->get_record('tool_mucertify_assignment', ['id' => $assignment->id], '*', MUST_EXIST);
+    }
+
+    /**
      * Unassign user from a certification.
      *
      * @param stdClass $certification
@@ -325,7 +469,7 @@ abstract class base {
      * @param stdClass $assignment
      * @return void
      */
-    final public static function unassign_user(stdClass $certification, stdClass $source, stdClass $assignment): void {
+    final public static function assignment_delete(stdClass $certification, stdClass $source, stdClass $assignment): void {
         global $DB;
 
         if (static::get_type() !== $source->type || $certification->id != $assignment->certificationid || $certification->id != $source->certificationid) {

@@ -99,10 +99,10 @@ final class assignment_test extends \advanced_testcase {
         $this->assertStringContainsString('Archived', $status);
         $certification = certification::restore($certification->id);
 
-        $assignment = \tool_mucertify\local\source\base::update_assignment((object)['id' => $assignment->id, 'archived' => 1]);
+        $assignment = \tool_mucertify\local\source\base::assignment_archive($assignment->id);
         $status = \tool_mucertify\local\assignment::get_status_html($certification, $assignment);
         $this->assertStringContainsString('Archived', $status);
-        $assignment = \tool_mucertify\local\source\base::update_assignment((object)['id' => $assignment->id, 'archived' => 0]);
+        $assignment = \tool_mucertify\local\source\base::assignment_restore($assignment->id);
 
         $period = period::override_dates((object)[
             'id' => $period->id,
@@ -133,24 +133,21 @@ final class assignment_test extends \advanced_testcase {
         $status = \tool_mucertify\local\assignment::get_status_html($certification, $assignment);
         $this->assertStringContainsString('Expired', $status);
 
-        $assignment = \tool_mucertify\local\source\base::update_assignment((object)[
+        $assignment = \tool_mucertify\local\source\base::assignment_update((object)[
             'id' => $assignment->id,
             'timecertifiedtemp' => $now + DAYSECS,
         ]);
         $status = \tool_mucertify\local\assignment::get_status_html($certification, $assignment);
         $this->assertStringContainsString('Temporary valid', $status);
 
-        $assignment = \tool_mucertify\local\source\base::update_assignment((object)[
+        $assignment = \tool_mucertify\local\source\base::assignment_update((object)[
             'id' => $assignment->id,
             'timecertifiedtemp' => $now - 1,
         ]);
         $status = \tool_mucertify\local\assignment::get_status_html($certification, $assignment);
         $this->assertStringContainsString('Expired', $status);
 
-        $assignment = \tool_mucertify\local\source\base::update_assignment((object)[
-            'id' => $assignment->id,
-            'archived' => 1,
-        ]);
+        $assignment = \tool_mucertify\local\source\base::assignment_archive($assignment->id);
         $status = \tool_mucertify\local\assignment::get_status_html($certification, $assignment);
         $this->assertStringContainsString('Archived', $status);
     }
@@ -231,10 +228,10 @@ final class assignment_test extends \advanced_testcase {
         $this->assertTrue(\tool_mucertify\local\assignment::has_active_assignments($user1->id));
 
         $assignment = $DB->get_record('tool_mucertify_assignment', ['userid' => $user1->id, 'certificationid' => $certification->id], '*', MUST_EXIST);
-        $assignment = \tool_mucertify\local\source\base::update_assignment((object)['id' => $assignment->id, 'archived' => 1]);
+        $assignment = \tool_mucertify\local\source\base::assignment_archive($assignment->id);
         $this->assertFalse(\tool_mucertify\local\assignment::has_active_assignments($user1->id));
 
-        $assignment = \tool_mucertify\local\source\base::update_assignment((object)['id' => $assignment->id, 'archived' => 0]);
+        $assignment = \tool_mucertify\local\source\base::assignment_restore($assignment->id);
         $certification = \tool_mucertify\local\certification::archive($certification->id);
         $this->assertFalse(\tool_mucertify\local\assignment::has_active_assignments($user1->id));
     }
@@ -266,11 +263,11 @@ final class assignment_test extends \advanced_testcase {
         $assignment = $DB->get_record('tool_mucertify_assignment', ['userid' => $user1->id, 'certificationid' => $certification->id], '*', MUST_EXIST);
         $this->assertSame('Not set', \tool_mucertify\local\assignment::get_until_html($certification, $assignment));
 
-        $assignment = \tool_mucertify\local\source\base::update_assignment((object)['id' => $assignment->id, 'timecertifiedtemp' => $now + DAYSECS]);
+        $assignment = \tool_mucertify\local\source\base::assignment_update((object)['id' => $assignment->id, 'timecertifiedtemp' => $now + DAYSECS]);
         $this->assertSame(userdate($assignment->timecertifiedtemp, get_string('strftimedatetimeshort')),
             \tool_mucertify\local\assignment::get_until_html($certification, $assignment));
 
-        $assignment = \tool_mucertify\local\source\base::update_assignment((object)['id' => $assignment->id, 'timecertifiedtemp' => null]);
+        $assignment = \tool_mucertify\local\source\base::assignment_update((object)['id' => $assignment->id, 'timecertifiedtemp' => null]);
         $period1 = $DB->get_record('tool_mucertify_period', ['userid' => $user1->id, 'certificationid' => $certification->id], '*', MUST_EXIST);
         $dateoverrides = [
             'id' => $period1->id,
@@ -299,12 +296,12 @@ final class assignment_test extends \advanced_testcase {
         $this->assertSame(userdate($period1->timeuntil, get_string('strftimedatetimeshort')),
             \tool_mucertify\local\assignment::get_until_html($certification, $assignment));
 
-        $assignment = \tool_mucertify\local\source\base::update_assignment((object)['id' => $assignment->id, 'timecertifiedtemp' => $now + WEEKSECS]);
+        $assignment = \tool_mucertify\local\source\base::assignment_update((object)['id' => $assignment->id, 'timecertifiedtemp' => $now + WEEKSECS]);
         $period1 = \tool_mucertify\local\period::override_dates((object)$dateoverrides);
         $this->assertSame(userdate($assignment->timecertifiedtemp, get_string('strftimedatetimeshort')),
             \tool_mucertify\local\assignment::get_until_html($certification, $assignment));
 
-        $assignment = \tool_mucertify\local\source\base::update_assignment((object)['id' => $assignment->id, 'timecertifiedtemp' => null]);
+        $assignment = \tool_mucertify\local\source\base::assignment_update((object)['id' => $assignment->id, 'timecertifiedtemp' => null]);
         $dateoverrides = [
             'id' => $period1->id,
             'timewindowstart' => (string)($now + 1500),
@@ -377,11 +374,11 @@ final class assignment_test extends \advanced_testcase {
         $this->assertSame(null, $assignment->timecertifiedfrom);
         $this->assertSame(null, $assignment->timecertifieduntil);
 
-        $assignment = \tool_mucertify\local\source\base::update_assignment((object)['id' => $assignment->id, 'timecertifiedtemp' => $now + DAYSECS]);
+        $assignment = \tool_mucertify\local\source\base::assignment_update((object)['id' => $assignment->id, 'timecertifiedtemp' => $now + DAYSECS]);
         $this->assertSame(null, $assignment->timecertifiedfrom);
         $this->assertSame(null, $assignment->timecertifieduntil);
 
-        $assignment = \tool_mucertify\local\source\base::update_assignment((object)['id' => $assignment->id, 'timecertifiedtemp' => null]);
+        $assignment = \tool_mucertify\local\source\base::assignment_update((object)['id' => $assignment->id, 'timecertifiedtemp' => null]);
         $period1 = $DB->get_record('tool_mucertify_period', ['userid' => $user1->id, 'certificationid' => $certification->id], '*', MUST_EXIST);
         $dateoverrides = [
             'id' => $period1->id,
@@ -413,14 +410,14 @@ final class assignment_test extends \advanced_testcase {
         $this->assertSame($dateoverrides['timeuntil'], $assignment->timecertifieduntil);
         $this->assertSame(null, $assignment->timecertifiedtemp);
 
-        $assignment = \tool_mucertify\local\source\base::update_assignment((object)['id' => $assignment->id, 'timecertifiedtemp' => $now + WEEKSECS]);
+        $assignment = \tool_mucertify\local\source\base::assignment_update((object)['id' => $assignment->id, 'timecertifiedtemp' => $now + WEEKSECS]);
         $period1 = \tool_mucertify\local\period::override_dates((object)$dateoverrides);
         $assignment = $DB->get_record('tool_mucertify_assignment', ['userid' => $user1->id, 'certificationid' => $certification->id], '*', MUST_EXIST);
         $this->assertSame($dateoverrides['timefrom'], $assignment->timecertifiedfrom);
         $this->assertSame($dateoverrides['timeuntil'], $assignment->timecertifieduntil);
         $this->assertSame((string)($now + WEEKSECS), $assignment->timecertifiedtemp);
 
-        $assignment = \tool_mucertify\local\source\base::update_assignment((object)['id' => $assignment->id, 'timecertifiedtemp' => null]);
+        $assignment = \tool_mucertify\local\source\base::assignment_update((object)['id' => $assignment->id, 'timecertifiedtemp' => null]);
         $dateoverrides = [
             'id' => $period1->id,
             'timewindowstart' => (string)($now + 1500),

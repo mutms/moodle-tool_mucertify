@@ -548,9 +548,9 @@ final class period {
      *
      * @param stdClass $assignment
      * @param bool $stoprecertify
-     * @return void
+     * @return stdClass assignment record
      */
-    public static function update_recertifiable(stdClass $assignment, bool $stoprecertify): void {
+    public static function update_recertifiable(stdClass $assignment, bool $stoprecertify): stdClass {
         global $DB;
 
         if ($stoprecertify) {
@@ -560,7 +560,7 @@ final class period {
             $DB->set_field('tool_mucertify_period', 'recertifiable', 1,
                 ['certificationid' => $assignment->certificationid, 'userid' => $assignment->userid, 'timerevoked' => null]);
         }
-        self::fix_flags($assignment->certificationid, $assignment->userid);
+        return self::fix_flags($assignment->certificationid, $assignment->userid);
     }
 
     /**
@@ -1067,7 +1067,7 @@ final class period {
                 continue;
             }
 
-            $prevertrecertification = false;
+            $preventrecertification = false;
             $assignment = $DB->get_record('tool_mucertify_assignment', ['certificationid' => $certification->id, 'userid' => $user->id]);
             if ($assignment) {
                 if ($assign && $skipassigned) {
@@ -1091,7 +1091,7 @@ final class period {
                 }
                 $result['assigned']++;
                 // New periods are created as non-recertifiable.
-                $prevertrecertification = true;
+                $preventrecertification = true;
             }
             $evidence = '';
             if ($data->evidencecolumn !== '' && isset($row[$data->evidencecolumn])) {
@@ -1112,7 +1112,7 @@ final class period {
                 'evidencedetails' => $evidence,
             ]);
             $result['periods']++;
-            if ($prevertrecertification) {
+            if ($preventrecertification) {
                 self::update_recertifiable($assignment, true);
             }
         }
