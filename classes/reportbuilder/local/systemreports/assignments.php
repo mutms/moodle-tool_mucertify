@@ -102,7 +102,7 @@ final class assignments extends system_report {
         $column
             ->add_fields("$assignmentalias.id")
             ->add_callback(static function(string $fullname, \stdClass $row): string {
-                $url = new \moodle_url('/admin/tool/mucertify/management/user_assignment.php', ['id' => $row->id]);
+                $url = new \moodle_url('/admin/tool/mucertify/management/assignment.php', ['id' => $row->id]);
                 return \html_writer::link($url, $fullname);
             });
         $this->add_column($column);

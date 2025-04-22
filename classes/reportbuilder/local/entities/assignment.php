@@ -103,7 +103,7 @@ final class assignment extends base {
                 if ($row->timecertifieduntil != \tool_mulib\local\date_util::TIMESTAMP_FOREVER) {
                     return $value;
                 }
-                return get_string('never', 'tool_mucertify');
+                return get_string('noexpiration', 'tool_mucertify');
             });
 
         $columns[] = (new column(
