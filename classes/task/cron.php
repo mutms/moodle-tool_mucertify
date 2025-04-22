@@ -48,7 +48,7 @@ class cron extends \core\task\scheduled_task {
         if (!$DB->record_exists('tool_mucertify_certification', [])) {
             return;
         }
-        
+
         $trace = new \text_progress_trace();
 
         $trace->output('assignment::fix_assignment_sources');
