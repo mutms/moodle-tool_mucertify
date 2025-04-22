@@ -42,10 +42,13 @@ class cron extends \core\task\scheduled_task {
      * Run task for all program cron stuff.
      */
     public function execute() {
-        if (!enrol_is_enabled('muprog')) {
+        global $DB;
+
+        // Do no use util::is_mucertify_active() here, this is used as final cleanup code.
+        if (!$DB->record_exists('tool_mucertify_certification', [])) {
             return;
         }
-
+        
         $trace = new \text_progress_trace();
 
         $trace->output('assignment::fix_assignment_sources');

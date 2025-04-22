@@ -43,7 +43,7 @@ require_login();
 $usercontext = context_user::instance($USER->id);
 $PAGE->set_context($usercontext);
 
-if (!enrol_is_enabled('muprog')) {
+if (!\tool_mucertify\local\util::is_mucertify_active()) {
     redirect(new moodle_url('/'));
 }
 if (isguestuser()) {

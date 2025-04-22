@@ -609,6 +609,15 @@ final class catalogue_test extends \advanced_testcase {
         $this->assertNull(\tool_mucertify\local\catalogue::get_catalogue_url());
 
         $this->setUser(get_admin());
+        $this->assertNull(\tool_mucertify\local\catalogue::get_catalogue_url());
+
+        /** @var \tool_mucertify_generator $generator */
+        $generator = $this->getDataGenerator()->get_plugin_generator('tool_mucertify');
+
+        $certification1 = $generator->create_certification(['archived' => 1]);
+        $this->assertNull(\tool_mucertify\local\catalogue::get_catalogue_url());
+
+        $certification1 = $generator->create_certification(['archived' => 0]);
         $expected = new \moodle_url('/admin/tool/mucertify/catalogue/index.php');
         $this->assertSame((string)$expected, (string)\tool_mucertify\local\catalogue::get_catalogue_url());
 
