@@ -20,7 +20,7 @@
 namespace tool_mucertify\phpunit\local;
 
 /**
- * certification catalogue test.
+ * Certification catalogue test.
  *
  * @group      muTMS
  * @package    tool_mucertify
