@@ -98,6 +98,7 @@ final class manual extends base {
 
             $url = new \moodle_url('/admin/tool/mucertify/management/source_manual_upload.php', ['sourceid' => $source->id]);
             $link = new \tool_mulib\output\dialog_form\link($url, get_string('source_manual_uploadusers', 'tool_mucertify'));
+            $link->set_dialog_size('xl');
             $actions->get_dropdown()->add_dialog_form($link);
         }
     }
