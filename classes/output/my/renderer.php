@@ -64,6 +64,7 @@ class renderer extends \plugin_renderer_base {
         }
 
         $result = '';
+        // NOTE: this will be changed to template during Bootstrap 5 migration.
         $result .= <<<EOT
 <div class="certificationbox clearfix" data-certificationid="$certification->id">
   $certificationimage
