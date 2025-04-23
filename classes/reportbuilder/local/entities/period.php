@@ -158,6 +158,23 @@ final class period extends base {
             });
 
         $columns[] = (new column(
+            'timefrom',
+            new lang_string('fromdate', 'tool_mucertify'),
+            $this->get_entity_name()
+        ))
+            ->add_joins($this->get_joins())
+            ->set_type(column::TYPE_TIMESTAMP)
+            ->add_fields("{$periodalias}.timefrom")
+            ->set_is_sortable(true)
+            ->add_callback([format::class, 'userdate'], $dateformat)
+            ->add_callback(static function($value, \stdClass $row): string {
+                if ($row->timefrom) {
+                    return $value;
+                }
+                return get_string('notset', 'tool_mucertify');
+            });
+
+        $columns[] = (new column(
             'timeuntil',
             new lang_string('untildate', 'tool_mucertify'),
             $this->get_entity_name()

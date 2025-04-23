@@ -54,7 +54,7 @@ class cron extends \core\task\scheduled_task {
         $trace->output('assignment::fix_assignment_sources');
         \tool_mucertify\local\assignment::fix_assignment_sources(null, null);
 
-        $trace->output('certify::sync_certifications');
+        $trace->output('mucertify::sync_certifications');
         \tool_muprog\local\source\mucertify::sync_certifications(null, null);
 
         $trace->output('notification_manager::trigger_notifications');

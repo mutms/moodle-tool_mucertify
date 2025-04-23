@@ -30,13 +30,13 @@ use lang_string;
 use moodle_url;
 
 /**
- * Embedded certification assignment periods report.
+ * Embedded My certification periods report.
  *
  * @package     tool_mucertify
  * @copyright   2025 Petr Skoda
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-final class assignment_periods extends system_report {
+final class my_assignment_periods extends system_report {
     /** @var \stdClass */
     protected $certification;
     /** @var \stdClass */
@@ -53,12 +53,11 @@ final class assignment_periods extends system_report {
 
     #[\Override]
     protected function initialise(): void {
-        global $DB;
-        // Make sure assignmentid and context match!
+        global $DB, $USER;
         $this->assignment = $DB->get_record('tool_mucertify_assignment',
-            ['id' => $this->get_parameters()['assignmentid']], '*', MUST_EXIST);
+            ['id' => $this->get_parameters()['assignmentid'], 'userid' => $USER->id, 'archived' => 0], '*', MUST_EXIST);
         $this->certification = $DB->get_record('tool_mucertify_certification',
-            ['id' => $this->assignment->certificationid, 'contextid' => $this->get_context()->id], '*', MUST_EXIST);
+            ['id' => $this->assignment->certificationid, 'archived' => 0], '*', MUST_EXIST);
 
         $this->periodentity = new period();
         $periodentityalias = $this->periodentity->get_table_alias('tool_mucertify_period');
@@ -76,10 +75,11 @@ final class assignment_periods extends system_report {
         $this->add_entity($this->allocationentity);
         $this->add_join("LEFT JOIN {tool_muprog_allocation} {$allocationalias} ON {$allocationalias}.id = {$periodentityalias}.allocationid");
 
+        // Link program to allocation instad of period, we want only assigned programs here.
         $this->programentity = new program();
         $programalias = $this->programentity->get_table_alias('tool_muprog_program');
         $this->add_entity($this->programentity);
-        $this->add_join("LEFT JOIN {tool_muprog_program} {$programalias} ON {$programalias}.id = {$periodentityalias}.programid");
+        $this->add_join("LEFT JOIN {tool_muprog_program} {$programalias} ON {$programalias}.id = {$allocationalias}.programid");
 
         $certificationentity = new certification();
         $certificationalias = $certificationentity->get_table_alias('tool_mucertify_certification');
@@ -100,7 +100,20 @@ final class assignment_periods extends system_report {
 
     #[\Override]
     protected function can_view(): bool {
-        return has_capability('tool/mucertify:view', $this->get_context());
+        global $USER;
+
+        // Everybody may view own certifications.
+        if (!\tool_mucertify\local\util::is_mucertify_active()) {
+            return false;
+        }
+        if (isguestuser() || !isloggedin()) {
+            return false;
+        }
+        $usercontext = $this->get_context();
+        if ($usercontext->contextlevel != CONTEXT_USER || $usercontext->instanceid != $USER->id) {
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -111,14 +124,7 @@ final class assignment_periods extends system_report {
         $allocationalias = $this->allocationentity->get_table_alias('tool_muprog_allocation');
         $programalias = $this->programentity->get_table_alias('tool_muprog_program');
 
-        $column = $this->periodentity->get_column('timewindowstart')
-            ->add_field("{$periodalias}.id")
-            ->add_callback(static function($value, \stdClass $row): string {
-                $url = new \moodle_url('/admin/tool/mucertify/management/period.php', ['id' => $row->id]);
-                return \html_writer::link($url, $value);
-            });
-        $this->add_column($column);
-
+        $this->add_column_from_entity('period:timewindowstart');
         $this->add_column_from_entity('period:timewindowdue');
         $this->add_column_from_entity('period:timewindowend');
 
@@ -126,24 +132,18 @@ final class assignment_periods extends system_report {
             ->set_title(new lang_string('program', 'tool_muprog'))
             ->add_field("{$programalias}.fullname")
             ->add_field("{$allocationalias}.id", 'allocationid')
-            ->add_field("{$programalias}.contextid")
+            ->add_field("{$programalias}.id", 'programid')
             ->set_callback(static function(?string $value, \stdClass $row): string {
-                if (!$row->contextid) {
+                if (!$row->allocationid) {
                     return '';
                 }
                 $fullname = format_string($row->fullname);
-                if (!$row->allocationid) {
-                    return $fullname;
-                }
-                $context = \context::instance_by_id($row->contextid, IGNORE_MISSING);
-                if (!$context || !has_capability('tool/muprog:view', $context)) {
-                    return $fullname;
-                }
-                $url = new \moodle_url('/admin/tool/muprog/management/allocation.php', ['id' => $row->allocationid]);
+                $url = new \moodle_url('/admin/tool/muprog/my/program.php', ['id' => $row->programid]);
                 return \html_writer::link($url, $fullname);
             });
         $this->add_column($column);
 
+        $this->add_column_from_entity('period:timefrom');
         $this->add_column_from_entity('period:timeuntil');
 
         if ($this->certification->recertify) {
@@ -159,15 +159,5 @@ final class assignment_periods extends system_report {
      * Adds the filters we want to display in the report.
      */
     protected function add_filters(): void {
-    }
-
-    /**
-     * Row class
-     *
-     * @param \stdClass $row
-     * @return string
-     */
-    public function get_row_class(\stdClass $row): string {
-        return $row->timerevoked ? 'text-muted' : '';
     }
 }
