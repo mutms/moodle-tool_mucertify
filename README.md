@@ -1,5 +1,7 @@
 # Certifications for Moodle™
 
+![Moodle Plugin CI](https://github.com/mutms/moodle-tool_mucertify/actions/workflows/moodle-ci.yml/badge.svg)
+
 _Certifications_ is a set of plugins designed to simplify the certification process for your employees
 and serve as a seamless solution for your compliance training needs. 
 
