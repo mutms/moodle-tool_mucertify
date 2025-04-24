@@ -38,12 +38,14 @@ $string['assignment_update'] = 'Update assignment';
 $string['assignments'] = 'Assignments';
 $string['assignmentsources'] = 'Assignment sources';
 $string['catalogue'] = 'Certification catalogue';
+$string['catalogue_actions'] = 'Catalogue actions';
 $string['catalogue_dofilter'] = 'Search';
 $string['catalogue_resetfilter'] = 'Clear';
 $string['catalogue_searchtext'] = 'Search text';
 $string['catalogue_tag'] = 'Filter by tag';
 $string['certificates'] = 'Certificates';
 $string['certification'] = 'Certification';
+$string['certification_actions'] = 'Certification actions';
 $string['certification_archive'] = 'Archive certification';
 $string['certification_archive_info'] = 'Archiving certification:
 

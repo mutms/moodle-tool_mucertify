@@ -266,7 +266,6 @@ final class catalogue {
 
         $searchwhere = '';
         if (isset($this->searchtext)) {
-            // NOTE: We should add better search similar to get_courses_search().
             $concat = $DB->sql_concat_join("' '", ['p.fullname', 'p.description', 'p.idnumber']);
             $searchwhere = 'AND ' . $DB->sql_like("($concat)", ':searchtext', false, false);
             $params['searchtext'] = '%' . $DB->sql_like_escape($this->searchtext) . '%';

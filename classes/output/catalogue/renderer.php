@@ -50,7 +50,7 @@ class renderer extends \plugin_renderer_base {
         if ($CFG->usetags) {
             $tags = \core_tag_tag::get_item_tags('tool_mucertify', 'certification', $certification->id);
             if ($tags) {
-                $tagsdiv = $this->output->tag_list($tags, '', 'certification-tags');
+                $tagsdiv = $this->output->tag_list($tags, '', 'certification-tags mb-3');
             }
         }
 
