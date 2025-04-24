@@ -41,6 +41,7 @@ $syscontext = context_system::instance();
 
 $PAGE->set_url(new moodle_url('/admin/tool/mucertify/catalogue/certification.php', ['id' => $id]));
 $PAGE->set_context(context_system::instance());
+$PAGE->set_secondary_navigation(false);
 
 require_login();
 require_capability('tool/mucertify:viewcatalogue', context_system::instance());
