@@ -51,7 +51,7 @@ class tool_mucertify_generator extends component_generator_base {
      * @return stdClass
      */
     public function create_certification($record = null): stdClass {
-        global $DB;
+        global $DB, $CFG;
 
         $this->certificationcount++;
 
@@ -121,6 +121,12 @@ class tool_mucertify_generator extends component_generator_base {
         unset($record->cohorts);
         unset($record->cohortids);
 
+        $image = null;
+        if (!empty($record->image)) {
+            $image = $record->image;
+        }
+        unset($record->image);
+
         $periodsdefauls = (array)certification::get_periods_defaults();
         $periods = [];
         foreach ((array)$record as $key => $value) {
@@ -167,6 +173,29 @@ class tool_mucertify_generator extends component_generator_base {
             \tool_mucertify\local\source\base::update_source($data);
         }
 
+        if ($image) {
+            $imagefile = $CFG->dirroot . '/' . ltrim($image, '/');
+            if (!file_exists($imagefile)) {
+                throw new Exception('Certification image file does not exist');
+            }
+            $context = \context::instance_by_id($certification->contextid);
+            $fs = get_file_storage();
+            $filerecord = [
+                'contextid' => $context->id,
+                'component' => 'tool_mucertify',
+                'filearea' => 'image',
+                'itemid' => $certification->id,
+                'filepath' => '/',
+                'filename' => basename($image),
+            ];
+            $file = $fs->create_file_from_pathname($filerecord, $imagefile);
+            $presenation = (array)json_decode($certification->presentationjson);
+            $presenation['image'] = $file->get_filename();
+            $DB->set_field('tool_mucertify_certification', 'presentationjson',
+                \tool_mucertify\local\util::json_encode($presenation), ['id' => $certification->id]);
+            $certification = $DB->get_record('tool_mucertify_certification', ['id' => $certification->id], '*', MUST_EXIST);
+        }
+
         return $certification;
     }
 
@@ -203,7 +232,7 @@ class tool_mucertify_generator extends component_generator_base {
             $source = \tool_mucertify\local\source\manual::update_source($data);
         }
 
-        $overridable = ['timecreated', 'timecertifiedtemp'];
+        $overridable = ['timecreated', 'timecertifiedtemp', 'noperiod'];
         $dateoverrides = [];
         foreach ($overridable as $override) {
             if (!empty($record->{$override}) && is_number($record->{$override})) {

@@ -158,6 +158,8 @@ final class generator_test extends \advanced_testcase {
     }
 
     public function test_create_certification_assignment(): void {
+        global $DB;
+
         /** @var \tool_mucertify_generator $generator */
         $generator = $this->getDataGenerator()->get_plugin_generator('tool_mucertify');
         $this->assertInstanceOf('tool_mucertify_generator', $generator);
@@ -171,6 +173,8 @@ final class generator_test extends \advanced_testcase {
         $user1 = $this->getDataGenerator()->create_user();
         $user2 = $this->getDataGenerator()->create_user();
         $user3 = $this->getDataGenerator()->create_user();
+        $user4 = $this->getDataGenerator()->create_user();
+        $user5 = $this->getDataGenerator()->create_user();
 
         $this->setCurrentTimeStart();
         $assignment1 = $generator->create_certification_assignment(
@@ -198,5 +202,23 @@ final class generator_test extends \advanced_testcase {
         $this->assertSame($certification1->id, $assignment3->certificationid);
         $this->assertSame($data->timecertifiedtemp, $assignment3->timecertifiedtemp);
         $this->assertSame($data->timecreated, $assignment3->timecreated);
+
+        $data = (object)[
+            'certificationid' => $certification1->id,
+            'userid' => $user4->id,
+            'noperiod' => '1',
+        ];
+        $assignment4 = $generator->create_certification_assignment($data);
+        $this->assertFalse($DB->record_exists('tool_mucertify_period',
+            ['certificationid' => $certification1->id, 'userid' => $user4->id]));
+
+        $data = (object)[
+            'certificationid' => $certification1->id,
+            'userid' => $user5->id,
+            'noperiod' => '',
+        ];
+        $assignment5 = $generator->create_certification_assignment($data);
+        $this->assertTrue($DB->record_exists('tool_mucertify_period',
+            ['certificationid' => $certification1->id, 'userid' => $user5->id]));
     }
 }
