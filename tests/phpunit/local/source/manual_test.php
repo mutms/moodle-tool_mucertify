@@ -25,7 +25,7 @@ use tool_mucertify\local\source\manual;
 /**
  * Certification manual assignment source test.
  *
- * @group      muTMS
+ * @group      MuTMS
  * @package    tool_mucertify
  * @copyright  2023 Open LMS (https://www.openlms.net/)
  * @copyright  2025 Petr Skoda

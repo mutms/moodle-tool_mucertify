@@ -1,4 +1,4 @@
-@tool @tool_mucertify @muTMS
+@tool @tool_mucertify @MuTMS
 Feature: Certification assignment management tests
 
   Background:

@@ -24,7 +24,7 @@ use tool_mucertify\local\source\manual;
 /**
  * Certification notifications base test.
  *
- * @group      muTMS
+ * @group      MuTMS
  * @package    tool_mucertify
  * @copyright  2024 Open LMS (https://www.openlms.net/)
  * @copyright  2025 Petr Skoda

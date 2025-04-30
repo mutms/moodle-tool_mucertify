@@ -22,7 +22,7 @@ namespace tool_mucertify\phpunit\external;
 /**
  * External API for certification assignment candidates test.
  *
- * @group      muTMS
+ * @group      MuTMS
  * @package    tool_mucertify
  * @copyright  2022 Open LMS (https://www.openlms.net/)
  * @copyright  2025 Petr Skoda

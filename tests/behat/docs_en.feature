@@ -1,4 +1,4 @@
-@tool @tool_mucertify @muTMS @javascript
+@tool @tool_mucertify @MuTMS @javascript
 Feature: Certifications plugin English documentation image generator
 
   Background:

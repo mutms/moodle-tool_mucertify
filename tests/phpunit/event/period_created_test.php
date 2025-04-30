@@ -22,7 +22,7 @@ namespace tool_mucertify\phpunit\event;
 /**
  * Certification period created test.
  *
- * @group      muTMS
+ * @group      MuTMS
  * @package    tool_mucertify
  * @copyright  2025 Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later

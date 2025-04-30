@@ -1,4 +1,4 @@
-@tool @tool_mucertify @muTMS
+@tool @tool_mucertify @MuTMS
 Feature: Import of historic certification periods
 
   Background:

@@ -1,4 +1,4 @@
-@tool @tool_mucertify @muTMS @tool_certificate
+@tool @tool_mucertify @MuTMS @tool_certificate
 Feature: Issuing of certificates for certification completion
 
   Background:
