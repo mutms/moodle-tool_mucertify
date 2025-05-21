@@ -39,3 +39,14 @@ Other recommended plugins:
 
 See [plugin documentation](https://github.com/mutms/moodle-tool_mucertify/blob/MOODLE_405_STABLE/docs/en/index.md)
 and [Wiki pages](https://github.com/mutms/moodle-tool_mucertify/wiki) for more information.
+
+## Acknowledgement
+
+This plugin is a fork of [Certifications by Open LMS](https://github.com/open-lms-open-source/moodle-tool_certify)
+and exists thanks to Open LMS's decision to release it to the public under the GPL 3 license.
+
+Note that the current code is still under development and is not suitable for production use.
+If you require a stable version for a production environment or commercial support,
+please consider [Open LMS Work](https://www.openlms.net/open-lms-work/).
+
+MuTMS project is not associated with Open LMS or Moodle HQ in any way.
