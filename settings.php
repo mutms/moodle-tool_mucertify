@@ -50,9 +50,14 @@ if ($ADMIN->fulltree) {
         new lang_string('source_selfassignment_allownew_desc', 'tool_mucertify'), 1));
 }
 
-$ADMIN->add('tool_mucertify', new admin_externalpage('tool_mucertify_customfield',
+$ADMIN->add('tool_mucertify', new admin_externalpage('tool_mucertify_customfield_certification',
     new lang_string('customfields', 'tool_mucertify'),
-    new moodle_url("/admin/tool/mucertify/management/customfield.php"),
+    new moodle_url("/admin/tool/mucertify/management/customfield_certification.php"),
+    'tool/mucertify:configurecustomfields'));
+
+$ADMIN->add('tool_mucertify', new admin_externalpage('tool_mucertify_customfield_assignment',
+    new lang_string('customfields_assignment', 'tool_mucertify'),
+    new moodle_url("/admin/tool/mucertify/management/customfield_assignment.php"),
     'tool/mucertify:configurecustomfields'));
 
 $ADMIN->add('tool_mucertify', new admin_externalpage('tool_mucertify_management',

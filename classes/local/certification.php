@@ -158,7 +158,7 @@ final class certification {
         $certification = $DB->get_record('tool_mucertify_certification', ['id' => $data->id], '*', MUST_EXIST);
 
         // Save custom fields if there are any of them in the form.
-        $handler = \tool_mucertify\customfield\fields_handler::create();
+        $handler = \tool_mucertify\customfield\certification_handler::create();
         $data->id = $certification->id;
         $handler->instance_form_save($data);
 
@@ -252,7 +252,7 @@ final class certification {
         $certification = self::update_image($data);
 
         // Save custom fields if there are any of them in the form.
-        $handler = \tool_mucertify\customfield\fields_handler::create();
+        $handler = \tool_mucertify\customfield\certification_handler::create();
         $handler->instance_form_save($data);
 
         $trans->allow_commit();
@@ -663,7 +663,7 @@ final class certification {
 
         $DB->delete_records('tool_mucertify_certification', ['id' => $certification->id]);
 
-        $handler = \tool_mucertify\customfield\fields_handler::create();
+        $handler = \tool_mucertify\customfield\certification_handler::create();
         $handler->delete_instance($certification->id);
 
         $trans->allow_commit();

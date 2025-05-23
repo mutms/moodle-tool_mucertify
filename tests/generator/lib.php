@@ -240,7 +240,16 @@ class tool_mucertify_generator extends component_generator_base {
             }
         }
 
-        \tool_mucertify\local\source\manual::assign_users($certification->id, $source->id, [$user->id], $dateoverrides);
+        $assignmentids = \tool_mucertify\local\source\manual::assign_users($certification->id, $source->id, [$user->id], $dateoverrides);
+
+        // Save custom fields.
+        foreach ($assignmentids as $assignmentid) {
+            $data = (object)(array)$record;
+            /** @var \tool_mucertify\customfield\assignment_handler $handler */
+            $handler = \tool_mucertify\customfield\assignment_handler::create();
+            $data->id = $assignmentid;
+            $handler->instance_form_save($data);
+        }
 
         return $DB->get_record('tool_mucertify_assignment', ['certificationid' => $certification->id, 'userid' => $user->id], '*', MUST_EXIST);
     }

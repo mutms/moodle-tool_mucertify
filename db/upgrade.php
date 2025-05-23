@@ -53,5 +53,12 @@ function xmldb_tool_mucertify_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2025042300, 'tool', 'mucertify');
     }
 
+    if ($oldversion < 2025052300) {
+        // Fix certification fields area.
+        $DB->set_field('customfield_category', 'area', 'certification', ['component' => 'tool_mucertify', 'area' => 'fields']);
+
+        upgrade_plugin_savepoint(true, 2025052300, 'tool', 'mucertify');
+    }
+
     return true;
 }

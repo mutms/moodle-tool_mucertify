@@ -60,15 +60,16 @@ final class assignment_updated_test extends \advanced_testcase {
         $sink = $this->redirectEvents();
         \tool_mucertify\local\source\base::assignment_update($assignment);
         $events = $sink->get_events();
-        $this->assertCount(0, $events);
+        $this->assertCount(1, $events);
+        $this->assertSame(\tool_mucertify\event\assignment_updated::class, get_class($events[0]));
 
+        $sink->clear();
         $assignment->timecertifiedtemp = time() + YEARSECS;
         \tool_mucertify\local\source\base::assignment_update($assignment);
         $events = $sink->get_events();
         $this->assertCount(1, $events);
         $sink->close();
 
-        $this->assertCount(1, $events);
         $event = reset($events);
         $this->assertInstanceOf(\tool_mucertify\event\assignment_updated::class, $event);
         $this->assertEquals($syscontext->id, $event->contextid);

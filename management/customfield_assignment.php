@@ -17,12 +17,10 @@
 // phpcs:disable moodle.Files.BoilerplateComment.CommentEndedTooSoon
 
 /**
- * Configuration for certification custom fields.
+ * Configuration for certification assignment custom fields.
  *
  * @package    tool_mucertify
- * @copyright  2024 Open LMS (https://www.openlms.net/)
  * @copyright  2025 Petr Skoda
- * @author     Farhan Karmali
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -32,15 +30,15 @@
 require('../../../../config.php');
 require_once($CFG->libdir.'/adminlib.php');
 
-admin_externalpage_setup('tool_mucertify_customfield');
+admin_externalpage_setup('tool_mucertify_customfield_assignment');
 
 /** @var \core_customfield\output\renderer $output */
 $output = $PAGE->get_renderer('core_customfield');
 
-$handler = \tool_mucertify\customfield\fields_handler::create();
+$handler = \tool_mucertify\customfield\assignment_handler::create();
 $outputpage = new \core_customfield\output\management($handler);
 
 echo $output->header(),
-$output->heading(new lang_string('customfields', 'tool_mucertify')),
+$output->heading(new lang_string('customfields_assignment', 'tool_mucertify')),
 $output->render($outputpage),
 $output->footer();
