@@ -54,7 +54,7 @@ final class certification_handler extends \core_customfield\handler {
      * @return \moodle_url The URL to configure custom fields for this component
      */
     public function get_configuration_url(): \moodle_url {
-        return new \moodle_url('/admin/tool/mucertify/management/customfield.php', []);
+        return new \moodle_url('/admin/tool/mucertify/management/customfield_certification.php', []);
     }
 
     /**
