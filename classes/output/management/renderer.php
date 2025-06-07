@@ -84,7 +84,7 @@ class renderer extends \plugin_renderer_base {
                 $url = new moodle_url('/admin/tool/mucertify/management/certification_archive.php', ['id' => $certification->id]);
                 $action = new \tool_mulib\output\dialog_form\icon($url, get_string('certification_archive', 'tool_mucertify'), 'i/settings');
             }
-            $action->set_dialog_size('');
+            $action->set_dialog_size('sm');
             $archived .= $this->output->render($action);
         }
         $details[] = ['property' => get_string('archived', 'tool_mucertify'), 'value' => $archived];
