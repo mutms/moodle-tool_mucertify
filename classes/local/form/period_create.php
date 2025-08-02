@@ -55,7 +55,11 @@ final class period_create extends \tool_mulib\local\dialog_form {
         $defaultdates = period::get_default_dates($certification, $user->id, []);
 
         \tool_mucertify\external\form_certification_periods_programid::add_form_element(
-            $mform, $this->arguments, 'programid', get_string('program', 'tool_muprog'));
+            $mform,
+            $this->arguments,
+            'programid',
+            get_string('program', 'tool_muprog')
+        );
         if ($firstperiod) {
             $mform->setDefault('programid', $settings->programid2);
         } else {

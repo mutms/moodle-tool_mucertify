@@ -139,8 +139,12 @@ final class manual extends base {
         $result = [];
 
         $certification = $DB->get_record('tool_mucertify_certification', ['id' => $certificationid], '*', MUST_EXIST);
-        $source = $DB->get_record('tool_mucertify_source',
-            ['id' => $sourceid, 'type' => static::get_type(), 'certificationid' => $certification->id], '*', MUST_EXIST);
+        $source = $DB->get_record(
+            'tool_mucertify_source',
+            ['id' => $sourceid, 'type' => static::get_type(), 'certificationid' => $certification->id],
+            '*',
+            MUST_EXIST
+        );
 
         if (count($userids) === 0) {
             return $result;
@@ -180,7 +184,8 @@ final class manual extends base {
     public static function process_uploaded_data(stdClass $data, array $filedata): array {
         global $DB, $USER;
 
-        if ($data->usermapping !== 'username'
+        if (
+            $data->usermapping !== 'username'
                 && $data->usermapping !== 'email'
                 && $data->usermapping !== 'idnumber'
         ) {
@@ -260,4 +265,3 @@ final class manual extends base {
         return $result;
     }
 }
-

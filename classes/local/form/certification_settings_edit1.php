@@ -43,7 +43,11 @@ final class certification_settings_edit1 extends \tool_mulib\local\dialog_form {
         $settings = certification::get_periods_settings($certification);
 
         \tool_mucertify\external\form_certification_periods_programid::add_form_element(
-            $mform, $this->arguments, 'programid1', get_string('program', 'tool_muprog'));
+            $mform,
+            $this->arguments,
+            'programid1',
+            get_string('program', 'tool_muprog')
+        );
         $mform->setDefault('programid1', $certification->programid1);
         $mform->addRule('programid1', get_string('required'), 'required', null, 'client');
 
@@ -51,8 +55,12 @@ final class certification_settings_edit1 extends \tool_mulib\local\dialog_form {
         $mform->addElement('select', 'resettype1', get_string('resettype1', 'tool_mucertify'), $resettypes);
         $mform->setDefault('resettype1', $settings->resettype1);
 
-        $mform->addElement('duration', 'due1', get_string('windowdueafter', 'tool_mucertify'),
-            ['optional' => true, 'defaultunit' => DAYSECS]);
+        $mform->addElement(
+            'duration',
+            'due1',
+            get_string('windowdueafter', 'tool_mucertify'),
+            ['optional' => true, 'defaultunit' => DAYSECS]
+        );
         $mform->setDefault('due1', $settings->due1);
 
         $since = certification::get_valid_options();
@@ -87,8 +95,12 @@ final class certification_settings_edit1 extends \tool_mulib\local\dialog_form {
         $mform->setType('expiration1[number]', PARAM_INT);
         $mform->setDefault('expiration1', util::get_delay_form_value($settings->expiration1, 'months'));
 
-        $mform->addElement('duration', 'recertify', get_string('recertifybefore', 'tool_mucertify'),
-            ['optional' => true, 'defaultunit' => DAYSECS]);
+        $mform->addElement(
+            'duration',
+            'recertify',
+            get_string('recertifybefore', 'tool_mucertify'),
+            ['optional' => true, 'defaultunit' => DAYSECS]
+        );
         $mform->setDefault('recertify', $settings->recertify);
 
         $mform->addElement('hidden', 'id');

@@ -52,8 +52,11 @@ class renderer extends \plugin_renderer_base {
 
         $presentation = (array)json_decode($certification->presentationjson);
         if (!empty($presentation['image'])) {
-            $imageurl = moodle_url::make_file_url("$CFG->wwwroot/pluginfile.php",
-                '/' . $context->id . '/tool_mucertify/image/' . $certification->id . '/'. $presentation['image'], false);
+            $imageurl = moodle_url::make_file_url(
+                "$CFG->wwwroot/pluginfile.php",
+                '/' . $context->id . '/tool_mucertify/image/' . $certification->id . '/' . $presentation['image'],
+                false
+            );
             $certificationimage = '<div class="certificationimage">' . html_writer::img($imageurl, '') . '</div>';
         }
 
@@ -304,8 +307,10 @@ class renderer extends \plugin_renderer_base {
                 $details->add(get_string('certificatetemplate', 'tool_certificate'), $name);
             }
         } else {
-            $details->add(get_string('certificatetemplate', 'tool_certificate'),
-                get_string('notset', 'tool_muprog'));
+            $details->add(
+                get_string('certificatetemplate', 'tool_certificate'),
+                get_string('notset', 'tool_muprog')
+            );
         }
 
         return $this->output->render($details);
@@ -435,7 +440,9 @@ class renderer extends \plugin_renderer_base {
         $context = \context::instance_by_id($certification->contextid);
         $report = \core_reportbuilder\system_report_factory::create(
             \tool_mucertify\reportbuilder\local\systemreports\assignment_periods::class,
-            $context, parameters:['assignmentid' => $assignment->id]);
+            $context,
+            parameters:['assignmentid' => $assignment->id]
+        );
         $result .= $report->output();
 
         return $result;
@@ -504,29 +511,45 @@ class renderer extends \plugin_renderer_base {
         }
         $details->add(get_string('programstatus', 'tool_muprog'), $programstatus);
 
-        $details->add(get_string('windowstartdate', 'tool_mucertify'),
-            period::get_windowstart_html($certification, $assignment, $period));
+        $details->add(
+            get_string('windowstartdate', 'tool_mucertify'),
+            period::get_windowstart_html($certification, $assignment, $period)
+        );
 
-        $details->add(get_string('windowduedate', 'tool_mucertify'),
-            period::get_windowdue_html($certification, $assignment, $period));
+        $details->add(
+            get_string('windowduedate', 'tool_mucertify'),
+            period::get_windowdue_html($certification, $assignment, $period)
+        );
 
-        $details->add(get_string('windowenddate', 'tool_mucertify'),
-            period::get_windowend_html($certification, $assignment, $period));
+        $details->add(
+            get_string('windowenddate', 'tool_mucertify'),
+            period::get_windowend_html($certification, $assignment, $period)
+        );
 
-        $details->add(get_string('fromdate', 'tool_mucertify'),
-            period::get_from_html($certification, $assignment, $period));
+        $details->add(
+            get_string('fromdate', 'tool_mucertify'),
+            period::get_from_html($certification, $assignment, $period)
+        );
 
-        $details->add(get_string('untildate', 'tool_mucertify'),
-            period::get_until_html($certification, $assignment, $period));
+        $details->add(
+            get_string('untildate', 'tool_mucertify'),
+            period::get_until_html($certification, $assignment, $period)
+        );
 
-        $details->add(get_string('recertify', 'tool_mucertify'),
-            period::get_recertify_html($certification, $assignment, $period));
+        $details->add(
+            get_string('recertify', 'tool_mucertify'),
+            period::get_recertify_html($certification, $assignment, $period)
+        );
 
-        $details->add(get_string('certifieddate', 'tool_mucertify'),
-            ($period->timecertified ? userdate($period->timecertified) : $strnotset));
+        $details->add(
+            get_string('certifieddate', 'tool_mucertify'),
+            ($period->timecertified ? userdate($period->timecertified) : $strnotset)
+        );
 
-        $details->add(get_string('revokeddate', 'tool_mucertify'),
-            ($period->timerevoked ? userdate($period->timerevoked) : $strnotset));
+        $details->add(
+            get_string('revokeddate', 'tool_mucertify'),
+            ($period->timerevoked ? userdate($period->timerevoked) : $strnotset)
+        );
 
         if (!empty($certification->templateid) && \tool_mucertify\local\certificate::is_available()) {
             $template = $DB->get_record('tool_certificate_templates', ['id' => $certification->templateid]);
@@ -552,13 +575,17 @@ class renderer extends \plugin_renderer_base {
         if ($period->evidencejson) {
             $jsondata = (object)json_decode($period->evidencejson);
             if (isset($jsondata->details)) {
-                $details->add(get_string('evidence_details', 'tool_mucertify'),
-                    format_text($jsondata->details, FORMAT_PLAIN, ['para' => false]));
+                $details->add(
+                    get_string('evidence_details', 'tool_mucertify'),
+                    format_text($jsondata->details, FORMAT_PLAIN, ['para' => false])
+                );
             }
         }
 
-        $details->add(get_string('periodstatus', 'tool_mucertify'),
-            period::get_status_html($certification, $assignment, $period));
+        $details->add(
+            get_string('periodstatus', 'tool_mucertify'),
+            period::get_status_html($certification, $assignment, $period)
+        );
 
         $result = $this->output->render($details);
 

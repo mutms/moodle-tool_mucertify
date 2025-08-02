@@ -62,8 +62,8 @@ final class period_update extends \tool_mulib\local\dialog_form {
         $mform->addElement('date_time_selector', 'timerevoked', get_string('revokeddate', 'tool_mucertify'), ['optional' => true]);
         $mform->setDefault('timerevoked', $period->timerevoked);
 
-        $mform->addElement('textarea', 'evidencedetails', get_string('evidence_details' , 'tool_mucertify'));
-        $mform->addHelpButton('evidencedetails', 'evidence_details' , 'tool_mucertify');
+        $mform->addElement('textarea', 'evidencedetails', get_string('evidence_details', 'tool_mucertify'));
+        $mform->addHelpButton('evidencedetails', 'evidence_details', 'tool_mucertify');
         $mform->setType('evidencedetails', PARAM_RAW); // Plain text only.
         if ($period->evidencejson) {
             $jsondata = (object)json_decode($period->evidencejson);

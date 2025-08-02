@@ -47,7 +47,11 @@ final class source_cohort_edit extends \tool_mulib\local\dialog_form {
         }
 
         form_source_cohort_edit_cohortids::add_form_element(
-            $mform, ['certificationid' => $certification->id], 'cohortids', get_string('source_cohort_cohortstoassign', 'tool_mucertify'));
+            $mform,
+            ['certificationid' => $certification->id],
+            'cohortids',
+            get_string('source_cohort_cohortstoassign', 'tool_mucertify')
+        );
         if (!empty($source->id)) {
             $cohorts = cohort::fetch_assignment_cohorts_menu($source->id);
             $mform->setDefault('cohortids', array_keys($cohorts));

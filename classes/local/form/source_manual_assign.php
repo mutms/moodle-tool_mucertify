@@ -47,24 +47,37 @@ final class source_manual_assign extends \tool_mulib\local\dialog_form {
 
         $this->arguments = ['certificationid' => $certification->id];
         \tool_mucertify\external\form_source_manual_assign_users::add_form_element(
-            $mform, $this->arguments, 'users', get_string('users'));
+            $mform,
+            $this->arguments,
+            'users',
+            get_string('users')
+        );
 
         $options = ['contextid' => $context->id, 'multiple' => false];
         $mform->addElement('cohort', 'cohortid', get_string('cohort', 'cohort'), $options);
 
         $now = time();
-        $mform->addElement('date_time_selector', 'timewindowstart', get_string('windowstartdate', 'tool_mucertify'),
-            ['optional' => false]);
+        $mform->addElement(
+            'date_time_selector',
+            'timewindowstart',
+            get_string('windowstartdate', 'tool_mucertify'),
+            ['optional' => false]
+        );
         $mform->setDefault('timewindowstart', $now);
 
-        if ($settings->valid1 === 'windowdue'
+        if (
+            $settings->valid1 === 'windowdue'
             || $settings->windowend1 === 'windowdue'
             || $settings->expiration1 === 'windowdue'
         ) {
             $this->dueoptional = false;
         }
-        $mform->addElement('date_time_selector', 'timewindowdue', get_string('windowduedate', 'tool_mucertify'),
-            ['optional' => $this->dueoptional]);
+        $mform->addElement(
+            'date_time_selector',
+            'timewindowdue',
+            get_string('windowduedate', 'tool_mucertify'),
+            ['optional' => $this->dueoptional]
+        );
         if (!$this->dueoptional) {
             $mform->addRule('timewindowdue', get_string('required'), 'required', null, 'client');
         }
@@ -125,7 +138,10 @@ final class source_manual_assign extends \tool_mulib\local\dialog_form {
         if ($data['users']) {
             foreach ($data['users'] as $userid) {
                 $error = \tool_mucertify\external\form_source_manual_assign_users::validate_form_value(
-                    $this->arguments, $userid, $context);
+                    $this->arguments,
+                    $userid,
+                    $context
+                );
                 if ($error !== null) {
                     $errors['users'] = $error;
                     break;

@@ -61,14 +61,16 @@ final class form_certification_visibility_edit_cohortids extends \tool_mulib\ext
         global $DB;
 
         ['query' => $query, 'certificationid' => $certificationid] = self::validate_parameters(
-            self::execute_parameters(), ['query' => $query, 'certificationid' => $certificationid]);
+            self::execute_parameters(),
+            ['query' => $query, 'certificationid' => $certificationid]
+        );
 
         $certification = $DB->get_record('tool_mucertify_certification', ['id' => $certificationid], '*', MUST_EXIST);
         $context = \context::instance_by_id($certification->contextid);
         self::validate_context($context);
         require_capability('tool/mucertify:edit', $context);
 
-        list($searchsql, $params) = self::get_cohort_search_query($query, 'ch');
+        [$searchsql, $params] = self::get_cohort_search_query($query, 'ch');
         $tenantselect = "";
         if (\tool_mucertify\local\util::is_mutenancy_active()) {
             if ($context->tenantid) {
