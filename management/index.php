@@ -78,7 +78,8 @@ echo $OUTPUT->header();
 
 $report = \core_reportbuilder\system_report_factory::create(
     \tool_mucertify\reportbuilder\local\systemreports\certifications::class,
-    $context);
+    $context
+);
 echo $report->output();
 
 echo $OUTPUT->footer();

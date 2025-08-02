@@ -52,10 +52,12 @@ final class form_source_manual_assign_users_test extends \advanced_testcase {
         $program = $programgenerator->create_program(['sources' => ['mucertify' => []]]);
 
         $certification1 = $generator->create_certification(
-            ['fullname' => 'hokus', 'programid' => $program->id, 'sources' => ['manual' => []]]);
+            ['fullname' => 'hokus', 'programid' => $program->id, 'sources' => ['manual' => []]]
+        );
         $source1 = $DB->get_record('tool_mucertify_source', ['certificationid' => $certification1->id, 'type' => 'manual'], '*', MUST_EXIST);
         $certification2 = $generator->create_certification(
-            ['idnumber' => 'pokus', 'programid' => $program->id, 'contextid' => $catcontext2->id, 'sources' => ['manual' => []]]);
+            ['idnumber' => 'pokus', 'programid' => $program->id, 'contextid' => $catcontext2->id, 'sources' => ['manual' => []]]
+        );
         $source2 = $DB->get_record('tool_mucertify_source', ['certificationid' => $certification2->id, 'type' => 'manual'], '*', MUST_EXIST);
 
         $user1 = $this->getDataGenerator()->create_user(['lastname' => 'Prijmeni 1']);
@@ -117,8 +119,10 @@ final class form_source_manual_assign_users_test extends \advanced_testcase {
             $this->fail('Exception expected');
         } catch (\moodle_exception $ex) {
             $this->assertInstanceOf('required_capability_exception', $ex);
-            $this->assertSame('Sorry, but you do not currently have permissions to do that (Assign users to certifications).',
-                $ex->getMessage());
+            $this->assertSame(
+                'Sorry, but you do not currently have permissions to do that (Assign users to certifications).',
+                $ex->getMessage()
+            );
         }
 
         $this->setUser($user5);
@@ -155,13 +159,16 @@ final class form_source_manual_assign_users_test extends \advanced_testcase {
         $program = $programgenerator->create_program(['sources' => ['mucertify' => []]]);
 
         $certification0 = $generator->create_certification(
-            ['fullname' => 'prg0', 'programid' => $program->id, 'sources' => ['manual' => []]]);
+            ['fullname' => 'prg0', 'programid' => $program->id, 'sources' => ['manual' => []]]
+        );
         $source0 = $DB->get_record('tool_mucertify_source', ['certificationid' => $certification0->id, 'type' => 'manual'], '*', MUST_EXIST);
         $certification1 = $generator->create_certification(
-            ['idnumber' => 'prg2', 'programid' => $program->id, 'contextid' => $tenant1catcontext->id, 'sources' => ['manual' => []]]);
+            ['idnumber' => 'prg2', 'programid' => $program->id, 'contextid' => $tenant1catcontext->id, 'sources' => ['manual' => []]]
+        );
         $source1 = $DB->get_record('tool_mucertify_source', ['certificationid' => $certification1->id, 'type' => 'manual'], '*', MUST_EXIST);
         $certification2 = $generator->create_certification(
-            ['idnumber' => 'prg3', 'programid' => $program->id, 'contextid' => $tenant2catcontext->id, 'sources' => ['manual' => []]]);
+            ['idnumber' => 'prg3', 'programid' => $program->id, 'contextid' => $tenant2catcontext->id, 'sources' => ['manual' => []]]
+        );
         $source2 = $DB->get_record('tool_mucertify_source', ['certificationid' => $certification2->id, 'type' => 'manual'], '*', MUST_EXIST);
 
         $admin = get_admin();

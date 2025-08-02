@@ -131,8 +131,12 @@ final class selfassignment extends base {
         global $DB, $USER;
 
         $certification = $DB->get_record('tool_mucertify_certification', ['id' => $certificationid], '*', MUST_EXIST);
-        $source = $DB->get_record('tool_mucertify_source',
-            ['id' => $sourceid, 'type' => static::get_type(), 'certificationid' => $certification->id], '*', MUST_EXIST);
+        $source = $DB->get_record(
+            'tool_mucertify_source',
+            ['id' => $sourceid, 'type' => static::get_type(), 'certificationid' => $certification->id],
+            '*',
+            MUST_EXIST
+        );
 
         $user = $DB->get_record('user', ['id' => $USER->id, 'deleted' => 0], '*', MUST_EXIST);
         $assignment = $DB->get_record('tool_mucertify_assignment', ['certificationid' => $certification->id, 'userid' => $user->id]);
@@ -184,15 +188,17 @@ final class selfassignment extends base {
      */
     public static function encode_datajson(stdClass $formdata): string {
         $data = ['maxusers' => null, 'key' => null, 'allowsignup' => 1];
-        if (isset($formdata->selfassignment_maxusers)
+        if (
+            isset($formdata->selfassignment_maxusers)
             && trim($formdata->selfassignment_maxusers) !== ''
-            && $formdata->selfassignment_maxusers >= 0) {
-
+            && $formdata->selfassignment_maxusers >= 0
+        ) {
             $data['maxusers'] = (int)$formdata->selfassignment_maxusers;
         }
-        if (isset($formdata->selfassignment_key)
-            && trim($formdata->selfassignment_key) !== '') {
-
+        if (
+            isset($formdata->selfassignment_key)
+            && trim($formdata->selfassignment_key) !== ''
+        ) {
             $data['key'] = $formdata->selfassignment_key;
         }
         if (isset($formdata->selfassignment_allowsignup)) {
@@ -233,4 +239,3 @@ final class selfassignment extends base {
         return $result;
     }
 }
-

@@ -63,7 +63,9 @@ final class form_source_manual_assign_users extends \tool_mulib\external\form_au
         global $DB, $CFG, $OUTPUT;
 
         ['query' => $query, 'certificationid' => $certificationid] = self::validate_parameters(
-            self::execute_parameters(), ['query' => $query, 'certificationid' => $certificationid]);
+            self::execute_parameters(),
+            ['query' => $query, 'certificationid' => $certificationid]
+        );
 
         $certification = $DB->get_record('tool_mucertify_certification', ['id' => $certificationid], '*', MUST_EXIST);
 
@@ -75,8 +77,8 @@ final class form_source_manual_assign_users extends \tool_mulib\external\form_au
         $fields = \core_user\fields::for_name()->with_identity($context, false);
         $extrafields = $fields->get_required_fields([\core_user\fields::PURPOSE_IDENTITY]);
 
-        list($searchsql, $searchparams) = users_search_sql($query, 'usr', true, $extrafields);
-        list($sortsql, $sortparams) = users_order_by_sql('usr', $query, $context);
+        [$searchsql, $searchparams] = users_search_sql($query, 'usr', true, $extrafields);
+        [$sortsql, $sortparams] = users_order_by_sql('usr', $query, $context);
         $params = array_merge($searchparams, $sortparams);
         $params['certificationid'] = $certificationid;
 
@@ -107,7 +109,7 @@ SQL;
      * @return callable
      */
     public static function get_label_callback(array $arguments): callable {
-        return function($value) use ($arguments): string {
+        return function ($value) use ($arguments): string {
             global $DB;
 
             $certification = $DB->get_record('tool_mucertify_certification', ['id' => $arguments['certificationid']], '*', MUST_EXIST);
@@ -115,7 +117,7 @@ SQL;
 
             $error = null; // This is not pretty, but luckily there is a low chance this will happen.
             if (static::validate_form_value($arguments, $value, $context) !== null) {
-                $error = ' (' . get_string('error') .')';
+                $error = ' (' . get_string('error') . ')';
             }
 
             $record = $DB->get_record('user', ['id' => $value]);

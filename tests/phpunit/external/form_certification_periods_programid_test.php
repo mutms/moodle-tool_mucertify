@@ -108,37 +108,45 @@ final class form_certification_periods_programid_test extends \advanced_testcase
         ]);
 
         $this->setAdminUser();
-        $response = form_certification_periods_programid::execute ('', $certification1->id);
+        $response = form_certification_periods_programid::execute('', $certification1->id);
         $results = form_certification_periods_programid::clean_returnvalue(
-            form_certification_periods_programid::execute_returns(), $response);
+            form_certification_periods_programid::execute_returns(),
+            $response
+        );
         $this->assertSame(null, $results['notice']);
         $this->assertCount(2, $results['list']);
         $this->assertSame($program1->id, $results['list'][0]['value']);
         $this->assertSame($program2->id, $results['list'][1]['value']);
 
-        $response = form_certification_periods_programid::execute ('hoku', $certification1->id);
+        $response = form_certification_periods_programid::execute('hoku', $certification1->id);
         $results = form_certification_periods_programid::clean_returnvalue(
-            form_certification_periods_programid::execute_returns(), $response);
+            form_certification_periods_programid::execute_returns(),
+            $response
+        );
         $this->assertSame(null, $results['notice']);
         $this->assertCount(1, $results['list']);
         $this->assertSame($program1->id, $results['list'][0]['value']);
 
         $this->setUser($user1);
-        $response = form_certification_periods_programid::execute ('', $certification2->id);
+        $response = form_certification_periods_programid::execute('', $certification2->id);
         $results = form_certification_periods_programid::clean_returnvalue(
-            form_certification_periods_programid::execute_returns(), $response);
+            form_certification_periods_programid::execute_returns(),
+            $response
+        );
         $this->assertSame(null, $results['notice']);
         $this->assertCount(1, $results['list']);
         $this->assertSame($program2->id, $results['list'][0]['value']);
 
         $this->setUser($user1);
         try {
-            form_certification_periods_programid::execute ('', $certification1->id);
+            form_certification_periods_programid::execute('', $certification1->id);
             $this->fail('Exception excepted');
         } catch (\moodle_exception $ex) {
             $this->assertInstanceOf(\required_capability_exception::class, $ex);
-            $this->assertSame('Sorry, but you do not currently have permissions to do that (Add and update certifications).',
-                $ex->getMessage());
+            $this->assertSame(
+                'Sorry, but you do not currently have permissions to do that (Add and update certifications).',
+                $ex->getMessage()
+            );
         }
     }
 
@@ -208,9 +216,11 @@ final class form_certification_periods_programid_test extends \advanced_testcase
         ]);
 
         $this->setAdminUser();
-        $response = form_certification_periods_programid::execute ('', $certification0->id);
+        $response = form_certification_periods_programid::execute('', $certification0->id);
         $results = form_certification_periods_programid::clean_returnvalue(
-            form_certification_periods_programid::execute_returns(), $response);
+            form_certification_periods_programid::execute_returns(),
+            $response
+        );
         $this->assertSame(null, $results['notice']);
         $this->assertCount(3, $results['list']);
         $this->assertSame($program0->id, $results['list'][0]['value']);
@@ -218,18 +228,22 @@ final class form_certification_periods_programid_test extends \advanced_testcase
         $this->assertSame($program2->id, $results['list'][2]['value']);
 
         $this->setAdminUser();
-        $response = form_certification_periods_programid::execute ('', $certification1->id);
+        $response = form_certification_periods_programid::execute('', $certification1->id);
         $results = form_certification_periods_programid::clean_returnvalue(
-            form_certification_periods_programid::execute_returns(), $response);
+            form_certification_periods_programid::execute_returns(),
+            $response
+        );
         $this->assertSame(null, $results['notice']);
         $this->assertCount(2, $results['list']);
         $this->assertSame($program0->id, $results['list'][0]['value']);
         $this->assertSame($program1->id, $results['list'][1]['value']);
 
         $this->setUser($user1);
-        $response = form_certification_periods_programid::execute ('', $certification0->id);
+        $response = form_certification_periods_programid::execute('', $certification0->id);
         $results = form_certification_periods_programid::clean_returnvalue(
-            form_certification_periods_programid::execute_returns(), $response);
+            form_certification_periods_programid::execute_returns(),
+            $response
+        );
         $this->assertSame(null, $results['notice']);
         $this->assertCount(2, $results['list']);
         $this->assertSame($program0->id, $results['list'][0]['value']);
@@ -237,12 +251,14 @@ final class form_certification_periods_programid_test extends \advanced_testcase
 
         $this->setUser($user1);
         try {
-            form_certification_periods_programid::execute ('', $certification2->id);
+            form_certification_periods_programid::execute('', $certification2->id);
             $this->fail('Exception excepted');
         } catch (\moodle_exception $ex) {
             $this->assertInstanceOf(\required_capability_exception::class, $ex);
-            $this->assertSame('Sorry, but you do not currently have permissions to do that (Add and update certifications).',
-                $ex->getMessage());
+            $this->assertSame(
+                'Sorry, but you do not currently have permissions to do that (Add and update certifications).',
+                $ex->getMessage()
+            );
         }
     }
 }

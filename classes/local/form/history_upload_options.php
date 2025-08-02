@@ -102,7 +102,7 @@ final class history_upload_options extends \tool_mulib\local\dialog_form {
             $mform->setDefault('evidencecolumn', array_search('evidence', $fileoptions));
         }
 
-        $mform->addElement('textarea', 'evidencedefault', get_string('evidence_default' , 'tool_mucertify'));
+        $mform->addElement('textarea', 'evidencedefault', get_string('evidence_default', 'tool_mucertify'));
         $mform->addRule('evidencedefault', get_string('required'), 'required', null, 'client');
         $mform->setDefault('evidencedefault', get_string('evidence_default_text', 'tool_mucertify'));
 

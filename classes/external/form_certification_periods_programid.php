@@ -66,7 +66,9 @@ final class form_certification_periods_programid extends \tool_mulib\external\fo
         global $DB;
 
         ['query' => $query, 'certificationid' => $certificationid] = self::validate_parameters(
-            self::execute_parameters(), ['query' => $query, 'certificationid' => $certificationid]);
+            self::execute_parameters(),
+            ['query' => $query, 'certificationid' => $certificationid]
+        );
 
         $certification = $DB->get_record('tool_mucertify_certification', ['id' => $certificationid], '*', MUST_EXIST);
 
@@ -75,7 +77,7 @@ final class form_certification_periods_programid extends \tool_mulib\external\fo
         self::validate_context($context);
         require_capability('tool/mucertify:edit', $context);
 
-        list($searchsql, $params) = \tool_muprog\local\management::get_program_search_query(null, $query, 'p');
+        [$searchsql, $params] = \tool_muprog\local\management::get_program_search_query(null, $query, 'p');
 
         $tenantselect = '';
         if (\tool_mucertify\local\util::is_mutenancy_active()) {
@@ -133,7 +135,7 @@ SQL;
      * @return callable
      */
     public static function get_label_callback(array $arguments): callable {
-        return function($value) use ($arguments): string {
+        return function ($value) use ($arguments): string {
             global $DB;
 
             if (!$value) {
@@ -145,7 +147,7 @@ SQL;
 
             $error = '';
             if (self::validate_form_value($arguments, $value, $context) !== null) {
-                $error = ' (' . get_string('error') .')';
+                $error = ' (' . get_string('error') . ')';
             }
 
             $program = $DB->get_record('tool_muprog_program', ['id' => $value]);

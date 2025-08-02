@@ -43,7 +43,11 @@ final class certification_settings_edit2 extends \tool_mulib\local\dialog_form {
         $settings = certification::get_periods_settings($certification);
 
         \tool_mucertify\external\form_certification_periods_programid::add_form_element(
-            $mform, $this->arguments, 'programid2', get_string('program', 'tool_muprog'));
+            $mform,
+            $this->arguments,
+            'programid2',
+            get_string('program', 'tool_muprog')
+        );
         $mform->setDefault('programid2', $settings->programid2);
         $mform->addRule('programid2', get_string('required'), 'required', null, 'client');
 
@@ -51,8 +55,12 @@ final class certification_settings_edit2 extends \tool_mulib\local\dialog_form {
         $mform->addElement('select', 'resettype2', get_string('resettype2', 'tool_mucertify'), $resettypes);
         $mform->setDefault('resettype2', $settings->resettype2);
 
-        $mform->addElement('duration', 'grace2', get_string('graceperiod', 'tool_mucertify'),
-            ['optional' => true, 'defaultunit' => DAYSECS]);
+        $mform->addElement(
+            'duration',
+            'grace2',
+            get_string('graceperiod', 'tool_mucertify'),
+            ['optional' => true, 'defaultunit' => DAYSECS]
+        );
         $mform->setDefault('grace2', $settings->grace2);
 
         $since = certification::get_valid_options();
