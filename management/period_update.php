@@ -32,15 +32,9 @@
 /** @var stdClass $CFG */
 /** @var stdClass $COURSE */
 
-use tool_mucertify\local\management;
-use tool_mucertify\local\period;
+define('AJAX_SCRIPT', true);
 
-// phpcs:ignoreFile moodle.Files.MoodleInternal.MoodleInternalGlobalState
-if (!empty($_SERVER['HTTP_X_MULIB_DIALOG_FORM_REQUEST'])) {
-    define('AJAX_SCRIPT', true);
-}
 require('../../../../config.php');
-require_once($CFG->dirroot . '/lib/formslib.php');
 
 $id = required_param('id', PARAM_INT);
 
@@ -63,25 +57,19 @@ if (($assignment && $assignment->archived) || $certification->archived) {
 $user = $DB->get_record('user', ['id' => $period->userid], '*', MUST_EXIST);
 
 $currenturl = new moodle_url('/admin/tool/mucertify/management/period_update.php', ['id' => $period->id]);
-
-management::setup_certification_page($currenturl, $context, $certification, 'certification_users');
+$PAGE->set_context($context);
+$PAGE->set_url($currenturl);
 
 $form = new \tool_mucertify\local\form\period_update(null,
     ['period' => $period, 'user' => $user, 'program' => $program, 'context' => $context]);
 
 if ($form->is_cancelled()) {
-    redirect($returnurl);
+    $form->ajax_form_cancelled($returnurl);
 }
 
 if ($data = $form->get_data()) {
     \tool_mucertify\local\period::override_dates($data);
-    $form->redirect_submitted($returnurl);
+    $form->ajax_form_submitted($returnurl);
 }
 
-echo $OUTPUT->header();
-
-echo $OUTPUT->heading(fullname($user), 3);
-
-echo $form->render();
-
-echo $OUTPUT->footer();
+$form->ajax_form_render();

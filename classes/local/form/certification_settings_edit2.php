@@ -31,7 +31,7 @@ use tool_mucertify\local\certification;
  * @author     Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-final class certification_settings_edit2 extends \tool_mulib\local\dialog_form {
+final class certification_settings_edit2 extends \tool_mulib\local\ajax_form {
     /** @var array $arguments for WS call to get candidate programs */
     protected $arguments;
 

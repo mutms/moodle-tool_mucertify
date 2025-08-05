@@ -113,7 +113,7 @@ final class selfassignment extends base {
         }
 
         $url = new \moodle_url('/admin/tool/mucertify/catalogue/source_selfassignment.php', ['sourceid' => $source->id]);
-        $button = new \tool_mulib\output\dialog_form\button($url, get_string('source_selfassignment_assign', 'tool_mucertify'));
+        $button = new \tool_mulib\output\ajax_form\button($url, get_string('source_selfassignment_assign', 'tool_mucertify'));
 
         $button = $OUTPUT->render($button);
 

@@ -182,7 +182,7 @@ final class assignments extends system_report {
         $certification = $this->certification;
 
         $url = new moodle_url('/admin/tool/mucertify/management/assignment_update.php', ['id' => ':id']);
-        $link = new \tool_mulib\output\dialog_form\link($url, get_string('assignment_update', 'tool_mucertify'), 'i/settings');
+        $link = new \tool_mulib\output\ajax_form\link($url, get_string('assignment_update', 'tool_mucertify'), 'i/settings');
         $this->add_action($link->create_report_action()
             ->add_callback(static function (\stdclass $row) use ($certification): bool {
                 global $DB;
@@ -211,7 +211,7 @@ final class assignments extends system_report {
             }));
 
         $url = new moodle_url('/admin/tool/mucertify/management/assignment_archive.php', ['id' => ':id']);
-        $link = new \tool_mulib\output\dialog_form\link($url, get_string('assignment_archive', 'tool_mucertify'), 'i/lock');
+        $link = new \tool_mulib\output\ajax_form\link($url, get_string('assignment_archive', 'tool_mucertify'), 'i/lock');
         $this->add_action($link->create_report_action()
             ->add_callback(static function (\stdclass $row) use ($certification): bool {
                 global $DB;
@@ -240,7 +240,7 @@ final class assignments extends system_report {
             }));
 
         $url = new moodle_url('/admin/tool/mucertify/management/assignment_restore.php', ['id' => ':id']);
-        $link = new \tool_mulib\output\dialog_form\link($url, get_string('assignment_restore', 'tool_mucertify'), 'i/unlock');
+        $link = new \tool_mulib\output\ajax_form\link($url, get_string('assignment_restore', 'tool_mucertify'), 'i/unlock');
         $this->add_action($link->create_report_action()
             ->add_callback(static function (\stdclass $row) use ($certification): bool {
                 global $DB;
@@ -269,7 +269,7 @@ final class assignments extends system_report {
             }));
 
         $url = new moodle_url('/admin/tool/mucertify/management/assignment_delete.php', ['id' => ':id']);
-        $link = new \tool_mulib\output\dialog_form\link($url, get_string('assignment_delete', 'tool_mucertify'), 'i/delete');
+        $link = new \tool_mulib\output\ajax_form\link($url, get_string('assignment_delete', 'tool_mucertify'), 'i/delete');
         $this->add_action($link->create_report_action(['class' => 'text-danger'])
             ->add_callback(static function (\stdclass $row) use ($certification): bool {
                 global $DB;

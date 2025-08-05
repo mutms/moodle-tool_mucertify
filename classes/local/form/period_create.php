@@ -30,7 +30,7 @@ use tool_mucertify\local\period;
  * @author     Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-final class period_create extends \tool_mulib\local\dialog_form {
+final class period_create extends \tool_mulib\local\ajax_form {
     /** @var array autocompletion arguments */
     protected $arguments;
 
