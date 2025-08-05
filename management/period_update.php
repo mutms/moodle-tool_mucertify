@@ -15,6 +15,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 // phpcs:disable moodle.Files.BoilerplateComment.CommentEndedTooSoon
+// phpcs:disable moodle.Files.LineLength.TooLong
 
 /**
  * certification management interface.
@@ -60,8 +61,10 @@ $currenturl = new moodle_url('/admin/tool/mucertify/management/period_update.php
 $PAGE->set_context($context);
 $PAGE->set_url($currenturl);
 
-$form = new \tool_mucertify\local\form\period_update(null,
-    ['period' => $period, 'user' => $user, 'program' => $program, 'context' => $context]);
+$form = new \tool_mucertify\local\form\period_update(
+    null,
+    ['period' => $period, 'user' => $user, 'program' => $program, 'context' => $context]
+);
 
 if ($form->is_cancelled()) {
     $form->ajax_form_cancelled($returnurl);

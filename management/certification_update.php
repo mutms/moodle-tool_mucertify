@@ -15,6 +15,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 // phpcs:disable moodle.Files.BoilerplateComment.CommentEndedTooSoon
+// phpcs:disable moodle.Files.LineLength.TooLong
 
 /**
  * Update certification.
@@ -51,8 +52,15 @@ $PAGE->set_context($context);
 $PAGE->set_url($currenturl);
 
 $editoroptions = certification::get_description_editor_options($context->id);
-$certification = file_prepare_standard_editor($certification, 'description', $editoroptions,
-    $context, 'tool_mucertify', 'description', $certification->id);
+$certification = file_prepare_standard_editor(
+    $certification,
+    'description',
+    $editoroptions,
+    $context,
+    'tool_mucertify',
+    'description',
+    $certification->id
+);
 $certification->tags = core_tag_tag::get_item_tags_array('tool_mucertify', 'certification', $certification->id);
 
 $certification->image = file_get_submitted_draft_itemid('image');

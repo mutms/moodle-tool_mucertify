@@ -15,6 +15,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 // phpcs:disable moodle.Files.BoilerplateComment.CommentEndedTooSoon
+// phpcs:disable moodle.Files.LineLength.TooLong
 
 /**
  * certification management interface.
@@ -57,8 +58,10 @@ $returnurl = new moodle_url('/admin/tool/mucertify/management/assignment.php', [
 
 $user = $DB->get_record('user', ['id' => $assignment->userid], '*', MUST_EXIST);
 
-$form = new \tool_mucertify\local\form\period_create(null,
-    ['assignment' => $assignment, 'certification' => $certification, 'user' => $user, 'context' => $context]);
+$form = new \tool_mucertify\local\form\period_create(
+    null,
+    ['assignment' => $assignment, 'certification' => $certification, 'user' => $user, 'context' => $context]
+);
 
 if ($form->is_cancelled()) {
     $form->ajax_form_cancelled($returnurl);
