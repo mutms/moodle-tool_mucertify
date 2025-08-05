@@ -15,6 +15,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 // phpcs:disable moodle.Files.BoilerplateComment.CommentEndedTooSoon
+// phpcs:disable moodle.Files.LineLength.TooLong
 
 /**
  * Update certification assignment.
@@ -62,8 +63,10 @@ if (!$sourceclass || !$sourceclass::is_assignment_update_possible($certification
     redirect($returnurl);
 }
 
-$form = new \tool_mucertify\local\form\assignment_update(null,
-    ['certification' => $certification, 'assignment' => $assignment, 'user' => $user, 'context' => $context]);
+$form = new \tool_mucertify\local\form\assignment_update(
+    null,
+    ['certification' => $certification, 'assignment' => $assignment, 'user' => $user, 'context' => $context]
+);
 
 if ($form->is_cancelled()) {
     $form->ajax_form_cancelled($returnurl);
