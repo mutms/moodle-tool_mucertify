@@ -50,6 +50,9 @@ final class certification {
      * @return array
      */
     public static function get_description_editor_options(int $contextid): array {
+        global $CFG;
+        require_once($CFG->dirroot . '/lib/formslib.php');
+
         $context = \context::instance_by_id($contextid);
         return ['maxfiles' => EDITOR_UNLIMITED_FILES, 'maxbytes' => get_site()->maxbytes, 'context' => $context];
     }
@@ -61,6 +64,8 @@ final class certification {
      */
     public static function get_image_filemanager_options(): array {
         global $CFG;
+        require_once($CFG->dirroot . '/lib/formslib.php');
+
         return ['maxbytes' => $CFG->maxbytes, 'maxfiles' => 1, 'subdirs' => 0, 'accepted_types' => ['.jpg', '.jpeg', '.jpe', '.png']];
     }
 
