@@ -19,6 +19,8 @@
 
 namespace tool_mucertify\local\form;
 
+use tool_mucertify\external\form_autocomplete\source_manual_assign_users;
+
 /**
  * assign users and cohorts manually.
  *
@@ -46,11 +48,12 @@ final class source_manual_assign extends \tool_mulib\local\ajax_form {
         $settings = \tool_mucertify\local\certification::get_periods_settings($certification);
 
         $this->arguments = ['certificationid' => $certification->id];
-        \tool_mucertify\external\form_source_manual_assign_users::add_form_element(
+        source_manual_assign_users::add_element(
             $mform,
             $this->arguments,
             'users',
-            get_string('users')
+            get_string('users'),
+            $context
         );
 
         $options = ['contextid' => $context->id, 'multiple' => false];
@@ -137,9 +140,9 @@ final class source_manual_assign extends \tool_mulib\local\ajax_form {
 
         if ($data['users']) {
             foreach ($data['users'] as $userid) {
-                $error = \tool_mucertify\external\form_source_manual_assign_users::validate_form_value(
-                    $this->arguments,
+                $error = source_manual_assign_users::validate_value(
                     $userid,
+                    $this->arguments,
                     $context
                 );
                 if ($error !== null) {

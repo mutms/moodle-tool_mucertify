@@ -21,6 +21,7 @@ namespace tool_mucertify\local\form;
 
 use tool_mucertify\local\util;
 use tool_mucertify\local\certification;
+use tool_mucertify\external\form_autocomplete\certification_periods_programid;
 
 /**
  * Edit initial certification settings.
@@ -39,14 +40,16 @@ final class certification_settings_edit1 extends \tool_mulib\local\ajax_form {
     protected function definition() {
         $mform = $this->_form;
         $certification = $this->_customdata['certification'];
+        $context = $this->_customdata['context'];
         $this->arguments = ['certificationid' => $certification->id];
         $settings = certification::get_periods_settings($certification);
 
-        \tool_mucertify\external\form_certification_periods_programid::add_form_element(
+        certification_periods_programid::add_element(
             $mform,
             $this->arguments,
             'programid1',
-            get_string('program', 'tool_muprog')
+            get_string('program', 'tool_muprog'),
+            $context
         );
         $mform->setDefault('programid1', $certification->programid1);
         $mform->addRule('programid1', get_string('required'), 'required', null, 'client');
@@ -113,6 +116,7 @@ final class certification_settings_edit1 extends \tool_mulib\local\ajax_form {
     #[\Override]
     public function validation($data, $files) {
         $errors = parent::validation($data, $files);
+        $context = $this->_customdata['context'];
 
         if ($data['windowend1']['since'] !== certification::SINCE_NEVER && $data['windowend1']['number'] <= 0) {
             $errors['windowend1'] = get_string('required');
@@ -122,8 +126,9 @@ final class certification_settings_edit1 extends \tool_mulib\local\ajax_form {
             $errors['expiration1'] = get_string('required');
         }
 
-        if (\tool_mucertify\external\form_certification_periods_programid::validate_form_value($this->arguments, $data['programid1']) !== null) {
-            $errors['programid1'] = get_string('error');
+        $error = certification_periods_programid::validate_value($data['programid1'], $this->arguments, $context);
+        if ($error !== null) {
+            $errors['programid1'] = $error;
         }
 
         return $errors;
