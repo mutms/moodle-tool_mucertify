@@ -20,7 +20,7 @@
 namespace tool_mucertify\local\form;
 
 use tool_mucertify\local\management;
-use tool_mucertify\external\form_certification_visibility_edit_cohortids;
+use tool_mucertify\external\form_autocomplete\certification_visibility_edit_cohortids;
 
 /**
  * Edit certification visibility.
@@ -42,11 +42,12 @@ final class certification_visibility_edit extends \tool_mulib\local\ajax_form {
         $mform->setDefault('public', $data->public);
         $mform->addHelpButton('public', 'public', 'tool_mucertify');
 
-        form_certification_visibility_edit_cohortids::add_form_element(
+        certification_visibility_edit_cohortids::add_element(
             $mform,
             ['certificationid' => $data->id],
             'cohortids',
-            get_string('cohorts', 'tool_mucertify')
+            get_string('cohorts', 'tool_mucertify'),
+            $context
         );
         $cohorts = management::fetch_current_cohorts_menu($data->id);
         $mform->setDefault('cohortids', array_keys($cohorts));
@@ -61,9 +62,12 @@ final class certification_visibility_edit extends \tool_mulib\local\ajax_form {
     #[\Override]
     public function validation($data, $files) {
         $errors = parent::validation($data, $files);
+        $certification = $this->_customdata['data'];
+        $context = $this->_customdata['context'];
+        $args = ['certificationid' => $certification->id];
 
         foreach ($data['cohortids'] as $cohortid) {
-            $error = form_certification_visibility_edit_cohortids::validate_cohortid($cohortid, $data['id']);
+            $error = certification_visibility_edit_cohortids::validate_value($cohortid, $args, $context);
             if ($error !== null) {
                 $errors['cohorts'] = $error;
                 break;
