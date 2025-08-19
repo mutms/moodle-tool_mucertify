@@ -1,5 +1,11 @@
 # Changelog
 
+## mu-5.0.2-02
+
+Release date: xx/08/2025
+
+* Fixed error when sending unassignment email and SMTP is down.
+
 ## mu-5.0.2-01
 
 Release date: 09/08/2025
