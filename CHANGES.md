@@ -4,6 +4,7 @@
 
 Release date: xx/08/2025
 
+* Fixed compatibility with unsupported MS SQL databases.
 * Fixed error when sending unassignment email and SMTP is down.
 
 ## mu-4.5.6-01

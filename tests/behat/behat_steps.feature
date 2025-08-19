@@ -38,11 +38,11 @@ Feature: Certifications navigation behat steps test
       | viewer2  | pviewer       | Category     | CAT1      |
       | admin1   | cadmin        | System       |           |
     And the following "tool_mucertify > certifications" exist:
-      | fullname          | idnumber | category | public | archived |
-      | Certification 000 | PR0      |          | 0      | 0        |
-      | Certification 001 | PR1      | Cat 1    | 1      | 0        |
-      | Certification 002 | PR2      | Cat 2    | 0      | 0        |
-      | Certification 003 | PR3      |          | 1      | 1        |
+      | fullname          | idnumber | category | publicaccess | archived |
+      | Certification 000 | PR0      |          | 0            | 0        |
+      | Certification 001 | PR1      | Cat 1    | 1            | 0        |
+      | Certification 002 | PR2      | Cat 2    | 0            | 0        |
+      | Certification 003 | PR3      |          | 1            | 1        |
 
   Scenario: Admin navigates to certifications via behat step
     Given I log in as "admin"
