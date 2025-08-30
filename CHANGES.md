@@ -4,6 +4,7 @@
 
 Release date: xx/08/2025
 
+* Fixed automatic cohort assignment source form.
 * Empty custom fields are not displayed anymore.
 * Fixed validation of tenant restrictions when selecting users.
 * Fixed compatibility with unsupported MS SQL databases.
