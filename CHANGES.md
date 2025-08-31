@@ -2,7 +2,7 @@
 
 ## mu-4.5.6-02
 
-Release date: xx/08/2025
+Release date: 31/08/2025
 
 * Fixed automatic cohort assignment source form.
 * Empty custom fields are not displayed anymore.
