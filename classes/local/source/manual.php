@@ -53,6 +53,15 @@ final class manual extends base {
     }
 
     /**
+     * Can a new source of this type be added to programs when creating program?
+     *
+     * @return bool
+     */
+    public static function is_new_allowed_in_new(): bool {
+        return true;
+    }
+
+    /**
      * Is it possible to manually assign users to this certification?
      *
      * @param stdClass $certification

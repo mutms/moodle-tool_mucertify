@@ -1,5 +1,11 @@
 # Changelog
 
+## mu-5.0.3-03
+
+Release date: xx/11/2025
+
+* Added option for enabling of Manual allocations during certification creation.
+
 ## mu-5.0.3-02
 
 Release date: 08/11/2025

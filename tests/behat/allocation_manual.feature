@@ -304,3 +304,20 @@ Feature: Manual certification assignment tests
     And I follow "Certification 000"
     Then I should see "ASF2" in the "Test field 2" definition list item
     And I should not see "Test field 1"
+
+  @javascript
+  Scenario: Manager may enable Manual assignment when creating certification
+    Given I log in as "manager1"
+    And I am on the "tool_mucertify > All certifications management" page
+
+    When I click on "Add certification" "button"
+    And I set the following fields in the ".modal-dialog" "css_element" to these values:
+      | Certification name | Certification 001 |
+      | Manual assignment  | 1                 |
+      | Certification ID   | CT01              |
+    And I click on "Add certification" "button" in the ".modal-dialog" "css_element"
+    And I follow "Assignment settings"
+    Then I should see "Active" in the "Manual assignment" definition list item
+    And I should see "Inactive" in the "Self assignment" definition list item
+    And I should see "Inactive" in the "Requests with approval" definition list item
+    And I should see "Inactive" in the "Automatic cohort assignment" definition list item
