@@ -276,6 +276,7 @@ $string['source_manual_result_skipped'] = '{$a} users were already assigned to c
 $string['source_manual_timeduecolumn'] = 'Certification due time column';
 $string['source_manual_timeendcolumn'] = 'Window closing time column';
 $string['source_manual_timestartcolumn'] = 'Window opening time column';
+$string['source_manual_timeuntilcolumn'] = 'Expiration time column';
 $string['source_manual_uploadusers'] = 'Upload assignments';
 $string['source_manual_usercolumn'] = 'User identification column';
 $string['source_manual_usermapping'] = 'User mapping via';

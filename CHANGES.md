@@ -4,6 +4,8 @@
 
 Release date: xx/11/2025
 
+* Added support for Expiration column into certification assignment uploads.
+* Added Expiration to certification assignment form - this can be used to align employee re-certifications to fixed dates. 
 * Added option for enabling of Manual allocations during certification creation.
 
 ## mu-5.0.3-02

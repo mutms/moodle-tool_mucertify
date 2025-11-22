@@ -215,7 +215,12 @@ final class manual extends base {
             unset($filedata[0]);
         }
 
-        $datefields = ['timestartcolumn' => 'timewindowstart', 'timeduecolumn' => 'timewindowdue', 'timeendcolumn' => 'timewindowend'];
+        $datefields = [
+            'timestartcolumn' => 'timewindowstart',
+            'timeduecolumn' => 'timewindowdue',
+            'timeendcolumn' => 'timewindowend',
+            'timeuntilcolumn' => 'timeuntil',
+        ];
         $datecolumns = [];
         foreach ($datefields as $key => $value) {
             if (isset($data->{$key}) && $data->{$key} != -1) {
