@@ -4,6 +4,7 @@
 
 Release date: xx/11/2025
 
+* After creating new certification user is now redirected to Period settings page because they need to add program. 
 * Fixed timezones in notifications.
 * Added supervisor notifications.
 * Added support for Expiration column into certification assignment uploads.
