@@ -83,6 +83,10 @@ final class base_test extends \advanced_testcase {
         $this->assertSame('Manual assignment', $result['certification_sourcename']);
         $this->assertStringContainsString('Not certified', $result['certification_status']);
 
+        if (!\tool_mulib\local\mulib::is_murelatio_available()) {
+            return;
+        }
+
         $this->setUser($user1);
         $result = \tool_mucertify\local\notification\base::get_assignment_placeholders($certification1, $source1, $assignment, $user1, $related1);
         $this->assertIsArray($result);
