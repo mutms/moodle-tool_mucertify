@@ -20,6 +20,7 @@
 namespace tool_mucertify\local\form;
 
 use tool_mucertify\external\form_autocomplete\source_manual_assign_users;
+use tool_mulib\local\mulib;
 
 /**
  * assign users and cohorts manually.
@@ -141,7 +142,7 @@ final class source_manual_assign extends \tool_mulib\local\ajax_form {
             if (!$cohort->visible && !has_capability('moodle/cohort:view', $cohortcontext)) {
                 $errors['cohortid'] = get_string('error');
             }
-            if (\tool_mucertify\local\util::is_mutenancy_active()) {
+            if (mulib::is_mutenancy_active()) {
                 if ($context->tenantid) {
                     if ($cohortcontext->tenantid && $context->tenantid != $cohortcontext->tenantid) {
                         $errors['cohortid'] = get_string('error');
