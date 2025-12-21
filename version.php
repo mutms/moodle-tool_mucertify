@@ -38,5 +38,7 @@ $plugin->incompatible = 500;
 $plugin->release = 'mu-4.5.8-02+';
 
 $plugin->dependencies = [
+    'tool_mulib' => 2025121645.02,
     'tool_muprog' => 2025121645,
+    'block_mucertify_my' => 2025121645,
 ];

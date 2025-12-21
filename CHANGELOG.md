@@ -9,6 +9,8 @@ The format of this change log follows the advice given at [Keep a CHANGELOG](htt
 ### Changed
 
 - Switched to new change log format
+- Reversed block dependencies to simplify Certifications installation and upgrades
+- Switched to new mulib Certification helpers
 
 ## [mu-4.5.8-02] - 2025-12-16
 
