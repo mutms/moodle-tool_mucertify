@@ -109,7 +109,7 @@ final class certification_create extends \tool_mulib\local\ajax_form {
         } else if (trim($data['idnumber']) !== $data['idnumber']) {
             $errors['idnumber'] = get_string('error');
         } else {
-            if ($DB->record_exists('tool_mucertify_certification', ['idnumber' => $data['idnumber']])) {
+            if ($DB->record_exists_select('tool_mucertify_certification', "LOWER(idnumber) = LOWER(?)", [$data['idnumber']])) {
                 $errors['idnumber'] = get_string('error');
             }
         }
