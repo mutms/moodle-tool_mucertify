@@ -94,8 +94,6 @@ final class certification_update extends \tool_mulib\local\ajax_form {
         global $DB;
         $context = $this->_customdata['context'];
 
-        $olddata = $this->_customdata['data'];
-
         $errors = parent::validation($data, $files);
 
         if (trim($data['fullname']) === '') {
@@ -107,12 +105,8 @@ final class certification_update extends \tool_mulib\local\ajax_form {
         } else if (trim($data['idnumber']) !== $data['idnumber']) {
             $errors['idnumber'] = get_string('error');
         } else {
-            if ($olddata->idnumber !== $data['idnumber']) {
-                $select = 'idnumber = :idnumber AND id <> :id';
-                $params = ['idnumber' => $data['idnumber'], 'id' => $olddata->id];
-                if ($DB->record_exists_select('tool_mucertify_certification', $select, $params)) {
-                    $errors['idnumber'] = get_string('error');
-                }
+            if ($DB->record_exists_select('tool_mucertify_certification', "LOWER(idnumber) = LOWER(?) AND id <> ?", [$data['idnumber'], $data['id']])) {
+                $errors['idnumber'] = get_string('error');
             }
         }
 
