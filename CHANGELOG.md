@@ -12,6 +12,7 @@ The format of this change log follows the advice given at [Keep a CHANGELOG](htt
 - Reversed block dependencies to simplify Certifications installation and upgrades
 - Switched to new mulib Certification helpers
 - Improved performance of Certifications management page on sites with large number of contexts
+- Fixed category selection autocomplete element in program editing form
 
 ## [mu-4.5.8-02] - 2025-12-16
 
