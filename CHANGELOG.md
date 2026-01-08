@@ -6,7 +6,9 @@ The format of this change log follows the advice given at [Keep a CHANGELOG](htt
 
 ## [Unreleased]
 
-- No changes
+### Added
+
+- New web services for fetching of certifications, certification assignments and periods 
 
 ## [mu-5.0.4-03] - 2025-12-31
 
