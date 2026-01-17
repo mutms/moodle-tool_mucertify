@@ -41,20 +41,20 @@ $usercontext = context_user::instance($USER->id);
 $PAGE->set_context($usercontext);
 
 if (!\tool_mulib\local\mulib::is_mucertify_active()) {
-    redirect(new moodle_url('/'));
+    redirect(new \core\url('/'));
 }
 if (isguestuser()) {
-    redirect(new moodle_url('/admin/tool/mucertify/catalogue/index.php'));
+    redirect(new \core\url('/admin/tool/mucertify/catalogue/index.php'));
 }
 
-$currenturl = new moodle_url('/admin/tool/mucertify/my/index.php');
+$currenturl = new \core\url('/admin/tool/mucertify/my/index.php');
 
 $title = get_string('mycertifications', 'tool_mucertify');
 $PAGE->navigation->extend_for_user($USER);
 $PAGE->set_title($title);
 $PAGE->set_url($currenturl);
 $PAGE->set_pagelayout('report');
-$PAGE->navbar->add(get_string('profile'), new moodle_url('/user/profile.php', ['id' => $USER->id]));
+$PAGE->navbar->add(get_string('profile'), new \core\url('/user/profile.php', ['id' => $USER->id]));
 $PAGE->navbar->add($title);
 
 $actions = new \tool_mulib\output\header_actions(get_string('certification_actions', 'tool_mucertify'));

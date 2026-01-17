@@ -27,7 +27,6 @@ use core_reportbuilder\system_report;
 use core_reportbuilder\local\helpers\database;
 use core_reportbuilder\local\helpers\user_profile_fields;
 use lang_string;
-use moodle_url;
 
 /**
  * Embedded My certification report.
@@ -111,7 +110,7 @@ final class my_assignments extends system_report {
                     return '';
                 }
                 $value = format_string($value);
-                $url = new \moodle_url('/admin/tool/mucertify/my/certification.php', ['id' => $row->id]);
+                $url = new \core\url('/admin/tool/mucertify/my/certification.php', ['id' => $row->id]);
                 return \html_writer::link($url, $value);
             });
         $this->add_column($column);

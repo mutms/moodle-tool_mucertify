@@ -10,6 +10,10 @@ The format of this change log follows the advice given at [Keep a CHANGELOG](htt
 
 - New web services for fetching of certifications, certification assignments and periods 
 
+### Fixed
+
+- Fixed usage of legacy moodle_url class
+
 ## [mu-4.5.8-03] - 2025-12-31
 
 ### Changed

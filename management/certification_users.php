@@ -46,7 +46,7 @@ $certification = $DB->get_record('tool_mucertify_certification', ['id' => $id], 
 $context = context::instance_by_id($certification->contextid);
 require_capability('tool/mucertify:view', $context);
 
-$currenturl = new moodle_url('/admin/tool/mucertify/management/certification_users.php', ['id' => $certification->id]);
+$currenturl = new \core\url('/admin/tool/mucertify/management/certification_users.php', ['id' => $certification->id]);
 
 management::setup_certification_page($currenturl, $context, $certification, 'certification_users');
 $PAGE->set_docs_path('https://github.com/mutms/moodle-tool_mucertify/wiki/Certification-users');
@@ -65,7 +65,7 @@ foreach ($sourceclasses as $sourceclass) {
     $sourceclass::add_management_certification_users_actions($actions, $certification, $sourcerecord);
 }
 if (!$certification->archived && has_capability('tool/mucertify:admin', $context)) {
-    $url = new \moodle_url('/admin/tool/mucertify/management/history_upload.php', ['certificationid' => $certification->id]);
+    $url = new \core\url('/admin/tool/mucertify/management/history_upload.php', ['certificationid' => $certification->id]);
     $link = new \tool_mulib\output\ajax_form\link($url, get_string('history_upload', 'tool_mucertify'));
     $link->set_form_size('xl');
     $actions->get_dropdown()->add_ajax_form($link);

@@ -627,12 +627,12 @@ final class catalogue_test extends \advanced_testcase {
         $this->assertNull(\tool_mucertify\local\catalogue::get_catalogue_url());
 
         $certification1 = $generator->create_certification(['archived' => 0]);
-        $expected = new \moodle_url('/admin/tool/mucertify/catalogue/index.php');
+        $expected = new \core\url('/admin/tool/mucertify/catalogue/index.php');
         $this->assertSame((string)$expected, (string)\tool_mucertify\local\catalogue::get_catalogue_url());
 
         $viewer = $this->getDataGenerator()->create_user();
         $this->setUser($viewer);
-        $expected = new \moodle_url('/admin/tool/mucertify/catalogue/index.php');
+        $expected = new \core\url('/admin/tool/mucertify/catalogue/index.php');
         $this->assertSame((string)$expected, (string)\tool_mucertify\local\catalogue::get_catalogue_url());
 
         $syscontext = \context_system::instance();

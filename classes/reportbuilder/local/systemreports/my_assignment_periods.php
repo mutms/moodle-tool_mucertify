@@ -28,7 +28,6 @@ use tool_muprog\reportbuilder\local\entities\allocation;
 use core_reportbuilder\system_report;
 use core_reportbuilder\local\helpers\database;
 use lang_string;
-use moodle_url;
 
 /**
  * Embedded My certification periods report.
@@ -147,7 +146,7 @@ final class my_assignment_periods extends system_report {
                     return '';
                 }
                 $fullname = format_string($row->fullname);
-                $url = new \moodle_url('/admin/tool/muprog/my/program.php', ['id' => $row->programid]);
+                $url = new \core\url('/admin/tool/muprog/my/program.php', ['id' => $row->programid]);
                 return \html_writer::link($url, $fullname);
             });
         $this->add_column($column);

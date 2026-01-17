@@ -41,13 +41,13 @@ require_login();
 
 $usercontext = context_user::instance($USER->id);
 $PAGE->set_context($usercontext);
-$PAGE->set_url(new moodle_url('/admin/tool/mucertify/my/certification.php', ['id' => $id]));
+$PAGE->set_url(new \core\url('/admin/tool/mucertify/my/certification.php', ['id' => $id]));
 
 if (!\tool_mulib\local\mulib::is_mucertify_active()) {
-    redirect(new moodle_url('/'));
+    redirect(new \core\url('/'));
 }
 if (isguestuser()) {
-    redirect(new moodle_url('/admin/tool/mucertify/catalogue/certification.php', ['id' => $id]));
+    redirect(new \core\url('/admin/tool/mucertify/catalogue/certification.php', ['id' => $id]));
 }
 
 $certification = $DB->get_record('tool_mucertify_certification', ['id' => $id]);
@@ -59,12 +59,12 @@ if (!$certification || $certification->archived) {
     }
     if (has_capability('tool/mucertify:view', $context)) {
         if ($certification) {
-            redirect(new moodle_url('/admin/tool/mucertify/management/certification.php', ['id' => $certification->id]));
+            redirect(new \core\url('/admin/tool/mucertify/management/certification.php', ['id' => $certification->id]));
         } else {
-            redirect(new moodle_url('/admin/tool/mucertify/management/index.php'));
+            redirect(new \core\url('/admin/tool/mucertify/management/index.php'));
         }
     } else {
-        redirect(new moodle_url('/admin/tool/mucertify/catalogue/index.php'));
+        redirect(new \core\url('/admin/tool/mucertify/catalogue/index.php'));
     }
 }
 $certificationcontext = context::instance_by_id($certification->contextid);
@@ -76,12 +76,12 @@ $assignment = \tool_mucertify\local\assignment::sync_current_status($assignment)
 
 if (!$assignment || $assignment->archived) {
     if (\tool_mucertify\local\catalogue::is_certification_visible($certification)) {
-        redirect(new moodle_url('/admin/tool/mucertify/catalogue/certification.php', ['id' => $id]));
+        redirect(new \core\url('/admin/tool/mucertify/catalogue/certification.php', ['id' => $id]));
     } else {
         if (has_capability('tool/mucertify:view', $certificationcontext)) {
-            redirect(new moodle_url('/admin/tool/mucertify/management/certification.php', ['id' => $certification->id]));
+            redirect(new \core\url('/admin/tool/mucertify/management/certification.php', ['id' => $certification->id]));
         } else {
-            redirect(new moodle_url('/admin/tool/mucertify/catalogue/index.php'));
+            redirect(new \core\url('/admin/tool/mucertify/catalogue/index.php'));
         }
     }
 }
@@ -90,14 +90,14 @@ $title = get_string('mycertifications', 'tool_mucertify');
 $PAGE->navigation->extend_for_user($USER);
 $PAGE->set_title($title);
 $PAGE->set_pagelayout('report');
-$PAGE->navbar->add(get_string('profile'), new moodle_url('/user/profile.php', ['id' => $USER->id]));
-$PAGE->navbar->add($title, new moodle_url('/admin/tool/mucertify/my/index.php'));
+$PAGE->navbar->add(get_string('profile'), new \core\url('/user/profile.php', ['id' => $USER->id]));
+$PAGE->navbar->add($title, new \core\url('/admin/tool/mucertify/my/index.php'));
 $PAGE->navbar->add(format_string($certification->fullname));
 
 $actions = new \tool_mulib\output\header_actions(get_string('certification_actions', 'tool_mucertify'));
 
 if (has_capability('tool/mucertify:view', $certificationcontext)) {
-    $manageurl = new moodle_url('/admin/tool/mucertify/management/certification.php', ['id' => $certification->id]);
+    $manageurl = new \core\url('/admin/tool/mucertify/management/certification.php', ['id' => $certification->id]);
     $actions->get_dropdown()->add_item(get_string('management', 'tool_mucertify'), $manageurl);
 }
 
