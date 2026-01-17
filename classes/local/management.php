@@ -19,7 +19,7 @@
 
 namespace tool_mucertify\local;
 
-use moodle_url, stdClass;
+use stdClass;
 use tool_mulib\local\mulib;
 
 /**
@@ -35,9 +35,9 @@ final class management {
     /**
      * Guess if user can access certification management UI.
      *
-     * @return moodle_url|null
+     * @return \core\url|null
      */
-    public static function get_management_url(): ?moodle_url {
+    public static function get_management_url(): ?\core\url {
         if (isguestuser() || !isloggedin()) {
             return null;
         }
@@ -45,7 +45,7 @@ final class management {
         // NOTE: this has to be very fast, do NOT loop all categories here!
 
         if (has_capability('tool/mucertify:view', \context_system::instance())) {
-            return new moodle_url('/admin/tool/mucertify/management/index.php');
+            return new \core\url('/admin/tool/mucertify/management/index.php');
         } else if (mulib::is_mutenancy_active()) {
             $tenantid = \tool_mutenancy\local\tenancy::get_current_tenantid();
             if ($tenantid) {
@@ -53,7 +53,7 @@ final class management {
                 if ($tenant) {
                     $catcontext = \context_coursecat::instance($tenant->categoryid);
                     if (has_capability('tool/mucertify:view', $catcontext)) {
-                        return new moodle_url('/admin/tool/mucertify/management/index.php', ['contextid' => $catcontext->id]);
+                        return new \core\url('/admin/tool/mucertify/management/index.php', ['contextid' => $catcontext->id]);
                     }
                 }
             }
@@ -84,11 +84,11 @@ final class management {
     /**
      * Set up $PAGE for certification management UI.
      *
-     * @param moodle_url $pageurl
+     * @param \core\url $pageurl
      * @param \context $context
      * @return void
      */
-    public static function setup_index_page(\moodle_url $pageurl, \context $context): void {
+    public static function setup_index_page(\core\url $pageurl, \context $context): void {
         global $PAGE;
 
         $PAGE->set_pagelayout('admin');
@@ -114,7 +114,7 @@ final class management {
         foreach ($contexts as $context) {
             $url = null;
             if (has_capability('tool/mucertify:view', $context)) {
-                $url = new moodle_url('/admin/tool/mucertify/management/index.php', ['contextid' => $context->id]);
+                $url = new \core\url('/admin/tool/mucertify/management/index.php', ['contextid' => $context->id]);
             }
             $PAGE->navbar->add($context->get_context_name(false), $url);
         }
@@ -123,13 +123,13 @@ final class management {
     /**
      * Set up $PAGE for certification management UI.
      *
-     * @param moodle_url $pageurl
+     * @param \core\url $pageurl
      * @param \context $context
      * @param stdClass $certification
      * @param string $secondarytab
      * @return void
      */
-    public static function setup_certification_page(\moodle_url $pageurl, \context $context, stdClass $certification, string $secondarytab): void {
+    public static function setup_certification_page(\core\url $pageurl, \context $context, stdClass $certification, string $secondarytab): void {
         global $PAGE;
 
         $PAGE->set_pagelayout('admin');
@@ -159,7 +159,7 @@ final class management {
         foreach ($contexts as $context) {
             $url = null;
             if (has_capability('tool/mucertify:view', $context)) {
-                $url = new moodle_url('/admin/tool/mucertify/management/index.php', ['contextid' => $context->id]);
+                $url = new \core\url('/admin/tool/mucertify/management/index.php', ['contextid' => $context->id]);
             }
             $PAGE->navbar->add($context->get_context_name(false), $url);
         }
