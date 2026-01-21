@@ -17,6 +17,7 @@ The format of this change log follows the advice given at [Keep a CHANGELOG](htt
 ### Fixed
 
 - Fixed usage of legacy moodle_url class
+- Improved navigation to start with "Certifications" instead of "System"
 
 ## [mu-4.5.8-03] - 2025-12-31
 
