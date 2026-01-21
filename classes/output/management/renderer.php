@@ -63,8 +63,16 @@ class renderer extends \plugin_renderer_base {
         $details = new \tool_mulib\output\entity_details();
         $details->add(get_string('certificationname', 'tool_mucertify'), format_string($certification->fullname));
         $details->add(get_string('certificationidnumber', 'tool_mucertify'), s($certification->idnumber));
+
         $url = new \core\url('/admin/tool/mucertify/management/index.php', ['contextid' => $context->id]);
-        $details->add(get_string('category'), html_writer::link($url, $context->get_context_name(false)));
+        $category = html_writer::link($url, $context->get_context_name(false));
+        if (has_capability('tool/mucertify:edit', $context)) {
+            $url = new url('/admin/tool/mucertify/management/certification_move.php', ['id' => $certification->id]);
+            $action = new \tool_mulib\output\ajax_form\icon($url, get_string('certification_move', 'tool_mucertify'), 'i/edit');
+            $category .= $this->output->render($action);
+        }
+        $details->add(get_string('category'), $category);
+
         if ($CFG->usetags) {
             $tags = \core_tag_tag::get_item_tags('tool_mucertify', 'tool_mucertify_certification', $certification->id);
             if ($tags) {

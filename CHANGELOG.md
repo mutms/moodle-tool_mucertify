@@ -12,11 +12,14 @@ The format of this change log follows the advice given at [Keep a CHANGELOG](htt
 
 ### Changed
 
+- Added separate "Move certification" action for moving of certifications into different contexts to match other MuTMS plugins
 - Used red colour for "Delete certification" action
 
 ### Fixed
 
 - Fixed usage of legacy moodle_url class
+- Certifications from deleted categories will be automatically marked as archived when moved to parent context
+- Fixed missing certification image when moving certification to a different context
 - Improved navigation to start with "Certifications" instead of "System"
 
 ## [mu-4.5.8-03] - 2025-12-31
