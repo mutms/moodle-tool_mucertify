@@ -10,6 +10,10 @@ The format of this change log follows the advice given at [Keep a CHANGELOG](htt
 
 - New web services for fetching of certifications, certification assignments and periods 
 
+### Changed
+
+- Used red colour for "Delete certification" action
+
 ### Fixed
 
 - Fixed usage of legacy moodle_url class
