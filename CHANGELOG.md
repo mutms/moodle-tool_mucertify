@@ -9,6 +9,7 @@ The format of this change log follows the advice given at [Keep a CHANGELOG](htt
 ### Added
 
 - New web services for fetching of certifications, certification assignments and periods 
+- Icons added to dropdown actions
 
 ### Changed
 
