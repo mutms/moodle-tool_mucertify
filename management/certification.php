@@ -57,7 +57,7 @@ $managementoutput = $PAGE->get_renderer('tool_mucertify', 'management');
 $actions = new header_actions(get_string('management_certification_general_actions', 'tool_mucertify'));
 if ($certification->archived && has_capability('tool/mucertify:delete', $context)) {
     $url = new \core\url('/admin/tool/mucertify/management/certification_delete.php', ['id' => $certification->id]);
-    $link = new tool_mulib\output\ajax_form\link($url, get_string('certification_delete', 'tool_mucertify'));
+    $link = new tool_mulib\output\ajax_form\link($url, get_string('certification_delete', 'tool_mucertify'), 'i/delete');
     $link->add_class('text-danger');
     $link->set_form_size('sm');
     $link->set_submitted_action($link::SUBMITTED_ACTION_REDIRECT);
