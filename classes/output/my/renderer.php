@@ -129,13 +129,11 @@ class renderer extends \plugin_renderer_base {
      * @return string
      */
     public function render_user_periods(stdClass $certification, stdClass $assignment): string {
-        global $USER;
-
         $result = $this->output->heading(get_string('periods', 'tool_mucertify'), 3);
 
-        $context = \context_user::instance($USER->id);
+        $context = \context_user::instance($assignment->userid);
         $report = \core_reportbuilder\system_report_factory::create(
-            \tool_mucertify\reportbuilder\local\systemreports\my_assignment_periods::class,
+            \tool_mucertify\reportbuilder\local\systemreports\assignment_periods_user::class,
             $context,
             parameters:['assignmentid' => $assignment->id]
         );

@@ -84,6 +84,13 @@ class behat_tool_mucertify extends behat_base {
                     throw new Exception('Invalid certification "' . $identifier . '."');
                 }
                 return new \core\url('/admin/tool/mucertify/management/certification.php', ['id' => $certification->id]);
+            case 'user certifications':
+                $userid = $this->get_user_id_by_identifier($identifier);
+                if (!$userid) {
+                    throw new Exception('The specified user with username or email "' .
+                        $identifier . '" does not exist');
+                }
+                return new moodle_url('/admin/tool/mucertify/my/index.php', ['userid' => $userid]);
 
             default:
                 throw new Exception('Unrecognised tool_mucertify page type "' . $type . '."');
