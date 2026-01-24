@@ -158,6 +158,7 @@ final class management {
             $PAGE->navbar->add($name, $url);
         }
 
-        $PAGE->navbar->add($certificationname);
+        $url = new url('/admin/tool/mucertify/management/certification.php', ['id' => $certification->id]);
+        $PAGE->navbar->add($certificationname, $url);
     }
 }

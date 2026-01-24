@@ -89,9 +89,16 @@ function tool_mucertify_myprofile_navigation(core_user\output\myprofile\tree $tr
         return;
     }
 
-    if ($USER->id == $user->id) {
-        $link = get_string('mycertifications', 'tool_mucertify');
+    $usercontext = context_user::instance($user->id);
+
+    if ($USER->id == $user->id || has_capability('tool/mucertify:viewusercertifications', $usercontext)) {
         $url = new \core\url('/admin/tool/mucertify/my/index.php');
+        if ($USER->id == $user->id) {
+            $link = get_string('mycertifications', 'tool_mucertify');
+        } else {
+            $link = get_string('certifications', 'tool_mucertify');
+            $url->param('userid', $user->id);
+        }
         $node = new core_user\output\myprofile\node('miscellaneous', 'toolcertify_certifications', $link, null, $url);
         $tree->add_node($node);
     }
