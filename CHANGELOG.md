@@ -6,7 +6,9 @@ The format of this change log follows the advice given at [Keep a CHANGELOG](htt
 
 ## [Unreleased]
 
-- No changes
+### Fixed
+
+- Fixed certification history upload action to not be visible when manual assignment source is disabled
 
 ## [mu-4.5.8-04] - 2026-01-25
 
