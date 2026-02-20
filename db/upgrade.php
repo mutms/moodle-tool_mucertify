@@ -117,5 +117,12 @@ function xmldb_tool_mucertify_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026022045, 'tool', 'mucertify');
     }
 
+    if ($oldversion < 2026022045.02) {
+        $syscontext = context_system::instance();
+        $DB->set_field('tag_instance', 'contextid', $syscontext->id, ['component' => 'tool_mucertify']);
+
+        upgrade_plugin_savepoint(true, 2026022045.02, 'tool', 'mucertify');
+    }
+
     return true;
 }

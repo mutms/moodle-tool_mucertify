@@ -248,7 +248,7 @@ final class certification_test extends \advanced_testcase {
             $this->assertSame('Invalid parameter value detected (System or category context expected)', $ex->getMessage());
         }
 
-        // Test tags are moved.
+        // Test tags are not moved.
 
         $data = [
             'fullname' => 'Certifikace 2',
@@ -263,7 +263,7 @@ final class certification_test extends \advanced_testcase {
         );
         $tags = \core_tag_tag::get_item_tags('tool_mucertify', 'tool_mucertify_certification', $certification2->id);
         foreach ($tags as $tag) {
-            $this->assertEquals($catcontext->id, $tag->taginstancecontextid);
+            $this->assertEquals($syscontext->id, $tag->taginstancecontextid);
         }
 
         $certification2 = certification::move($certification2->id, $syscontext->id);

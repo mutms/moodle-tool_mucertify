@@ -82,6 +82,7 @@ final class certification {
         global $DB, $CFG;
         $data = clone($data);
 
+        $syscontext = \context_system::instance();
         $context = \context::instance_by_id($data->contextid);
         if (!($context instanceof \context_system) && !($context instanceof \context_coursecat)) {
             throw new \coding_exception('certification contextid must be a system or course category');
@@ -149,7 +150,7 @@ final class certification {
         self::update_image($data);
 
         if ($CFG->usetags && isset($data->tags)) {
-            \core_tag_tag::set_item_tags('tool_mucertify', 'tool_mucertify_certification', $data->id, $context, $data->tags);
+            \core_tag_tag::set_item_tags('tool_mucertify', 'tool_mucertify_certification', $data->id, $syscontext, $data->tags);
         }
 
         if ($editorused) {
@@ -215,6 +216,7 @@ final class certification {
 
         $oldcertification = $DB->get_record('tool_mucertify_certification', ['id' => $data->id], '*', MUST_EXIST);
         $context = \context::instance_by_id($oldcertification->contextid);
+        $syscontext = \context_system::instance();
 
         $record = new stdClass();
         $record->id = $oldcertification->id;
@@ -268,7 +270,7 @@ final class certification {
         }
 
         if ($CFG->usetags && isset($data->tags)) {
-            \core_tag_tag::set_item_tags('tool_mucertify', 'tool_mucertify_certification', $data->id, $context, $data->tags);
+            \core_tag_tag::set_item_tags('tool_mucertify', 'tool_mucertify_certification', $data->id, $syscontext, $data->tags);
         }
 
         $certification = self::update_image($data);
@@ -311,12 +313,6 @@ final class certification {
         }
 
         $trans = $DB->start_delegated_transaction();
-
-        // Do not check if tags enabled here.
-        $tags = \core_tag_tag::get_item_tags_array('tool_mucertify', 'tool_mucertify_certification', $certification->id);
-        if ($tags) {
-            \core_tag_tag::set_item_tags('tool_mucertify', 'tool_mucertify_certification', $certification->id, $context, $tags);
-        }
 
         $record = (object)[
             'id' => $certification->id,
