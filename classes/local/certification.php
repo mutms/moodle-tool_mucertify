@@ -22,6 +22,7 @@ namespace tool_mucertify\local;
 use stdClass;
 use tool_muprog\local\course_reset;
 use core\exception\invalid_parameter_exception;
+use core\url;
 
 /**
  * Certification helper.
@@ -376,6 +377,57 @@ final class certification {
         }
 
         return $certification;
+    }
+
+    /**
+     * Returns certification image URL.
+     *
+     * @param stdClass $certification must include id, contextid and presentationjson property.
+     * @param bool $generateifmissing
+     * @return url|null
+     */
+    public static function get_image_url(stdClass $certification, bool $generateifmissing): ?url {
+        global $CFG;
+
+        $presentation = (array)json_decode($certification->presentationjson);
+        if (!empty($presentation['image'])) {
+            $context = \context::instance_by_id($certification->contextid);
+            return url::make_file_url(
+                "$CFG->wwwroot/pluginfile.php",
+                '/' . $context->id . '/tool_mucertify/image/' . $certification->id . '/' . $presentation['image']
+            );
+        }
+
+        if (!$generateifmissing) {
+            return null;
+        }
+
+        $syscontext = \context_system::instance();
+        return url::make_file_url(
+            "$CFG->wwwroot/pluginfile.php",
+            '/' . $syscontext->id . '/tool_mucertify/image/' . $certification->id . '/geopattern.svg'
+        );
+    }
+
+    /**
+     * Create certification image using geopattern.
+     *
+     * @param int $certificationid
+     * @return \core_geopattern
+     */
+    public static function get_image_geopattern(int $certificationid): \core_geopattern {
+        $colornumbers = range(1, 10);
+        $basecolors = [];
+        foreach ($colornumbers as $number) {
+            $basecolors[] = get_config('core_admin', 'coursecolor' . $number);
+        }
+        $color = $basecolors[($certificationid + 7) % 10]; // Do not start with the same colour as courses.
+
+        $pattern = new \core_geopattern();
+        $pattern->setColor($color);
+        $pattern->patternbyid('certification_' . $certificationid);
+
+        return $pattern;
     }
 
     /**
