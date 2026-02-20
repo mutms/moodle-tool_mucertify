@@ -9,6 +9,7 @@ The format of this change log follows the advice given at [Keep a CHANGELOG](htt
 ### Changes
 
 - Refactored certification image support
+- All images were moved to system context, certification context will be used only for management access control and tenant separation
 
 ## [v4.5.10.01](https://github.com/mutms/moodle-tool_mucertify/compare/mu-4.5.9-01...v4.5.10.01) - 2026-02-12
 

@@ -45,7 +45,7 @@ final class certification_test extends \advanced_testcase {
     public function test_get_description_editor_options(): void {
         $syscontext = \context_system::instance();
 
-        $result = certification::get_description_editor_options($syscontext->id);
+        $result = certification::get_description_editor_options();
         $this->assertIsArray($result);
         $this->assertSame(-1, $result['maxfiles']);
         $this->assertSame($syscontext, $result['context']);
@@ -276,7 +276,7 @@ final class certification_test extends \advanced_testcase {
             $this->assertEquals($syscontext->id, $tag->taginstancecontextid);
         }
 
-        // Test images are moved.
+        // Test images are not moved.
 
         $admin = get_admin();
         $this->setUser($admin);
@@ -312,12 +312,10 @@ final class certification_test extends \advanced_testcase {
             'image' => $draftid2,
         ];
         $certification3 = certification::create((object)$data);
-        $this->assertTrue($fs->file_exists($catcontext->id, 'tool_mucertify', 'description', $certification3->id, '/', 'someimage.jpg'));
-        $this->assertTrue($fs->file_exists($catcontext->id, 'tool_mucertify', 'image', $certification3->id, '/', 'otherimage.jpg'));
+        $this->assertTrue($fs->file_exists($syscontext->id, 'tool_mucertify', 'description', $certification3->id, '/', 'someimage.jpg'));
+        $this->assertTrue($fs->file_exists($syscontext->id, 'tool_mucertify', 'image', $certification3->id, '/', 'otherimage.jpg'));
 
         $certification3 = certification::move($certification3->id, $syscontext->id);
-        $this->assertFalse($fs->file_exists($catcontext->id, 'tool_mucertify', 'description', $certification3->id, '/', 'someimage.jpg'));
-        $this->assertFalse($fs->file_exists($catcontext->id, 'tool_mucertify', 'image', $certification3->id, '/', 'otherimage.jpg'));
         $this->assertTrue($fs->file_exists($syscontext->id, 'tool_mucertify', 'description', $certification3->id, '/', 'someimage.jpg'));
         $this->assertTrue($fs->file_exists($syscontext->id, 'tool_mucertify', 'image', $certification3->id, '/', 'otherimage.jpg'));
     }
