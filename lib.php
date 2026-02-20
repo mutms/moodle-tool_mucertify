@@ -41,6 +41,10 @@
 function tool_mucertify_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options = []) {
     global $DB;
 
+    if ($context->contextlevel != CONTEXT_SYSTEM) {
+        send_file_not_found();
+    }
+
     if ($filearea !== 'description' && $filearea !== 'image') {
         send_file_not_found();
     }
@@ -55,11 +59,12 @@ function tool_mucertify_pluginfile($course, $cm, $context, $filearea, $args, $fo
     }
 
     $certification = $DB->get_record('tool_mucertify_certification', ['id' => $certificationid]);
-    if (!$certification || $context->id != $certification->contextid) {
+    if (!$certification) {
         send_file_not_found();
     }
+    $certificationcontext = context::instance_by_id($certification->contextid);
     if (
-        !has_capability('tool/mucertify:view', $context)
+        !has_capability('tool/mucertify:view', $certificationcontext)
         && !\tool_mucertify\local\catalogue::is_certification_visible($certification)
     ) {
         send_file_not_found();
