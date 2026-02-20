@@ -50,13 +50,8 @@ class renderer extends \plugin_renderer_base {
 
         $certificationimage = '';
 
-        $presentation = (array)json_decode($certification->presentationjson);
-        if (!empty($presentation['image'])) {
-            $imageurl = \core\url::make_file_url(
-                "$CFG->wwwroot/pluginfile.php",
-                '/' . $context->id . '/tool_mucertify/image/' . $certification->id . '/' . $presentation['image'],
-                false
-            );
+        $imageurl = certification::get_image_url($certification, false);
+        if ($imageurl) {
             $certificationimage = '<div class="certificationimage">' . html_writer::img($imageurl, '') . '</div>';
         }
 
