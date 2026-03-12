@@ -50,7 +50,7 @@ Recommended plugins:
 
 ## Documentation
 
-See [online documentation](https://docs.mutms.org/certifications/) for more information.
+See [online documentation](https://docs.mutms.org/mucertify/) for more information.
 
 ---
 
