@@ -183,14 +183,14 @@ Feature: Certifications plugin English wiki documentation image generator
     When I skip tests if "block_mucertify_my" is not installed
     And I follow "Dashboard"
     And I turn editing mode on
+    And I open the "Calendar" blocks action menu
+    And I follow "Delete Calendar block"
+    And I click on "Delete" "button" in the "Delete block?" "dialogue"
     And I open the "Recently accessed items" blocks action menu
     And I follow "Delete Recently accessed items block"
     And I click on "Delete" "button" in the "Delete block?" "dialogue"
     And I open the "Timeline" blocks action menu
     And I follow "Delete Timeline block"
-    And I click on "Delete" "button" in the "Delete block?" "dialogue"
-    And I open the "Calendar" blocks action menu
-    And I follow "Delete Calendar block"
     And I click on "Delete" "button" in the "Delete block?" "dialogue"
     And I add the "My certifications" block to the "content" region
     And I turn editing mode off
