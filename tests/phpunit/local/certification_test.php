@@ -218,6 +218,40 @@ final class certification_test extends \advanced_testcase {
         $this->assertSame('0', $certification->archived);
     }
 
+    public function test_move_customfields(): void {
+        global $DB;
+
+        $syscontext = \context_system::instance();
+        $category = $this->getDataGenerator()->create_category([]);
+        $catcontext = \context_coursecat::instance($category->id);
+        /** @var \tool_mucertify_generator $generator */
+        $generator = $this->getDataGenerator()->get_plugin_generator('tool_mucertify');
+        /** @var \core_customfield_generator $cfgenerator */
+        $cfgenerator = $this->getDataGenerator()->get_plugin_generator('core_customfield');
+
+        $pcategory = $cfgenerator->create_category(['component' => 'tool_mucertify', 'area' => 'certification']);
+        $pfield = $cfgenerator->create_field(['categoryid' => $pcategory->get('id'), 'shortname' => 'pf', 'type' => 'text']);
+        $acategory = $cfgenerator->create_category(['component' => 'tool_mucertify', 'area' => 'assignment']);
+        $afield = $cfgenerator->create_field(['categoryid' => $acategory->get('id'), 'shortname' => 'af', 'type' => 'text']);
+
+        $certification1 = $generator->create_certification(['contextid' => $syscontext->id, 'sources' => ['manual' => []]]);
+        $certification2 = $generator->create_certification(['contextid' => $syscontext->id, 'sources' => ['manual' => []]]);
+        $user = $this->getDataGenerator()->create_user();
+        $assignment1 = $generator->create_certification_assignment(['certificationid' => $certification1->id, 'userid' => $user->id]);
+        $assignment2 = $generator->create_certification_assignment(['certificationid' => $certification2->id, 'userid' => $user->id]);
+        $cfgenerator->add_instance_data($pfield, $certification1->id, 'p1');
+        $cfgenerator->add_instance_data($pfield, $certification2->id, 'p2');
+        $cfgenerator->add_instance_data($afield, $assignment1->id, 'a1');
+        $cfgenerator->add_instance_data($afield, $assignment2->id, 'a2');
+
+        certification::move($certification1->id, $catcontext->id);
+
+        $this->assertEquals($catcontext->id, $DB->get_field('customfield_data', 'contextid', ['fieldid' => $pfield->get('id'), 'instanceid' => $certification1->id]));
+        $this->assertEquals($catcontext->id, $DB->get_field('customfield_data', 'contextid', ['fieldid' => $afield->get('id'), 'instanceid' => $assignment1->id]));
+        $this->assertEquals($syscontext->id, $DB->get_field('customfield_data', 'contextid', ['fieldid' => $pfield->get('id'), 'instanceid' => $certification2->id]));
+        $this->assertEquals($syscontext->id, $DB->get_field('customfield_data', 'contextid', ['fieldid' => $afield->get('id'), 'instanceid' => $assignment2->id]));
+    }
+
     public function test_move(): void {
         $syscontext = \context_system::instance();
 

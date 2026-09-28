@@ -23,6 +23,8 @@ use stdClass;
 use tool_muprog\local\course_reset;
 use core\exception\invalid_parameter_exception;
 use core\url;
+use tool_mulib\local\customfield_util;
+use tool_mulib\local\sql;
 
 /**
  * Certification helper.
@@ -320,6 +322,25 @@ final class certification {
         ];
 
         $DB->update_record('tool_mucertify_certification', $record);
+
+        // Custom field data is stored in the certification context.
+        customfield_util::change_instances_context(
+            'tool_mucertify',
+            'certification',
+            0,
+            new sql(":certificationid1", ['certificationid1' => $certification->id]),
+            $context
+        );
+        customfield_util::change_instances_context(
+            'tool_mucertify',
+            'assignment',
+            0,
+            new sql(
+                "SELECT a.id FROM {tool_mucertify_assignment} a WHERE a.certificationid = :certificationid2",
+                ['certificationid2' => $certification->id]
+            ),
+            $context
+        );
 
         $certification = $DB->get_record('tool_mucertify_certification', ['id' => $certification->id], '*', MUST_EXIST);
 
