@@ -75,16 +75,16 @@ Feature: Manual certification assignment tests
     And I follow "Certification 000"
     And I click on "Assignment settings" "link" in the ".secondary-navigation" "css_element"
     And I click on "Update Manual assignment" "link"
-    And I set the following fields to these values:
+    And I set the following muform fields in the "dialog[open]" "css_element":
       | Active | Yes |
-    And I click on "Update" "button" in the ".modal-dialog" "css_element"
+    And I click on "Update" "button" in the "dialog[open]" "css_element"
     And I should see "Active" in the "Manual assignment" definition list item
     And I click on "Users" "link" in the ".secondary-navigation" "css_element"
 
     When I press "Assign users"
-    And I set the following fields to these values:
+    And I set the following muform fields in the "dialog[open]" "css_element":
       | Users | Student 1, Student 5 |
-    And I click on "Assign users" "button" in the ".modal-dialog" "css_element"
+    And I click on "Assign users" "button" in the "dialog[open]" "css_element"
     Then "Student 1" row "Source" column of "reportbuilder-table" table should contain "Manual assignment"
     And "Student 5" row "Source" column of "reportbuilder-table" table should contain "Manual assignment"
     And I should not see "Student 2"
@@ -92,9 +92,9 @@ Feature: Manual certification assignment tests
     And I should not see "Student 4"
 
     When I press "Assign users"
-    And I set the following fields to these values:
+    And I set the following muform fields in the "dialog[open]" "css_element":
       | Cohort | Cohort 2 |
-    And I click on "Assign users" "button" in the ".modal-dialog" "css_element"
+    And I click on "Assign users" "button" in the "dialog[open]" "css_element"
     Then "Student 1" row "Source" column of "reportbuilder-table" table should contain "Manual assignment"
     And "Student 2" row "Source" column of "reportbuilder-table" table should contain "Manual assignment"
     And "Student 5" row "Source" column of "reportbuilder-table" table should contain "Manual assignment"
@@ -103,25 +103,25 @@ Feature: Manual certification assignment tests
 
     And I click on "Actions" "link" in the "Student 2" "table_row"
     When I click on "Archive assignment" "link" in the "Student 2" "table_row"
-    And I click on "Archive assignment" "button" in the ".modal-dialog" "css_element"
+    And I click on "Archive assignment" "button" in the "dialog[open]" "css_element"
     Then "Student 2" row "Archived" column of "reportbuilder-table" table should contain "Yes"
 
     And I click on "Actions" "link" in the "Student 2" "table_row"
     When I click on "Restore assignment" "link" in the "Student 2" "table_row"
-    And I click on "Restore assignment" "button" in the ".modal-dialog" "css_element"
+    And I click on "Restore assignment" "button" in the "dialog[open]" "css_element"
     Then "Student 2" row "Archived" column of "reportbuilder-table" table should contain "No"
 
     And I click on "Actions" "link" in the "Student 2" "table_row"
     And I click on "Archive assignment" "link" in the "Student 2" "table_row"
-    And I click on "Archive assignment" "button" in the ".modal-dialog" "css_element"
+    And I click on "Archive assignment" "button" in the "dialog[open]" "css_element"
     And I click on "Actions" "link" in the "Student 2" "table_row"
     When I click on "Delete assignment" "link" in the "Student 2" "table_row"
-    And I click on "Cancel" "button" in the ".modal-dialog" "css_element"
+    And I click on "Cancel" "button" in the "dialog[open]" "css_element"
     Then "Student 2" row "Source" column of "reportbuilder-table" table should contain "Manual assignment"
 
     And I click on "Actions" "link" in the "Student 2" "table_row"
     When I click on "Delete assignment" "link" in the "Student 2" "table_row"
-    And I click on "Delete assignment" "button" in the ".modal-dialog" "css_element"
+    And I click on "Delete assignment" "button" in the "dialog[open]" "css_element"
     Then I should not see "Student 2"
 
   @javascript
@@ -132,15 +132,10 @@ Feature: Manual certification assignment tests
     And I click on "Users" "link" in the ".secondary-navigation" "css_element"
 
     When I press "Assign users"
-    And I set the following fields to these values:
-      | Users                    | Student 1   |
-      | timeuntil[enabled]       | 1           |
-      | timeuntil[day]           | 1           |
-      | timeuntil[month]         | 1           |
-      | timeuntil[year]          | 2035        |
-      | timeuntil[hour]          | 00          |
-      | timeuntil[minute]        | 00          |
-    And I click on "Assign users" "button" in the ".modal-dialog" "css_element"
+    And I set the following muform fields in the "dialog[open]" "css_element":
+      | Users     | Student 1        |
+      | timeuntil | 2035-01-01 00:00 |
+    And I click on "Assign users" "button" in the "dialog[open]" "css_element"
     And I follow "Student 1"
     Then the following should exist in the "reportbuilder-table" table:
       | Certification due | Window closing | Program     | Expiration     | Re-certify automatically | Status  |
@@ -163,45 +158,45 @@ Feature: Manual certification assignment tests
     And I follow "Certification 000"
     And I click on "Assignment settings" "link" in the ".secondary-navigation" "css_element"
     And I click on "Update Manual assignment" "link"
-    And I set the following fields to these values:
+    And I set the following muform fields in the "dialog[open]" "css_element":
       | Active | Yes |
-    And I click on "Update" "button" in the ".modal-dialog" "css_element"
+    And I click on "Update" "button" in the "dialog[open]" "css_element"
     And I should see "Active" in the "Manual assignment" definition list item
     And I click on "Users" "link" in the ".secondary-navigation" "css_element"
     When I press "Assign users"
-    And I set the following fields to these values:
+    And I set the following muform fields in the "dialog[open]" "css_element":
       | Users | Student 1 |
-    And I click on "Assign users" "button" in the ".modal-dialog" "css_element"
+    And I click on "Assign users" "button" in the "dialog[open]" "css_element"
     Then "Student 1" row "Source" column of "reportbuilder-table" table should contain "Manual assignment"
 
     And I am on the "tool_mucertify > All certifications management" page
     And I follow "Certification 001"
     And I click on "Assignment settings" "link" in the ".secondary-navigation" "css_element"
     And I click on "Update Manual assignment" "link"
-    And I set the following fields to these values:
+    And I set the following muform fields in the "dialog[open]" "css_element":
       | Active | Yes |
-    And I click on "Update" "button" in the ".modal-dialog" "css_element"
+    And I click on "Update" "button" in the "dialog[open]" "css_element"
     And I should see "Active" in the "Manual assignment" definition list item
     And I click on "Users" "link" in the ".secondary-navigation" "css_element"
 
     When I press "Assign users"
-    And I set the following fields to these values:
+    And I set the following muform fields in the "dialog[open]" "css_element":
       | Users | Student 1 |
-    And I click on "Assign users" "button" in the ".modal-dialog" "css_element"
+    And I click on "Assign users" "button" in the "dialog[open]" "css_element"
     And "Student 1" row "Source" column of "reportbuilder-table" table should contain "Manual assignment"
     And I click on "Switch tenant" "link"
-    And I set the following fields to these values:
+    And I set the following muform fields in the "dialog[open]" "css_element":
       | Tenant      | Tenant 1         |
-    And I click on "Switch tenant" "button" in the ".modal-dialog" "css_element"
+    And I click on "Switch tenant" "button" in the "dialog[open]" "css_element"
 
     And I am on the "tool_mucertify > All certifications management" page
     And I follow "Certification 000"
     And I click on "Users" "link" in the ".secondary-navigation" "css_element"
 
     When I press "Assign users"
-    And I set the following fields to these values:
+    And I set the following muform fields in the "dialog[open]" "css_element":
       | Users | Tenant 1 Student |
-    And I click on "Assign users" "button" in the ".modal-dialog" "css_element"
+    And I click on "Assign users" "button" in the "dialog[open]" "css_element"
     Then "Tenant 1 Student" row "Source" column of "reportbuilder-table" table should contain "Manual assignment"
 
     And I am on the "tool_mucertify > All certifications management" page
@@ -209,9 +204,9 @@ Feature: Manual certification assignment tests
     And I click on "Users" "link" in the ".secondary-navigation" "css_element"
 
     When I press "Assign users"
-    And I set the following fields to these values:
+    And I set the following muform fields in the "dialog[open]" "css_element":
       | Users | Tenant 1 Student |
-    And I click on "Assign users" "button" in the ".modal-dialog" "css_element"
+    And I click on "Assign users" "button" in the "dialog[open]" "css_element"
     Then "Tenant 1 Student" row "Source" column of "reportbuilder-table" table should contain "Manual assignment"
 
   @javascript @_file_upload
@@ -221,30 +216,30 @@ Feature: Manual certification assignment tests
     And I follow "Certification 000"
     And I click on "Assignment settings" "link" in the ".secondary-navigation" "css_element"
     And I click on "Update Manual assignment" "link"
-    And I set the following fields to these values:
+    And I set the following muform fields in the "dialog[open]" "css_element":
       | Active | Yes |
-    And I click on "Update" "button" in the ".modal-dialog" "css_element"
+    And I click on "Update" "button" in the "dialog[open]" "css_element"
     And I click on "Users" "link" in the ".secondary-navigation" "css_element"
 
     When I click on "Upload assignments" action from "User actions" dropdown
-    And I upload "admin/tool/mucertify/tests/fixtures/assign.csv" file to "CSV file" filemanager
-    And I click on "Continue" "button" in the ".modal-dialog" "css_element"
-    And the following fields match these values:
+    And I upload "admin/tool/mucertify/tests/fixtures/assign.csv" file to "csvfile" muform filemanager in the "dialog[open]" "css_element"
+    And I click on "Continue" "button" in the "dialog[open]" "css_element"
+    And the following muform fields in the "dialog[open]" "css_element" match:
       | User identification column | username |
       | User mapping via           | Username |
       | First line is header       | 1        |
-    And I click on "Upload assignments" "button" in the ".modal-dialog" "css_element"
+    And I click on "Upload assignments" "button" in the "dialog[open]" "css_element"
     Then I should see "4 users were assigned to certification"
     And I should see "1 errors detected when assigning certification"
 
     When I click on "Upload assignments" action from "User actions" dropdown
-    And I upload "admin/tool/mucertify/tests/fixtures/assign.csv" file to "CSV file" filemanager
-    And I click on "Continue" "button" in the ".modal-dialog" "css_element"
-    And I set the following fields to these values:
+    And I upload "admin/tool/mucertify/tests/fixtures/assign.csv" file to "csvfile" muform filemanager in the "dialog[open]" "css_element"
+    And I click on "Continue" "button" in the "dialog[open]" "css_element"
+    And I set the following muform fields in the "dialog[open]" "css_element":
       | User identification column | email         |
       | User mapping via           | Email address |
       | First line is header       | 1             |
-    And I click on "Upload assignments" "button" in the ".modal-dialog" "css_element"
+    And I click on "Upload assignments" "button" in the "dialog[open]" "css_element"
     Then I should see "3 users were already assigned to certification"
     And I should see "2 errors detected when assigning certification"
 
@@ -253,19 +248,19 @@ Feature: Manual certification assignment tests
     And I click on "Users" "link" in the ".secondary-navigation" "css_element"
     And I click on "Assignment settings" "link" in the ".secondary-navigation" "css_element"
     And I click on "Update Manual assignment" "link"
-    And I set the following fields to these values:
+    And I set the following muform fields in the "dialog[open]" "css_element":
       | Active | Yes |
-    And I click on "Update" "button" in the ".modal-dialog" "css_element"
+    And I click on "Update" "button" in the "dialog[open]" "css_element"
     And I click on "Users" "link" in the ".secondary-navigation" "css_element"
 
     When I click on "Upload assignments" action from "User actions" dropdown
-    And I upload "admin/tool/mucertify/tests/fixtures/assign.csv" file to "CSV file" filemanager
-    And I click on "Continue" "button" in the ".modal-dialog" "css_element"
-    And I set the following fields to these values:
+    And I upload "admin/tool/mucertify/tests/fixtures/assign.csv" file to "csvfile" muform filemanager in the "dialog[open]" "css_element"
+    And I click on "Continue" "button" in the "dialog[open]" "css_element"
+    And I set the following muform fields in the "dialog[open]" "css_element":
      | Window opening time column    | timewindowstart |
      | Certification due time column | timewindowdue   |
      | Window closing time column    | timewindowend   |
-    And I click on "Upload assignments" "button" in the ".modal-dialog" "css_element"
+    And I click on "Upload assignments" "button" in the "dialog[open]" "css_element"
     Then I should see "3 users were assigned to certification"
     And I should see "2 errors detected when assigning certification"
     And I click on "Student 1" "link"
@@ -281,14 +276,14 @@ Feature: Manual certification assignment tests
     And I click on "Users" "link" in the ".secondary-navigation" "css_element"
 
     When I click on "Upload assignments" action from "User actions" dropdown
-    And I upload "admin/tool/mucertify/tests/fixtures/assign_expire.csv" file to "CSV file" filemanager
-    And I click on "Continue" "button" in the ".modal-dialog" "css_element"
-    And I set the following fields in the ".modal-dialog" "css_element" to these values:
+    And I upload "admin/tool/mucertify/tests/fixtures/assign_expire.csv" file to "csvfile" muform filemanager in the "dialog[open]" "css_element"
+    And I click on "Continue" "button" in the "dialog[open]" "css_element"
+    And I set the following muform fields in the "dialog[open]" "css_element":
       | User identification column | username  |
       | User mapping via           | Username  |
-      | Expiration time            | timeuntil |
+      | Expiration time column     | timeuntil |
       | First line is header       | 1         |
-    And I click on "Upload assignments" "button" in the ".modal-dialog" "css_element"
+    And I click on "Upload assignments" "button" in the "dialog[open]" "css_element"
     And I should see "2 users were assigned to certification"
     And I follow "Student 1"
     Then the following should exist in the "reportbuilder-table" table:
@@ -308,14 +303,14 @@ Feature: Manual certification assignment tests
     And I click on "Users" "link" in the ".secondary-navigation" "css_element"
 
     When I click on "Upload assignments" action from "User actions" dropdown
-    And I upload "admin/tool/mucertify/tests/fixtures/assign_temp.csv" file to "CSV file" filemanager
-    And I click on "Continue" "button" in the ".modal-dialog" "css_element"
-    And I set the following fields in the ".modal-dialog" "css_element" to these values:
+    And I upload "admin/tool/mucertify/tests/fixtures/assign_temp.csv" file to "csvfile" muform filemanager in the "dialog[open]" "css_element"
+    And I click on "Continue" "button" in the "dialog[open]" "css_element"
+    And I set the following muform fields in the "dialog[open]" "css_element":
       | User identification column             | username  |
       | User mapping via                       | Username  |
       | Temporary certification until column   | timetemp  |
       | First line is header                   | 1         |
-    And I click on "Upload assignments" "button" in the ".modal-dialog" "css_element"
+    And I click on "Upload assignments" "button" in the "dialog[open]" "css_element"
     And I should see "2 users were assigned to certification"
     And I follow "Student 1"
     Then I should see "Temporary valid" in the "Certification status" definition list item
@@ -354,26 +349,26 @@ Feature: Manual certification assignment tests
     And I follow "Certification 000"
     And I click on "Assignment settings" "link" in the ".secondary-navigation" "css_element"
     And I click on "Update Manual assignment" "link"
-    And I set the following fields to these values:
+    And I set the following muform fields in the "dialog[open]" "css_element":
       | Active | Yes |
-    And I click on "Update" "button" in the ".modal-dialog" "css_element"
+    And I click on "Update" "button" in the "dialog[open]" "css_element"
     And I should see "Active" in the "Manual assignment" definition list item
     And I click on "Users" "link" in the ".secondary-navigation" "css_element"
 
     When I press "Assign users"
-    And I set the following fields to these values:
-      | Users        | Student 1 |
-      | Test field 1 | Prvni     |
-      | Test field 2 | ASF2     |
-    And I click on "Assign users" "button" in the ".modal-dialog" "css_element"
+    And I set the following muform fields in the "dialog[open]" "css_element":
+      | Users                  | Student 1 |
+      | customfield_testfield1 | Prvni     |
+      | customfield_testfield2 | ASF2      |
+    And I click on "Assign users" "button" in the "dialog[open]" "css_element"
     And I follow "Student 1"
     Then I should see "Prvni" in the "Test field 1" definition list item
     And I should see "ASF2" in the "Test field 2" definition list item
 
     When I press "Update assignment"
-    And I set the following fields to these values:
-      | Test field 1 | Druhy     |
-    And I click on "Update assignment" "button" in the ".modal-dialog" "css_element"
+    And I set the following muform fields in the "dialog[open]" "css_element":
+      | customfield_testfield1 | Druhy |
+    And I click on "Update assignment" "button" in the "dialog[open]" "css_element"
     Then I should see "Druhy" in the "Test field 1" definition list item
     And I should see "ASF2" in the "Test field 2" definition list item
 
@@ -390,11 +385,11 @@ Feature: Manual certification assignment tests
     And I am on the "tool_mucertify > All certifications management" page
 
     When I click on "Add certification" "button"
-    And I set the following fields in the ".modal-dialog" "css_element" to these values:
+    And I set the following muform fields in the "dialog[open]" "css_element":
       | Certification name | Certification 001 |
-      | Manual assignment  | 1                 |
+      | addsources         | manual            |
       | Certification ID   | CT01              |
-    And I click on "Add certification" "button" in the ".modal-dialog" "css_element"
+    And I click on "Add certification" "button" in the "dialog[open]" "css_element"
     And I follow "Assignment settings"
     Then I should see "Active" in the "Manual assignment" definition list item
     And I should see "Inactive" in the "Self assignment" definition list item

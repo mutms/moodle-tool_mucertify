@@ -19,6 +19,13 @@
 
 namespace tool_mucertify\local\form;
 
+use tool_mulib\muform\element\buttons;
+use tool_mulib\muform\element\cancel;
+use tool_mulib\muform\element\inforawhtml;
+use tool_mulib\muform\element\select;
+use tool_mulib\muform\element\submit;
+use tool_mulib\muform\form;
+
 /**
  * Edit certification certificate settings.
  *
@@ -28,53 +35,32 @@ namespace tool_mucertify\local\form;
  * @author     Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-final class certification_certificate_edit extends \tool_mulib\local\ajax_form {
+final class certification_certificate_edit extends form {
     #[\Override]
-    protected function definition() {
+    protected function definition(): void {
         global $OUTPUT;
 
-        $mform = $this->_form;
-        $data = $this->_customdata['data'];
-        $context = $this->_customdata['context'];
+        $current = $this->get_current_data();
+        $context = $this->get_extra_data()['context'];
 
-        $canmanagetemplates = \tool_certificate\permission::can_manage_anywhere();
-        $templates = self::get_templates($context, $data->templateid);
-
+        $templates = self::get_templates($context, $current['templateid'] ? (int)$current['templateid'] : null);
         $templateoptions = ['0' => get_string('notset', 'tool_mucertify')] + $templates;
-        $manageurl = new \core\url('/admin/tool/certificate/manage_templates.php');
+        $this->add(new select('templateid', get_string('certificatetemplate', 'tool_certificate'), $templateoptions));
 
-        $elements = [];
-        $elements[] = $mform->createElement('select', 'templateid', get_string('certificatetemplate', 'tool_certificate'), $templateoptions);
-
-        if ($canmanagetemplates) {
-            $elements[] = $mform->createElement(
-                'static',
-                'managetemplates',
-                '',
-                $OUTPUT->action_link($manageurl, get_string('managetemplates', 'tool_certificate'))
+        if (\tool_certificate\permission::can_manage_anywhere()) {
+            // Opens in a new window, the form must not be lost.
+            $manage = get_string('managetemplates', 'tool_certificate');
+            $link = \html_writer::link(
+                new \core\url('/admin/tool/certificate/manage_templates.php'),
+                $OUTPUT->pix_icon('i/settings', $manage) . ' ' . $manage,
+                ['target' => '_blank', 'class' => 'small']
             );
+            $this->add(new inforawhtml('managetemplates', '', $link));
         }
-        $mform->addGroup(
-            $elements,
-            'template_group',
-            get_string('certificatetemplate', 'tool_certificate'),
-            \html_writer::div('', 'w-100'),
-            false
-        );
-        $mform->setDefault('templateid', $data->templateid);
 
-        $mform->addElement('hidden', 'id');
-        $mform->setDefault('id', $data->id);
-        $mform->setType('id', PARAM_INT);
-
-        $this->add_action_buttons(true, get_string('updatecertificatetemplate', 'tool_mucertify'));
-    }
-
-    #[\Override]
-    public function validation($data, $files) {
-        $errors = parent::validation($data, $files);
-
-        return $errors;
+        $this->add(new buttons('buttons'));
+        $this->add(new submit('submit', get_string('updatecertificatetemplate', 'tool_mucertify')), 'buttons');
+        $this->add(new cancel(), 'buttons');
     }
 
     /**

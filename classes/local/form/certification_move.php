@@ -19,7 +19,13 @@
 
 namespace tool_mucertify\local\form;
 
-use tool_mucertify\external\form_autocomplete\certification_contextid;
+use tool_mulib\muform\element\autocomplete;
+use tool_mulib\muform\element\buttons;
+use tool_mulib\muform\element\cancel;
+use tool_mulib\muform\element\info;
+use tool_mulib\muform\element\submit;
+use tool_mulib\muform\form;
+use tool_mucertify\muform\autocomplete\certification_contextid;
 
 /**
  * Move certification to a different context.
@@ -28,38 +34,22 @@ use tool_mucertify\external\form_autocomplete\certification_contextid;
  * @copyright  2026 Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-final class certification_move extends \tool_mulib\local\ajax_form {
+final class certification_move extends form {
     #[\Override]
-    protected function definition() {
-        $mform = $this->_form;
-        $certification = $this->_customdata['certification'];
-        $context = $this->_customdata['context'];
+    protected function definition(): void {
+        $certification = $this->get_current_data();
 
-        $mform->addElement('static', 'fullname', get_string('certificationname', 'tool_mucertify'), format_string($certification->fullname));
+        $this->add(new info('fullname', get_string('certificationname', 'tool_mucertify')));
 
-        $mform->addElement('static', 'idnumber', get_string('certificationidnumber', 'tool_mucertify'), format_string($certification->idnumber));
+        $this->add(new info('idnumber', get_string('certificationidnumber', 'tool_mucertify'), null, info::PLAIN));
 
-        certification_contextid::add_element($mform, [], 'contextid', get_string('category'), $context);
+        $source = new certification_contextid((int)$certification['contextid']);
+        $contextid = new autocomplete('contextid', get_string('category'), $source);
+        $contextid->set_required(true);
+        $this->add($contextid);
 
-        $mform->addElement('hidden', 'id');
-        $mform->setType('id', PARAM_INT);
-
-        $this->add_action_buttons(true, get_string('certification_move', 'tool_mucertify'));
-
-        $this->set_data($certification);
-    }
-
-    #[\Override]
-    public function validation($data, $files) {
-        $errors = parent::validation($data, $files);
-
-        $context = $this->_customdata['context'];
-
-        $error = certification_contextid::validate_value($data['contextid'], [], $context);
-        if ($error !== null) {
-            $errors['contextid'] = $error;
-        }
-
-        return $errors;
+        $this->add(new buttons('buttons'));
+        $this->add(new submit('submit', get_string('certification_move', 'tool_mucertify')), 'buttons');
+        $this->add(new cancel(), 'buttons');
     }
 }

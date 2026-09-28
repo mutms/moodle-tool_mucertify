@@ -28,14 +28,13 @@
  */
 
 use tool_mucertify\local\certification;
+use tool_mulib\muform\handler;
 
 /** @var moodle_database $DB */
 /** @var moodle_page $PAGE */
 /** @var core_renderer $OUTPUT */
 /** @var stdClass $CFG */
 /** @var stdClass $COURSE */
-
-define('AJAX_SCRIPT', true);
 
 require('../../../../config.php');
 
@@ -50,8 +49,13 @@ require_capability('tool/mucertify:edit', $context);
 $currenturl = new \core\url('/admin/tool/mucertify/management/certification_restore.php', ['id' => $certification->id]);
 $PAGE->set_context($context);
 $PAGE->set_url($currenturl);
+$title = get_string('certification_restore', 'tool_mucertify');
+$PAGE->set_title($title);
+$PAGE->set_heading($title);
 
-$form = new \tool_mucertify\local\form\certification_restore(null, ['certification' => $certification]);
+$handler = handler::from_request();
+
+$form = new \tool_mucertify\local\form\certification_restore($currenturl, $certification);
 $returnurl = new \core\url('/admin/tool/mucertify/management/certification.php', ['id' => $certification->id]);
 
 if (!$certification->archived) {
@@ -59,12 +63,12 @@ if (!$certification->archived) {
 }
 
 if ($form->is_cancelled()) {
-    $form->ajax_form_cancelled($returnurl);
+    $handler->cancelled($returnurl);
 }
 
 if ($data = $form->get_data()) {
     certification::restore($certification->id);
-    $form->ajax_form_submitted($returnurl);
+    $handler->submitted($returnurl);
 }
 
-$form->ajax_form_render();
+$handler->render($form);

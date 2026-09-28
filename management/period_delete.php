@@ -27,13 +27,13 @@
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use tool_mulib\muform\handler;
+
 /** @var moodle_database $DB */
 /** @var moodle_page $PAGE */
 /** @var core_renderer $OUTPUT */
 /** @var stdClass $CFG */
 /** @var stdClass $COURSE */
-
-define('AJAX_SCRIPT', true);
 
 require('../../../../config.php');
 
@@ -48,9 +48,12 @@ $assignment = $DB->get_record('tool_mucertify_assignment', ['certificationid' =>
 $context = context::instance_by_id($certification->contextid);
 require_capability('tool/mucertify:admin', $context);
 
-$currenturl = new \core\url('/admin/tool/mucertify/management/period_update.php', ['id' => $period->id]);
+$currenturl = new \core\url('/admin/tool/mucertify/management/period_delete.php', ['id' => $period->id]);
 $PAGE->set_context($context);
 $PAGE->set_url($currenturl);
+$title = get_string('period_delete', 'tool_mucertify');
+$PAGE->set_title($title);
+$PAGE->set_heading($title);
 
 $returnurl = new \core\url('/admin/tool/mucertify/management/period.php', ['id' => $period->id]);
 if (!$period->timerevoked || ($assignment && $assignment->archived) || $certification->archived) {
@@ -59,20 +62,23 @@ if (!$period->timerevoked || ($assignment && $assignment->archived) || $certific
 
 $user = $DB->get_record('user', ['id' => $period->userid], '*', MUST_EXIST);
 
-$form = new \tool_mucertify\local\form\period_delete(null, ['period' => $period, 'user' => $user, 'context' => $context]);
+$handler = handler::from_request();
+
+$current = ['userfullname' => fullname($user), 'timewindowstart' => $period->timewindowstart, 'timerevoked' => $period->timerevoked];
+$form = new \tool_mucertify\local\form\period_delete($currenturl, $current);
 
 if ($form->is_cancelled()) {
-    $form->ajax_form_cancelled($returnurl);
+    $handler->cancelled($returnurl);
 }
 
 if ($data = $form->get_data()) {
-    \tool_mucertify\local\period::delete($data->id);
+    \tool_mucertify\local\period::delete($period->id);
     if ($assignment) {
         $returnurl = new \core\url('/admin/tool/mucertify/management/assignment.php', ['id' => $assignment->id]);
     } else {
         $returnurl = new \core\url('/admin/tool/mucertify/management/certification.php', ['id' => $certification->id]);
     }
-    $form->ajax_form_submitted($returnurl);
+    $handler->submitted($returnurl);
 }
 
-$form->ajax_form_render();
+$handler->render($form);

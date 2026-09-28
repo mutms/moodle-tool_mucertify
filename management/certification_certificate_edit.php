@@ -28,14 +28,13 @@
  */
 
 use tool_mucertify\local\certification;
+use tool_mulib\muform\handler;
 
 /** @var moodle_database $DB */
 /** @var moodle_page $PAGE */
 /** @var core_renderer $OUTPUT */
 /** @var stdClass $CFG */
 /** @var stdClass $COURSE */
-
-define('AJAX_SCRIPT', true);
 
 require('../../../../config.php');
 
@@ -54,18 +53,23 @@ if (!\tool_mucertify\local\certificate::is_available()) {
 $currenturl = new \core\url('/admin/tool/mucertify/management/certification_certificate_edit.php', ['id' => $id]);
 $PAGE->set_context($context);
 $PAGE->set_url($currenturl);
+$title = get_string('updatecertificatetemplate', 'tool_mucertify');
+$PAGE->set_title($title);
+$PAGE->set_heading($title);
 
-$form = new \tool_mucertify\local\form\certification_certificate_edit(null, ['data' => $certification, 'context' => $context]);
+$handler = handler::from_request();
+
+$form = new \tool_mucertify\local\form\certification_certificate_edit($currenturl, ['templateid' => $certification->templateid ?? 0], ['context' => $context]);
 
 $returnurl = new \core\url('/admin/tool/mucertify/management/certification_settings.php', ['id' => $certification->id]);
 
 if ($form->is_cancelled()) {
-    $form->ajax_form_cancelled($returnurl);
+    $handler->cancelled($returnurl);
 }
 
 if ($data = $form->get_data()) {
-    certification::update_certificate($data->id, $data->templateid);
-    $form->ajax_form_submitted($returnurl);
+    certification::update_certificate($certification->id, (int)$data->templateid);
+    $handler->submitted($returnurl);
 }
 
-$form->ajax_form_render();
+$handler->render($form);

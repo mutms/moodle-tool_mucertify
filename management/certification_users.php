@@ -74,9 +74,9 @@ foreach ($sourceclasses as $sourceclass) {
 }
 if ($allowhistoryupload) {
     $url = new \core\url('/admin/tool/mucertify/management/history_upload.php', ['certificationid' => $certification->id]);
-    $link = new \tool_mulib\output\ajax_form\link($url, get_string('history_upload', 'tool_mucertify'), 'i/upload');
+    $link = new \tool_mulib\output\muform\dialog\link($url, get_string('history_upload', 'tool_mucertify'), 'i/upload');
     $link->set_form_size('xl');
-    $actions->get_dropdown()->add_ajax_form($link);
+    $actions->get_dropdown()->add_dialog($link);
 }
 
 if ($actions->has_items()) {

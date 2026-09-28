@@ -19,7 +19,10 @@
 
 namespace tool_mucertify\local\form;
 
-use tool_mucertify\local\source\manual;
+use tool_mulib\muform\element\buttons;
+use tool_mulib\muform\element\cancel;
+use tool_mulib\muform\element\submit;
+use tool_mulib\muform\form;
 
 /**
  * Assign users via file upload.
@@ -29,105 +32,20 @@ use tool_mucertify\local\source\manual;
  * @author     Farhan Karmali
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-final class source_manual_upload_file extends \tool_mulib\local\ajax_form {
+final class source_manual_upload_file extends form {
+    use csv_upload_trait;
+
     #[\Override]
-    protected function definition() {
-        global $CFG;
-        require_once($CFG->dirroot . '/lib/csvlib.class.php');
+    protected function definition(): void {
+        $this->add_csv_file();
 
-        $mform = $this->_form;
-        $certification = $this->_customdata['certification'];
-        $source = $this->_customdata['source'];
-        $context = $this->_customdata['context'];
-
-        $mform->addElement('filepicker', 'csvfile', get_string('upload_csvfile', 'tool_mucertify'));
-        $mform->addRule('csvfile', null, 'required');
-
-        $choices = \csv_import_reader::get_delimiter_list();
-        $mform->addElement('select', 'delimiter_name', get_string('csvdelimiter', 'tool_uploaduser'), $choices);
-        if (array_key_exists('cfg', $choices)) {
-            $mform->setDefault('delimiter_name', 'cfg');
-        } else if (get_string('listsep', 'langconfig') === ';') {
-            $mform->setDefault('delimiter_name', 'semicolon');
-        } else {
-            $mform->setDefault('delimiter_name', 'comma');
-        }
-
-        $choices = \core_text::get_encodings();
-        $mform->addElement('select', 'encoding', get_string('encoding', 'tool_uploaduser'), $choices);
-        $mform->setDefault('encoding', 'UTF-8');
-
-        $mform->addElement('hidden', 'sourceid');
-        $mform->setType('sourceid', PARAM_INT);
-        $mform->setDefault('sourceid', $source->id);
-
-        $this->add_action_buttons(true, get_string('continue'));
+        $this->add(new buttons('buttons'));
+        $this->add(new submit('submit', get_string('continue')), 'buttons');
+        $this->add(new cancel(), 'buttons');
     }
 
     #[\Override]
-    public function validation($data, $files) {
-        global $USER;
-        $errors = parent::validation($data, $files);
-
-        // File validation is bad in mforms, so work around it here.
-        if (empty($data['csvfile'])) {
-            $errors['csvfile'] = get_string('error');
-            return $errors;
-        }
-        $draftid = $data['csvfile'];
-        $fs = get_file_storage();
-        $context = \context_user::instance($USER->id);
-        $files = $fs->get_area_files($context->id, 'user', 'draft', $draftid, 'id DESC', false);
-        if (!$files) {
-            $errors['csvfile'] = get_string('required');
-            return $errors;
-        }
-        $file = reset($files);
-        $content = $file->get_content();
-        $content = trim($content);
-        if (!$content) {
-            $errors['csvfile'] = get_string('error');
-            return $errors;
-        }
-
-        $iid = \csv_import_reader::get_new_iid('certifyuploadusers');
-        $cir = new \csv_import_reader($iid, 'certifyuploadusers');
-
-        $readcount = $cir->load_csv_content($content, $data['encoding'], $data['delimiter_name']);
-        $columns = $cir->get_columns();
-        $csvloaderror = $cir->get_error();
-        unset($content);
-
-        if (!is_null($csvloaderror)) {
-            $errors['csvfile'] = $csvloaderror;
-            return $errors;
-        } else if (!$readcount || !$columns) {
-            $errors['csvfile'] = get_string('error');
-            return $errors;
-        }
-
-        if ($errors) {
-            return $errors;
-        }
-
-        $cir = new \csv_import_reader($iid, 'certifyuploadusers');
-        $cir->init();
-        $filedata = [];
-        $filedata[] = array_map('trim', $columns);
-        while ($line = $cir->next()) {
-            $filedata[] = array_map('trim', $line);
-        }
-        $cir->close();
-
-        if (!$filedata) {
-            $errors['csvfile'] = get_string('error');
-            return $errors;
-        }
-
-        $cir->cleanup(true);
-
-        \tool_mucertify\local\util::store_uploaded_data($data['csvfile'], $filedata);
-
-        return $errors;
+    protected function validation(array $data, array &$allerrors): void {
+        $this->validate_csv_file($data, $allerrors);
     }
 }

@@ -19,6 +19,14 @@
 
 namespace tool_mucertify\local\form;
 
+use tool_mulib\muform\element\buttons;
+use tool_mulib\muform\element\cancel;
+use tool_mulib\muform\element\number;
+use tool_mulib\muform\element\select;
+use tool_mulib\muform\element\sharedkey;
+use tool_mulib\muform\element\submit;
+use tool_mulib\muform\form;
+
 /**
  * Edit certification self assignment settings.
  *
@@ -28,61 +36,32 @@ namespace tool_mucertify\local\form;
  * @author     Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-final class source_selfassignment_edit extends \tool_mulib\local\ajax_form {
+final class source_selfassignment_edit extends form {
     #[\Override]
-    protected function definition() {
-        $mform = $this->_form;
-        $context = $this->_customdata['context'];
-        $source = $this->_customdata['source'];
-        $certification = $this->_customdata['certification'];
+    protected function definition(): void {
+        $source = $this->get_extra_data()['source'];
+        $yesno = ['1' => get_string('yes'), '0' => get_string('no')];
 
-        $mform->addElement('select', 'enable', get_string('active'), ['1' => get_string('yes'), '0' => get_string('no')]);
-        $mform->setDefault('enable', $source->enable);
-        if ($source->hasassignments) {
-            $mform->hardFreeze('enable');
-        }
+        $enable = new select('enable', get_string('active'), $yesno);
+        $enable->set_frozen($source->hasassignments);
+        $this->add($enable);
 
-        $mform->addElement(
-            'select',
-            'selfassignment_allowsignup',
-            get_string('source_selfassignment_allowsignup', 'tool_mucertify'),
-            ['1' => get_string('yes'), '0' => get_string('no')]
-        );
-        $mform->setDefault('selfassignment_allowsignup', 1);
-        $mform->hideIf('selfassignment_allowsignup', 'enable', 'eq', '0');
+        $dm = $this->get_display_manager();
 
-        $mform->addElement('passwordunmask', 'selfassignment_key', get_string('source_selfassignment_key', 'tool_mucertify'));
-        $mform->setDefault('selfassignment_key', $source->selfassignment_key);
-        $mform->hideIf('selfassignment_key', 'enable', 'eq', '0');
+        $allowsignup = new select('selfassignment_allowsignup', get_string('source_selfassignment_allowsignup', 'tool_mucertify'), $yesno);
+        $this->add($allowsignup);
+        $dm->hide_if('selfassignment_allowsignup', 'enable', 'eq', '0');
 
-        $mform->addElement('text', 'selfassignment_maxusers', get_string('source_selfassignment_maxusers', 'tool_mucertify'), 'size="8"');
-        $mform->setType('selfassignment_maxusers', PARAM_RAW);
-        $mform->setDefault('selfassignment_maxusers', $source->selfassignment_maxusers);
-        $mform->hideIf('selfassignment_maxusers', 'enable', 'eq', '0');
+        $key = new sharedkey('selfassignment_key', get_string('source_selfassignment_key', 'tool_mucertify'), [], true);
+        $this->add($key);
+        $dm->hide_if('selfassignment_key', 'enable', 'eq', '0');
 
-        $mform->addElement('hidden', 'certificationid');
-        $mform->setType('certificationid', PARAM_INT);
-        $mform->setDefault('certificationid', $certification->id);
+        $maxusers = new number('selfassignment_maxusers', get_string('source_selfassignment_maxusers', 'tool_mucertify'), ['min' => 0, 'width' => 'small']);
+        $this->add($maxusers);
+        $dm->hide_if('selfassignment_maxusers', 'enable', 'eq', '0');
 
-        $mform->addElement('hidden', 'type');
-        $mform->setType('type', PARAM_ALPHANUMEXT);
-        $mform->setDefault('type', $source->type);
-
-        $this->add_action_buttons(true, get_string('update'));
-    }
-
-    #[\Override]
-    public function validation($data, $files) {
-        $errors = parent::validation($data, $files);
-
-        if ($data['selfassignment_maxusers'] !== '') {
-            if (!is_number($data['selfassignment_maxusers'])) {
-                $errors['selfassignment_maxusers'] = get_string('error');
-            } else if ($data['selfassignment_maxusers'] < 0) {
-                $errors['selfassignment_maxusers'] = get_string('error');
-            }
-        }
-
-        return $errors;
+        $this->add(new buttons('buttons'));
+        $this->add(new submit('submit', get_string('update')), 'buttons');
+        $this->add(new cancel(), 'buttons');
     }
 }

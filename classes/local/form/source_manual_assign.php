@@ -19,8 +19,18 @@
 
 namespace tool_mucertify\local\form;
 
-use tool_mucertify\external\form_autocomplete\source_manual_assign_users;
-use tool_mulib\local\mulib;
+use tool_mucertify\customfield\assignment_handler;
+use tool_mucertify\local\certification;
+use tool_mucertify\muform\autocomplete\source_manual_assign_cohortid;
+use tool_mucertify\muform\autocompletemany\source_manual_assign_users;
+use tool_mulib\muform\element\autocomplete;
+use tool_mulib\muform\element\autocompletemany;
+use tool_mulib\muform\element\buttons;
+use tool_mulib\muform\element\cancel;
+use tool_mulib\muform\element\customfields;
+use tool_mulib\muform\element\datetime;
+use tool_mulib\muform\element\submit;
+use tool_mulib\muform\form;
 
 /**
  * assign users and cohorts manually.
@@ -31,157 +41,60 @@ use tool_mulib\local\mulib;
  * @author     Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-final class source_manual_assign extends \tool_mulib\local\ajax_form {
-    /** @var array $arguments for WS call to get candidate users */
-    protected $arguments;
-    /** @var bool is due date optional? */
-    protected $dueoptional = true;
-    /** @var \tool_mucertify\customfield\assignment_handler */
-    protected $handler;
-    /** @var \stdClass */
-    protected $settings;
-
+final class source_manual_assign extends form {
     #[\Override]
-    protected function definition() {
-        $mform = $this->_form;
-        $certification = $this->_customdata['certification'];
-        $source = $this->_customdata['source'];
-        $context = $this->_customdata['context'];
+    protected function definition(): void {
+        $certification = $this->get_extra_data()['certification'];
+        $settings = certification::get_periods_settings($certification);
 
-        $settings = \tool_mucertify\local\certification::get_periods_settings($certification);
-        $this->settings = $settings;
+        $users = new autocompletemany('users', get_string('users'), new source_manual_assign_users((int)$certification->id));
+        $users->set_required_marker(true);
+        $this->add($users);
 
-        $this->arguments = ['certificationid' => $certification->id];
-        source_manual_assign_users::add_element(
-            $mform,
-            $this->arguments,
-            'users',
-            get_string('users'),
-            $context
-        );
+        $cohortid = new autocomplete('cohortid', get_string('cohort', 'cohort'), new source_manual_assign_cohortid((int)$certification->id));
+        $cohortid->set_required_marker(true);
+        $this->add($cohortid);
 
-        $options = ['contextid' => $context->id, 'multiple' => false];
-        $mform->addElement('cohort', 'cohortid', get_string('cohort', 'cohort'), $options);
+        $timewindowstart = new datetime('timewindowstart', get_string('windowstartdate', 'tool_mucertify'));
+        $timewindowstart->set_required(true);
+        $this->add($timewindowstart);
 
-        $now = time();
-        $mform->addElement(
-            'date_time_selector',
-            'timewindowstart',
-            get_string('windowstartdate', 'tool_mucertify'),
-            ['optional' => false]
-        );
-        $mform->setDefault('timewindowstart', $now);
-
-        if (
-            $settings->valid1 === 'windowdue'
-            || $settings->windowend1 === 'windowdue'
-            || $settings->expiration1 === 'windowdue'
-        ) {
-            $this->dueoptional = false;
-        }
-        $mform->addElement(
-            'date_time_selector',
-            'timewindowdue',
-            get_string('windowduedate', 'tool_mucertify'),
-            ['optional' => $this->dueoptional]
-        );
-        if (!$this->dueoptional) {
-            $mform->addRule('timewindowdue', get_string('required'), 'required', null, 'client');
-        }
-        if ($settings->due1 !== null) {
-            $mform->setDefault('timewindowdue', $now + $settings->due1);
-        }
+        // Other dates may depend on the due date.
+        $duerequired = $settings->valid1 === certification::SINCE_WINDOWDUE
+            || $settings->windowend1['since'] === certification::SINCE_WINDOWDUE
+            || $settings->expiration1['since'] === certification::SINCE_WINDOWDUE;
+        $timewindowdue = new datetime('timewindowdue', get_string('windowduedate', 'tool_mucertify'));
+        $timewindowdue->set_required($duerequired);
+        $this->add($timewindowdue);
 
         if ($settings->recertify) {
-            $mform->addElement(
-                'date_time_selector',
-                'timeuntil',
-                get_string('untildate', 'tool_mucertify'),
-                ['optional' => true]
-            );
+            $this->add(new datetime('timeuntil', get_string('untildate', 'tool_mucertify')));
         }
 
-        $mform->addElement('hidden', 'certificationid');
-        $mform->setType('certificationid', PARAM_INT);
-        $mform->setDefault('certificationid', $source->certificationid);
+        $this->add(new customfields('customfields', assignment_handler::create(), null));
 
-        $mform->addElement('hidden', 'sourceid');
-        $mform->setType('sourceid', PARAM_INT);
-        $mform->setDefault('sourceid', $source->id);
-
-        // Add custom fields to the form.
-        $this->handler = \tool_mucertify\customfield\assignment_handler::create();
-        $this->handler->set_new_item_context($context);
-        $this->handler->instance_form_definition($mform);
-
-        $this->add_action_buttons(true, get_string('source_manual_assignusers', 'tool_mucertify'));
-
-        // Prepare custom fields data.
-        $data = (object)[];
-        $this->handler->instance_form_before_set_data($data);
-        $this->set_data($data);
+        $this->add(new buttons('buttons'));
+        $this->add(new submit('submit', get_string('source_manual_assignusers', 'tool_mucertify')), 'buttons');
+        $this->add(new cancel(), 'buttons');
     }
 
     #[\Override]
-    public function definition_after_data() {
-        parent::definition_after_data();
-        $mform = $this->_form;
-        $this->handler->instance_form_definition_after_data($mform, 0);
-    }
-
-    #[\Override]
-    public function validation($data, $files) {
-        global $DB;
-        $errors = parent::validation($data, $files);
-
-        $context = $this->_customdata['context'];
-
-        if ($data['cohortid']) {
-            $cohort = $DB->get_record('cohort', ['id' => $data['cohortid']], '*', MUST_EXIST);
-            $cohortcontext = \context::instance_by_id($cohort->contextid);
-            if (!$cohort->visible && !has_capability('moodle/cohort:view', $cohortcontext)) {
-                $errors['cohortid'] = get_string('error');
-            }
-            if (mulib::is_mutenancy_active()) {
-                if ($context->tenantid) {
-                    if ($cohortcontext->tenantid && $context->tenantid != $cohortcontext->tenantid) {
-                        $errors['cohortid'] = get_string('error');
-                    }
-                }
-            }
-        }
-
-        if ($data['users']) {
-            foreach ($data['users'] as $userid) {
-                $error = source_manual_assign_users::validate_value(
-                    $userid,
-                    $this->arguments,
-                    $context
-                );
-                if ($error !== null) {
-                    $errors['users'] = $error;
-                    break;
-                }
-            }
-        }
+    protected function validation(array $data, array &$allerrors): void {
+        $certification = $this->get_extra_data()['certification'];
+        $settings = certification::get_periods_settings($certification);
 
         if (!$data['users'] && !$data['cohortid']) {
-            $errors['users'] = get_string('required');
-            $errors['cohortid'] = get_string('required');
+            $allerrors['users'][] = get_string('required');
+            $allerrors['cohortid'][] = get_string('required');
         }
 
-        if ($this->settings->recertify && !empty($data['timeuntil'])) {
+        if ($settings->recertify && !empty($data['timeuntil'])) {
             if (
-                $data['timeuntil'] - $this->settings->recertify <= $data['timewindowstart']
-                || $data['timeuntil'] - $this->settings->recertify <= time()
+                $data['timeuntil'] - $settings->recertify <= $data['timewindowstart']
+                || $data['timeuntil'] - $settings->recertify <= time()
             ) {
-                $errors['timeuntil'] = get_string('error');
+                $allerrors['timeuntil'][] = get_string('error');
             }
         }
-
-        // Add the custom fields validation.
-        $errors = array_merge($errors, $this->handler->instance_form_validation($data, $files));
-
-        return $errors;
     }
 }

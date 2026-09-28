@@ -28,14 +28,13 @@
  */
 
 use tool_mucertify\local\source\manual;
+use tool_mulib\muform\handler;
 
 /** @var moodle_database $DB */
 /** @var moodle_page $PAGE */
 /** @var core_renderer $OUTPUT */
 /** @var stdClass $CFG */
 /** @var stdClass $COURSE */
-
-define('AJAX_SCRIPT', true);
 
 require('../../../../config.php');
 
@@ -51,6 +50,9 @@ require_capability('tool/mucertify:assign', $context);
 $currenturl = new \core\url('/admin/tool/mucertify/management/source_manual_assign.php', ['sourceid' => $source->id]);
 $PAGE->set_context($context);
 $PAGE->set_url($currenturl);
+$title = get_string('source_manual_assignusers', 'tool_mucertify');
+$PAGE->set_title($title);
+$PAGE->set_heading($title);
 
 $returnurl = new \core\url('/admin/tool/mucertify/management/certification_users.php', ['id' => $certification->id]);
 
@@ -58,10 +60,15 @@ if (!manual::is_assignment_possible($certification, $source)) {
     redirect($returnurl);
 }
 
-$form = new \tool_mucertify\local\form\source_manual_assign(null, ['certification' => $certification, 'source' => $source, 'context' => $context]);
+$handler = handler::from_request();
+
+$settings = \tool_mucertify\local\certification::get_periods_settings($certification);
+$now = time();
+$current = ['timewindowstart' => $now, 'timewindowdue' => ($settings->due1 !== null) ? $now + $settings->due1 : null];
+$form = new \tool_mucertify\local\form\source_manual_assign($currenturl, $current, ['certification' => $certification]);
 
 if ($form->is_cancelled()) {
-    $form->ajax_form_cancelled($returnurl);
+    $handler->cancelled($returnurl);
 }
 
 if ($data = $form->get_data()) {
@@ -82,15 +89,11 @@ if ($data = $form->get_data()) {
         $assignmentids = manual::assign_users($certification->id, $source->id, $userids, $dateoverrides);
     }
 
-    // Save custom fields.
     foreach ($assignmentids as $assignmentid) {
-        /** @var \tool_mucertify\customfield\assignment_handler $handler */
-        $handler = \tool_mucertify\customfield\assignment_handler::create();
-        $data->id = $assignmentid;
-        $handler->instance_form_save($data);
+        $form->get_element('customfields')->save($assignmentid);
     }
 
-    $form->ajax_form_submitted($returnurl);
+    $handler->submitted($returnurl);
 }
 
-$form->ajax_form_render();
+$handler->render($form);

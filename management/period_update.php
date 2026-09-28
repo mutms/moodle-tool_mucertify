@@ -27,13 +27,13 @@
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use tool_mulib\muform\handler;
+
 /** @var moodle_database $DB */
 /** @var moodle_page $PAGE */
 /** @var core_renderer $OUTPUT */
 /** @var stdClass $CFG */
 /** @var stdClass $COURSE */
-
-define('AJAX_SCRIPT', true);
 
 require('../../../../config.php');
 
@@ -60,19 +60,27 @@ $user = $DB->get_record('user', ['id' => $period->userid], '*', MUST_EXIST);
 $currenturl = new \core\url('/admin/tool/mucertify/management/period_update.php', ['id' => $period->id]);
 $PAGE->set_context($context);
 $PAGE->set_url($currenturl);
+$title = get_string('period_update', 'tool_mucertify');
+$PAGE->set_title($title);
+$PAGE->set_heading($title);
 
-$form = new \tool_mucertify\local\form\period_update(
-    null,
-    ['period' => $period, 'user' => $user, 'program' => $program, 'context' => $context]
-);
+$handler = handler::from_request();
+
+$current = (array)$period;
+$current['programname'] = $program->fullname ?? '';
+$current['userfullname'] = fullname($user);
+$evidence = $period->evidencejson ? (object)json_decode($period->evidencejson) : null;
+$current['evidencedetails'] = $evidence->details ?? '';
+$form = new \tool_mucertify\local\form\period_update($currenturl, $current);
 
 if ($form->is_cancelled()) {
-    $form->ajax_form_cancelled($returnurl);
+    $handler->cancelled($returnurl);
 }
 
 if ($data = $form->get_data()) {
+    $data->id = $period->id;
     \tool_mucertify\local\period::override_dates($data);
-    $form->ajax_form_submitted($returnurl);
+    $handler->submitted($returnurl);
 }
 
-$form->ajax_form_render();
+$handler->render($form);

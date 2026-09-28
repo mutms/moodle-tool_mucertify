@@ -116,7 +116,7 @@ final class approval extends base {
         }
 
         $url = new \core\url('/admin/tool/mucertify/catalogue/source_approval_request.php', ['sourceid' => $source->id]);
-        $button = new \tool_mulib\output\ajax_form\button($url, get_string('source_approval_makerequest', 'tool_mucertify'));
+        $button = new \tool_mulib\output\muform\dialog\button($url, get_string('source_approval_makerequest', 'tool_mucertify'));
 
         $button = $OUTPUT->render($button);
 

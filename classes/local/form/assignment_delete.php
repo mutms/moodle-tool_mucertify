@@ -19,6 +19,12 @@
 
 namespace tool_mucertify\local\form;
 
+use tool_mulib\muform\element\buttons;
+use tool_mulib\muform\element\cancel;
+use tool_mulib\muform\element\info;
+use tool_mulib\muform\element\submit;
+use tool_mulib\muform\form;
+
 /**
  * Delete user assignment.
  *
@@ -28,25 +34,15 @@ namespace tool_mucertify\local\form;
  * @author     Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-final class assignment_delete extends \tool_mulib\local\ajax_form {
+final class assignment_delete extends form {
     #[\Override]
-    protected function definition() {
-        $mform = $this->_form;
-        $certification = $this->_customdata['certification'];
-        $assignment = $this->_customdata['assignment'];
-        $user = $this->_customdata['user'];
-        $context = $this->_customdata['context'];
+    protected function definition(): void {
+        $this->add(new info('certificationfullname', get_string('certificationname', 'tool_mucertify')));
 
-        $mform->addElement('static', 'certificationfullname', get_string('certificationname', 'tool_mucertify'), format_string($certification->fullname));
+        $this->add(new info('userfullname', get_string('user')));
 
-        $mform->addElement('static', 'userfullname', get_string('user'), fullname($user));
-
-        $mform->addElement('hidden', 'id');
-        $mform->setType('id', PARAM_INT);
-        $mform->setDefault('id', $assignment->id);
-
-        $this->add_action_buttons(true, get_string('assignment_delete', 'tool_mucertify'));
-
-        $this->set_data($assignment);
+        $this->add(new buttons('buttons'));
+        $this->add(new submit('submit', get_string('assignment_delete', 'tool_mucertify')), 'buttons');
+        $this->add(new cancel(), 'buttons');
     }
 }

@@ -28,14 +28,14 @@
  */
 
 use tool_mucertify\local\certification;
+use tool_mulib\muform\handler;
+use tool_mulib\muform\util\file_area;
 
 /** @var moodle_database $DB */
 /** @var moodle_page $PAGE */
 /** @var core_renderer $OUTPUT */
 /** @var stdClass $CFG */
 /** @var stdClass $COURSE */
-
-define('AJAX_SCRIPT', true);
 
 require('../../../../config.php');
 
@@ -51,33 +51,32 @@ $syscontext = context_system::instance();
 $currenturl = new \core\url('/admin/tool/mucertify/management/certification_update.php', ['id' => $certification->id]);
 $PAGE->set_context($context);
 $PAGE->set_url($currenturl);
+$title = get_string('certification_update', 'tool_mucertify');
+$PAGE->set_title($title);
+$PAGE->set_heading($title);
 
-$editoroptions = certification::get_description_editor_options();
-$certification = file_prepare_standard_editor(
-    $certification,
-    'description',
-    $editoroptions,
-    $syscontext,
-    'tool_mucertify',
-    'description',
-    $certification->id
-);
-$certification->tags = core_tag_tag::get_item_tags_array('tool_mucertify', 'tool_mucertify_certification', $certification->id);
+$handler = handler::from_request();
 
-$certification->image = file_get_submitted_draft_itemid('image');
-file_prepare_draft_area($certification->image, $syscontext->id, 'tool_mucertify', 'image', $certification->id, ['subdirs' => 0]);
-
-$form = new \tool_mucertify\local\form\certification_update(null, ['data' => $certification, 'editoroptions' => $editoroptions, 'context' => $context]);
+$current = (array)$certification;
+$current['image'] = new file_area($syscontext, 'tool_mucertify', 'image', $certification->id);
+$current['descriptionfilearea'] = new file_area($syscontext, 'tool_mucertify', 'description', $certification->id);
+$form = new \tool_mucertify\local\form\certification_update($currenturl, $current);
 
 $returnurl = new \core\url('/admin/tool/mucertify/management/certification.php', ['id' => $certification->id]);
 
 if ($form->is_cancelled()) {
-    $form->ajax_form_cancelled($returnurl);
+    $handler->cancelled($returnurl);
 }
 
 if ($data = $form->get_data()) {
-    $certification = certification::update_general($data);
-    $form->ajax_form_submitted($returnurl);
+    // Custom fields and description files are saved by the form elements.
+    $record = (object)array_filter((array)$data, fn($key) => !str_starts_with($key, 'customfield_'), ARRAY_FILTER_USE_KEY);
+    $record->id = $certification->id;
+    unset($record->archived);
+    $certification = certification::update_general($record);
+    $form->get_element('description')->save_area();
+    $form->get_element('customfields')->save($certification->id);
+    $handler->submitted($returnurl);
 }
 
-$form->ajax_form_render();
+$handler->render($form);

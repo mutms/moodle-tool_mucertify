@@ -66,8 +66,8 @@ $actions = new header_actions(get_string('management_index_actions', 'tool_mupro
 
 if (has_capability('tool/mucertify:edit', $context)) {
     $url = new \core\url('/admin/tool/mucertify/management/certification_create.php', ['contextid' => $context->id]);
-    $button = new tool_mulib\output\ajax_form\button($url, get_string('certification_create', 'tool_mucertify'));
-    $button->set_submitted_action($button::SUBMITTED_ACTION_REDIRECT);
+    $button = new tool_mulib\output\muform\dialog\button($url, get_string('certification_create', 'tool_mucertify'));
+    $button->set_submitted_action(\tool_mulib\muform\handler\dialog::ACTION_REDIRECT);
     $actions->add_button($button);
 }
 

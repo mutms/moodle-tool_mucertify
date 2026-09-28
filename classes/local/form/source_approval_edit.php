@@ -19,8 +19,11 @@
 
 namespace tool_mucertify\local\form;
 
-use tool_mucertify\local\certification;
-use tool_mucertify\local\assignment;
+use tool_mulib\muform\element\buttons;
+use tool_mulib\muform\element\cancel;
+use tool_mulib\muform\element\select;
+use tool_mulib\muform\element\submit;
+use tool_mulib\muform\form;
 
 /**
  * Edit approval source settings.
@@ -31,44 +34,22 @@ use tool_mucertify\local\assignment;
  * @author     Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-final class source_approval_edit extends \tool_mulib\local\ajax_form {
+final class source_approval_edit extends form {
     #[\Override]
-    protected function definition() {
-        $mform = $this->_form;
-        $context = $this->_customdata['context'];
-        $source = $this->_customdata['source'];
-        $certification = $this->_customdata['certification'];
+    protected function definition(): void {
+        $source = $this->get_extra_data()['source'];
+        $yesno = ['1' => get_string('yes'), '0' => get_string('no')];
 
-        $mform->addElement('select', 'enable', get_string('active'), ['1' => get_string('yes'), '0' => get_string('no')]);
-        $mform->setDefault('enable', $source->enable);
-        if ($source->hasassignments) {
-            $mform->hardFreeze('enable');
-        }
+        $enable = new select('enable', get_string('active'), $yesno);
+        $enable->set_frozen($source->hasassignments);
+        $this->add($enable);
 
-        $mform->addElement(
-            'select',
-            'approval_allowrequest',
-            get_string('source_approval_allowrequest', 'tool_mucertify'),
-            ['1' => get_string('yes'), '0' => get_string('no')]
-        );
-        $mform->setDefault('approval_allowrequest', $source->approval_allowrequest);
-        $mform->hideIf('approval_allowrequest', 'enable', 'eq', '0');
+        $allowrequest = new select('approval_allowrequest', get_string('source_approval_allowrequest', 'tool_mucertify'), $yesno);
+        $this->add($allowrequest);
+        $this->get_display_manager()->hide_if('approval_allowrequest', 'enable', 'eq', '0');
 
-        $mform->addElement('hidden', 'certificationid');
-        $mform->setType('certificationid', PARAM_INT);
-        $mform->setDefault('certificationid', $certification->id);
-
-        $mform->addElement('hidden', 'type');
-        $mform->setType('type', PARAM_ALPHANUMEXT);
-        $mform->setDefault('type', $source->type);
-
-        $this->add_action_buttons(true, get_string('update'));
-    }
-
-    #[\Override]
-    public function validation($data, $files) {
-        $errors = parent::validation($data, $files);
-
-        return $errors;
+        $this->add(new buttons('buttons'));
+        $this->add(new submit('submit', get_string('update')), 'buttons');
+        $this->add(new cancel(), 'buttons');
     }
 }

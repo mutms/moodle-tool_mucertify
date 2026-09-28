@@ -49,14 +49,14 @@ Feature: General Certification management tests
     And I am on the "tool_mucertify > All certifications management" page
 
     When I press "Add certification"
-    And the following fields in the ".modal-dialog" "css_element" match these values:
+    And the following muform fields in the "dialog[open]" "css_element" match:
       | Certification name |             |
       | Certification ID   |             |
       | Description        |             |
-    And I set the following fields in the ".modal-dialog" "css_element" to these values:
+    And I set the following muform fields in the "dialog[open]" "css_element":
       | Certification name | Certification 001 |
       | Certification ID   | CT01              |
-    And I click on "Add certification" "button" in the ".modal-dialog" "css_element"
+    And I click on "Add certification" "button" in the "dialog[open]" "css_element"
     And I click on "General" "link" in the ".secondary-navigation" "css_element"
     Then I should see "Certification 001" in the "Certification name" definition list item
     And I should see "CT01" in the "Certification ID" definition list item
@@ -73,18 +73,18 @@ Feature: General Certification management tests
     And I am on the "tool_mucertify > All certifications management" page
 
     When I press "Add certification"
-    And the following fields in the ".modal-dialog" "css_element" match these values:
+    And the following muform fields in the "dialog[open]" "css_element" match:
       | Certification name |             |
       | Certification ID   |             |
       | Description        |             |
-    And I set the following fields in the ".modal-dialog" "css_element" to these values:
-      | Certification name | Certification 001 |
-      | Certification ID   | CT01        |
-      | Description        | Nice desc   |
-    And I upload "admin/tool/mucertify/tests/fixtures/badge.png" file to "Certification image" filemanager
-    And I set the field "Category" to "Cat 2"
-    And I set the field "Tags" to "Mathematics, Algebra"
-    And I click on "Add certification" "button" in the ".modal-dialog" "css_element"
+    And I set the following muform fields in the "dialog[open]" "css_element":
+      | Certification name | Certification 001    |
+      | Certification ID   | CT01                 |
+      | Description        | Nice desc            |
+      | Category           | Cat 2                |
+      | Tags               | Mathematics, Algebra |
+    And I upload "admin/tool/mucertify/tests/fixtures/badge.png" file to "image" muform filemanager in the "dialog[open]" "css_element"
+    And I click on "Add certification" "button" in the "dialog[open]" "css_element"
     And I click on "General" "link" in the ".secondary-navigation" "css_element"
     Then I should see "Certification 001" in the "Certification name" definition list item
     And I should see "CT01" in the "Certification ID" definition list item
@@ -101,17 +101,17 @@ Feature: General Certification management tests
     Given I log in as "manager1"
     And I am on the "tool_mucertify > All certifications management" page
     And I press "Add certification"
-    And I set the following fields in the ".modal-dialog" "css_element" to these values:
+    And I set the following muform fields in the "dialog[open]" "css_element":
       | Certification name | Certification 001 |
       | Certification ID   | CT01              |
-    And I click on "Add certification" "button" in the ".modal-dialog" "css_element"
+    And I click on "Add certification" "button" in the "dialog[open]" "css_element"
     And I click on "General" "link" in the ".secondary-navigation" "css_element"
 
     When I press "Edit"
-    And I set the following fields in the ".modal-dialog" "css_element" to these values:
+    And I set the following muform fields in the "dialog[open]" "css_element":
       | Certification name | Certification 002 |
       | Certification ID   | CT02              |
-    And I click on "Update certification" "button" in the ".modal-dialog" "css_element"
+    And I click on "Update certification" "button" in the "dialog[open]" "css_element"
     Then I should see "Certification 002" in the "Certification name" definition list item
     And I should see "CT02" in the "Certification ID" definition list item
     And I should see "System" in the "Category" definition list item
@@ -122,23 +122,23 @@ Feature: General Certification management tests
     Given I log in as "manager1"
     And I am on the "tool_mucertify > All certifications management" page
     And I press "Add certification"
-    And I set the following fields in the ".modal-dialog" "css_element" to these values:
+    And I set the following muform fields in the "dialog[open]" "css_element":
       | Certification name | Certification 002 |
       | Certification ID   | CT02              |
-    And I set the field "Category" to "Cat 1"
-    And I set the field "Tags" to "Logic"
-    And I click on "Add certification" "button" in the ".modal-dialog" "css_element"
+      | Category           | Cat 1             |
+      | Tags               | Logic             |
+    And I click on "Add certification" "button" in the "dialog[open]" "css_element"
     And I click on "General" "link" in the ".secondary-navigation" "css_element"
     And I should see "Cat 1" in the "Category" definition list item
 
     When I press "Edit"
-    And I set the following fields in the ".modal-dialog" "css_element" to these values:
-      | Certification name | Certification 001 |
-      | Certification ID   | CT01              |
-      | Description        | Nice desc         |
-    And I upload "admin/tool/mucertify/tests/fixtures/badge.png" file to "Certification image" filemanager
-    And I set the field "Tags" to "Mathematics, Algebra"
-    And I click on "Update certification" "button" in the ".modal-dialog" "css_element"
+    And I set the following muform fields in the "dialog[open]" "css_element":
+      | Certification name | Certification 001    |
+      | Certification ID   | CT01                 |
+      | Description        | Nice desc            |
+      | Tags               | Mathematics, Algebra |
+    And I upload "admin/tool/mucertify/tests/fixtures/badge.png" file to "image" muform filemanager in the "dialog[open]" "css_element"
+    And I click on "Update certification" "button" in the "dialog[open]" "css_element"
     Then I should see "Certification 001" in the "Certification name" definition list item
     And I should see "CT01" in the "Certification ID" definition list item
     And I should see "Cat 1" in the "Category" definition list item
@@ -151,22 +151,24 @@ Feature: General Certification management tests
     Given I log in as "manager1"
     And I am on the "tool_mucertify > All certifications management" page
     And I press "Add certification"
-    And I set the following fields in the ".modal-dialog" "css_element" to these values:
+    And I set the following muform fields in the "dialog[open]" "css_element":
       | Certification name | Certification 002 |
       | Certification ID   | CT02              |
-    And I set the field "Tags" to "Logic"
-    And I click on "Add certification" "button" in the ".modal-dialog" "css_element"
+      | Tags               | Logic             |
+    And I click on "Add certification" "button" in the "dialog[open]" "css_element"
     And I click on "General" "link" in the ".secondary-navigation" "css_element"
     And I should see "System" in the "Category" definition list item
 
     When I click on "Move certification" "link"
-    And I set the field "Category" to "Cat 2"
-    And I click on "Move certification" "button" in the ".modal-dialog" "css_element"
+    And I set the following muform fields in the "dialog[open]" "css_element":
+      | Category | Cat 2 |
+    And I click on "Move certification" "button" in the "dialog[open]" "css_element"
     Then I should see "Cat 2" in the "Category" definition list item
 
     When I click on "Move certification" "link"
-    And I set the field "Category" to "System"
-    And I click on "Move certification" "button" in the ".modal-dialog" "css_element"
+    And I set the following muform fields in the "dialog[open]" "css_element":
+      | Category | System |
+    And I click on "Move certification" "button" in the "dialog[open]" "css_element"
     Then I should see "System" in the "Category" definition list item
 
   @javascript
@@ -186,29 +188,29 @@ Feature: General Certification management tests
     When I log in as "editor1"
     And I am on the "tool_mucertify > All certifications management" page
     And I press "Add certification"
-    And I set the following fields in the ".modal-dialog" "css_element" to these values:
-      | Certification name | Certification 002 |
-      | Certification ID   | CT02              |
-      | Test field         | Test value        |
-    And I click on "Add certification" "button" in the ".modal-dialog" "css_element"
+    And I set the following muform fields in the "dialog[open]" "css_element":
+      | Certification name    | Certification 002 |
+      | Certification ID      | CT02              |
+      | customfield_testfield | Test value        |
+    And I click on "Add certification" "button" in the "dialog[open]" "css_element"
 
   @javascript
   Scenario: Manager may archive and restore certification
     Given I log in as "manager1"
     And I am on the "tool_mucertify > All certifications management" page
     And I click on "Add certification" "button"
-    And I set the following fields in the ".modal-dialog" "css_element" to these values:
+    And I set the following muform fields in the "dialog[open]" "css_element":
       | Certification name  | Certification 001 |
       | Certification ID    | C01               |
-    And I click on "Add certification" "button" in the ".modal-dialog" "css_element"
+    And I click on "Add certification" "button" in the "dialog[open]" "css_element"
     And I click on "General" "link" in the ".secondary-navigation" "css_element"
 
     When I click on "Archive certification" "link"
-    And I click on "Archive certification" "button" in the ".modal-dialog" "css_element"
+    And I click on "Archive certification" "button" in the "dialog[open]" "css_element"
     Then I should see "Yes" in the "Archived" definition list item
 
     When I click on "Restore certification" "link"
-    And I click on "Restore certification" "button" in the ".modal-dialog" "css_element"
+    And I click on "Restore certification" "button" in the "dialog[open]" "css_element"
     Then I should see "No" in the "Archived" definition list item
 
   @javascript
@@ -216,15 +218,15 @@ Feature: General Certification management tests
     Given I log in as "manager1"
     And I am on the "tool_mucertify > All certifications management" page
     And I click on "Add certification" "button"
-    And I set the following fields in the ".modal-dialog" "css_element" to these values:
+    And I set the following muform fields in the "dialog[open]" "css_element":
       | Certification name  | Certification 001 |
       | Certification ID    | C01               |
-    And I click on "Add certification" "button" in the ".modal-dialog" "css_element"
+    And I click on "Add certification" "button" in the "dialog[open]" "css_element"
     And I click on "General" "link" in the ".secondary-navigation" "css_element"
     And I click on "Archive certification" "link"
-    And I click on "Archive certification" "button" in the ".modal-dialog" "css_element"
+    And I click on "Archive certification" "button" in the "dialog[open]" "css_element"
     And I should see "Yes" in the "Archived" definition list item
 
     When I click on "Delete certification" action from "Certification actions" dropdown
-    And I click on "Delete certification" "button" in the ".modal-dialog" "css_element"
+    And I click on "Delete certification" "button" in the "dialog[open]" "css_element"
     Then I should see "No certifications found"

@@ -55,33 +55,33 @@ Feature: Issuing of certificates for certification completion
     And I click on "Period settings" "link" in the ".secondary-navigation" "css_element"
 
     When I click on "Update certificate template" "link"
-    And the following fields match these values:
+    And the following muform fields in the "dialog[open]" "css_element" match:
       | Certificate template | Not set       |
-    And I set the following fields to these values:
+    And I set the following muform fields in the "dialog[open]" "css_element":
       | Certificate template | Certificate 1 |
-    And I click on "Update certificate template" "button" in the ".modal-dialog" "css_element"
+    And I click on "Update certificate template" "button" in the "dialog[open]" "css_element"
     Then I should see "Certificate 1" in the "Certificate template" definition list item
 
     When I click on "Update certificate template" "link"
-    And the following fields match these values:
+    And the following muform fields in the "dialog[open]" "css_element" match:
       | Certificate template | Certificate 1 |
-    And I set the following fields to these values:
+    And I set the following muform fields in the "dialog[open]" "css_element":
       | Certificate template | Certificate 2 |
-    And I click on "Update certificate template" "button" in the ".modal-dialog" "css_element"
+    And I click on "Update certificate template" "button" in the "dialog[open]" "css_element"
     Then I should see "Certificate 2" in the "Certificate template" definition list item
 
     When I click on "Update certificate template" "link"
-    And the following fields match these values:
+    And the following muform fields in the "dialog[open]" "css_element" match:
       | Certificate template | Certificate 2 |
-    And I set the following fields to these values:
+    And I set the following muform fields in the "dialog[open]" "css_element":
       | Certificate template | Certificate 1 |
-    And I click on "Update certificate template" "button" in the ".modal-dialog" "css_element"
+    And I click on "Update certificate template" "button" in the "dialog[open]" "css_element"
     Then I should see "Certificate 1" in the "Certificate template" definition list item
 
     When I click on "Update certificate template" "link"
-    And I set the following fields to these values:
+    And I set the following muform fields in the "dialog[open]" "css_element":
       | Certificate template | Not set       |
-    And I click on "Update certificate template" "button" in the ".modal-dialog" "css_element"
+    And I click on "Update certificate template" "button" in the "dialog[open]" "css_element"
     Then I should see "Not set" in the "Certificate template" definition list item
 
   @javascript
@@ -96,39 +96,25 @@ Feature: Issuing of certificates for certification completion
     And I click on "Period settings" "link" in the ".secondary-navigation" "css_element"
 
     And I click on "Update certificate template" "link"
-    And I set the following fields to these values:
+    And I set the following muform fields in the "dialog[open]" "css_element":
       | Certificate template | Certificate 1 |
-    And I click on "Update certificate template" "button" in the ".modal-dialog" "css_element"
+    And I click on "Update certificate template" "button" in the "dialog[open]" "css_element"
     And I should see "Certificate 1" in the "Certificate template" definition list item
 
     And I click on "Users" "link" in the ".secondary-navigation" "css_element"
     And I press "Assign users"
-    And I set the following fields to these values:
-      | Users                    | Student 1 |
-      | timewindowstart[day]     | 5         |
-      | timewindowstart[month]   | 11        |
-      | timewindowstart[year]    | 2022      |
-      | timewindowstart[hour]    | 09        |
-      | timewindowstart[minute]  | 00        |
-    And I click on "Assign users" "button" in the ".modal-dialog" "css_element"
+    And I set the following muform fields in the "dialog[open]" "css_element":
+      | Users           | Student 1        |
+      | timewindowstart | 2022-11-05 09:00 |
+    And I click on "Assign users" "button" in the "dialog[open]" "css_element"
 
     And I follow "Student 1"
     And I click on "5/11/22" "link" in the "Program 000" "table_row"
     And I press "Override period dates"
-    And I set the following fields to these values:
-      | timefrom[enabled]      | 1         |
-      | timefrom[day]          | 5         |
-      | timefrom[month]        | 11        |
-      | timefrom[year]         | 2022      |
-      | timefrom[hour]         | 09        |
-      | timefrom[minute]       | 00        |
-      | timecertified[enabled] | 1         |
-      | timecertified[day]     | 1         |
-      | timecertified[month]   | 11        |
-      | timecertified[year]    | 2023      |
-      | timecertified[hour]    | 09        |
-      | timecertified[minute]  | 00        |
-    And I click on "Override period dates" "button" in the ".modal-dialog" "css_element"
+    And I set the following muform fields in the "dialog[open]" "css_element":
+      | timefrom      | 2022-11-05 09:00 |
+      | timecertified | 2023-11-01 09:00 |
+    And I click on "Override period dates" "button" in the "dialog[open]" "css_element"
     And I should see "Valid" in the "Certification status" definition list item
 
     And I log out

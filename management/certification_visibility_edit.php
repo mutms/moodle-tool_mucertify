@@ -27,16 +27,15 @@
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use tool_mucertify\local\management;
 use tool_mucertify\local\certification;
+use tool_mucertify\local\management;
+use tool_mulib\muform\handler;
 
 /** @var moodle_database $DB */
 /** @var moodle_page $PAGE */
 /** @var core_renderer $OUTPUT */
 /** @var stdClass $CFG */
 /** @var stdClass $COURSE */
-
-define('AJAX_SCRIPT', true);
 
 require('../../../../config.php');
 
@@ -51,23 +50,29 @@ require_capability('tool/mucertify:edit', $context);
 $currenturl = new \core\url('/admin/tool/mucertify/management/certification_visibility_edit.php', ['id' => $id]);
 $PAGE->set_context($context);
 $PAGE->set_url($currenturl);
+$title = get_string('certification_update', 'tool_mucertify');
+$PAGE->set_title($title);
+$PAGE->set_heading($title);
 
-$current = new stdClass();
-$current->id = $certification->id;
-$current->publicaccess = $certification->publicaccess;
-$current->cohorts = array_keys(management::fetch_current_cohorts_menu($certification->id));
+$handler = handler::from_request();
 
-$form = new \tool_mucertify\local\form\certification_visibility_edit(null, ['data' => $current, 'context' => $context]);
+$current = [
+    'id' => $certification->id,
+    'publicaccess' => $certification->publicaccess,
+    'cohortids' => array_keys(management::fetch_current_cohorts_menu($certification->id)),
+];
+$form = new \tool_mucertify\local\form\certification_visibility_edit($currenturl, $current);
 
 $returnurl = new \core\url('/admin/tool/mucertify/management/certification_visibility.php', ['id' => $certification->id]);
 
 if ($form->is_cancelled()) {
-    $form->ajax_form_cancelled($returnurl);
+    $handler->cancelled($returnurl);
 }
 
 if ($data = $form->get_data()) {
+    $data->id = $certification->id;
     certification::update_visibility($data);
-    $form->ajax_form_submitted($returnurl);
+    $handler->submitted($returnurl);
 }
 
-$form->ajax_form_render();
+$handler->render($form);

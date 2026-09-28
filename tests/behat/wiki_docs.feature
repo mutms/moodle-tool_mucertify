@@ -82,18 +82,16 @@ Feature: Certifications plugin English wiki documentation image generator
     And I follow "Health and safety"
     And I follow "Period settings"
     And I click on "Update certification" "link"
-    And I set the following fields to these values:
-      | expiration1[since]    | Certification completion date         |
-      | expiration1[number]   | 12                                    |
-      | expiration1[timeunit] | Months                                |
-    And I click on "Update certification" "button" in the ".modal-dialog" "css_element"
+    And I set the following muform fields in the "dialog[open]" "css_element":
+      | expiration1_since | Certification completion date |
+      | expiration1_delay | P12M                          |
+    And I click on "Update certification" "button" in the "dialog[open]" "css_element"
     And I click on "Update re-certification" "link"
-    And I set the following fields to these values:
-      | expiration2[since]    | Certification completion date         |
-      | expiration2[number]   | 12                                    |
-      | expiration2[timeunit] | Months                                |
-      | resettype2            | Full course purge                     |
-    And I click on "Update re-certification" "button" in the ".modal-dialog" "css_element"
+    And I set the following muform fields in the "dialog[open]" "css_element":
+      | expiration2_since | Certification completion date |
+      | expiration2_delay | P12M                          |
+      | resettype2        | Full course purge             |
+    And I click on "Update re-certification" "button" in the "dialog[open]" "css_element"
     And I change window size to "1208x1000"
 
     Then I make documentation screenshot "img_certification_settings.png" for "tool_mucertify" plugin
@@ -114,10 +112,10 @@ Feature: Certifications plugin English wiki documentation image generator
     And I follow "Health and safety"
     And I follow "Assignment settings"
     And I click on "Update Automatic cohort assignment" "link"
-    And I set the following fields to these values:
+    And I set the following muform fields in the "dialog[open]" "css_element":
       | Active            | Yes           |
       | Assign to cohorts | All employees |
-    And I click on "Update" "button" in the ".modal-dialog" "css_element"
+    And I click on "Update" "button" in the "dialog[open]" "css_element"
 
     Then I make documentation screenshot "img_certification_assignment.png" for "tool_mucertify" plugin
     And site is restored after documentation screenshots
@@ -129,35 +127,16 @@ Feature: Certifications plugin English wiki documentation image generator
     And I follow "Users"
     And I follow "User A"
     And I press "Add period"
-    And I set the following fields to these values:
-      | timewindowstart[day]     | 5           |
-      | timewindowstart[month]   | 3           |
-      | timewindowstart[year]    | 2024        |
-      | timewindowstart[hour]    | 09          |
-      | timewindowstart[minute]  | 00          |
-      | timefrom[enabled]        | 1           |
-      | timefrom[day]            | 7           |
-      | timefrom[month]          | 3           |
-      | timefrom[year]           | 2024        |
-      | timefrom[hour]           | 09          |
-      | timefrom[minute]         | 00          |
-      | timeuntil[enabled]       | 1           |
-      | timeuntil[day]           | 7           |
-      | timeuntil[month]         | 3           |
-      | timeuntil[year]          | 2025        |
-      | timeuntil[hour]          | 09          |
-      | timeuntil[minute]        | 00          |
-    And I click on "Add period" "button" in the ".modal-dialog" "css_element"
+    And I set the following muform fields in the "dialog[open]" "css_element":
+      | timewindowstart | 2024-03-05 09:00 |
+      | timefrom        | 2024-03-07 09:00 |
+      | timeuntil       | 2025-03-07 09:00 |
+    And I click on "Add period" "button" in the "dialog[open]" "css_element"
     And I follow "5/03/24"
     And I press "Override period dates"
-    And I set the following fields to these values:
-      | timecertified[enabled] | 1         |
-      | timecertified[day]     | 7         |
-      | timecertified[month]   | 3         |
-      | timecertified[year]    | 2024      |
-      | timecertified[hour]    | 09        |
-      | timecertified[minute]  | 00        |
-    And I click on "Override period dates" "button" in the ".modal-dialog" "css_element"
+    And I set the following muform fields in the "dialog[open]" "css_element":
+      | timecertified | 2024-03-07 09:00 |
+    And I click on "Override period dates" "button" in the "dialog[open]" "css_element"
 
     When I follow "Users"
     Then I make documentation screenshot "img_certification_users.png" for "tool_mucertify" plugin

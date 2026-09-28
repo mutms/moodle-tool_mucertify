@@ -26,6 +26,8 @@
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use tool_mulib\muform\handler;
+
 /** @var moodle_database $DB */
 /** @var moodle_page $PAGE */
 /** @var core_renderer $OUTPUT */
@@ -33,14 +35,12 @@
 /** @var stdClass $COURSE */
 /** @var stdClass $USER */
 
-define('AJAX_SCRIPT', true);
-
 require('../../../../config.php');
 
 $sourceid = required_param('sourceid', PARAM_INT);
 
 $PAGE->set_context(context_system::instance());
-$PAGE->set_url(new \core\url('/admin/tool/mucertify/catalogue/source_approval_requests.php', ['sourceid' => $sourceid]));
+$PAGE->set_url(new \core\url('/admin/tool/mucertify/catalogue/source_approval_request.php', ['sourceid' => $sourceid]));
 
 require_login();
 require_capability('tool/mucertify:viewcatalogue', context_system::instance());
@@ -64,15 +64,17 @@ if (!\tool_mucertify\local\source\approval::can_user_request($certification, $so
 
 $returnurl = new \core\url('/admin/tool/mucertify/catalogue/certification.php', ['id' => $certification->id]);
 
-$form = new tool_mucertify\local\form\source_approval_request(null, ['source' => $source, 'certification' => $certification]);
+$handler = handler::from_request();
+
+$form = new tool_mucertify\local\form\source_approval_request($PAGE->url, []);
 
 if ($form->is_cancelled()) {
-    $form->ajax_form_cancelled($returnurl);
+    $handler->cancelled($returnurl);
 }
 
 if ($data = $form->get_data()) {
     tool_mucertify\local\source\approval::request($certification->id, $source->id);
-    $form->ajax_form_submitted($returnurl);
+    $handler->submitted($returnurl);
 }
 
-$form->ajax_form_render();
+$handler->render($form, get_string('source_approval_makerequest', 'tool_mucertify'));

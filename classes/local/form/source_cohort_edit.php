@@ -19,8 +19,14 @@
 
 namespace tool_mucertify\local\form;
 
+use tool_mulib\muform\element\autocompletemany;
+use tool_mulib\muform\element\buttons;
+use tool_mulib\muform\element\cancel;
+use tool_mulib\muform\element\select;
+use tool_mulib\muform\element\submit;
+use tool_mulib\muform\form;
 use tool_mucertify\local\source\cohort;
-use tool_mucertify\external\form_autocomplete\source_cohort_edit_cohortids;
+use tool_mucertify\muform\autocompletemany\source_cohort_edit_cohortids;
 
 /**
  * Edit cohort assignment settings.
@@ -31,61 +37,30 @@ use tool_mucertify\external\form_autocomplete\source_cohort_edit_cohortids;
  * @author     Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-final class source_cohort_edit extends \tool_mulib\local\ajax_form {
+final class source_cohort_edit extends form {
     #[\Override]
-    protected function definition() {
-        $mform = $this->_form;
-        $context = $this->_customdata['context'];
-        $source = $this->_customdata['source'];
-        $certification = $this->_customdata['certification'];
+    protected function definition(): void {
+        $source = $this->get_extra_data()['source'];
+        $yesno = ['1' => get_string('yes'), '0' => get_string('no')];
 
-        $mform->addElement('select', 'enable', get_string('active'), ['1' => get_string('yes'), '0' => get_string('no')]);
-        $mform->setDefault('enable', $source->enable);
-        if ($source->hasassignments) {
-            $mform->hardFreeze('enable');
-        }
+        $enable = new select('enable', get_string('active'), $yesno);
+        $enable->set_frozen($source->hasassignments);
+        $this->add($enable);
 
-        source_cohort_edit_cohortids::add_element(
-            $mform,
-            ['certificationid' => $certification->id],
+        $certificationid = (int)$this->get_extra_data()['certification']->id;
+        $cohortids = new autocompletemany(
             'cohortids',
             get_string('source_cohort_cohortstoassign', 'tool_mucertify'),
-            $context
+            new source_cohort_edit_cohortids($certificationid)
         );
         if (!empty($source->id)) {
-            $cohorts = cohort::fetch_assignment_cohorts_menu($source->id);
-            $mform->setDefault('cohortids', array_keys($cohorts));
+            $cohortids->set_default(array_map('strval', array_keys(cohort::fetch_assignment_cohorts_menu($source->id))));
         }
-        $mform->hideIf('cohortids', 'enable', 'eq', 0);
+        $this->add($cohortids);
+        $this->get_display_manager()->hide_if('cohortids', 'enable', 'eq', '0');
 
-        $mform->addElement('hidden', 'certificationid');
-        $mform->setType('certificationid', PARAM_INT);
-        $mform->setDefault('certificationid', $certification->id);
-
-        $mform->addElement('hidden', 'type');
-        $mform->setType('type', PARAM_ALPHANUMEXT);
-        $mform->setDefault('type', $source->type);
-
-        $this->add_action_buttons(true, get_string('update'));
-    }
-
-    #[\Override]
-    public function validation($data, $files) {
-        $errors = parent::validation($data, $files);
-        $certification = $this->_customdata['certification'];
-        $context = $this->_customdata['context'];
-        $args = ['certificationid' => $certification->id];
-
-        if ($data['enable']) {
-            foreach ($data['cohortids'] as $cohortid) {
-                $error = source_cohort_edit_cohortids::validate_value($cohortid, $args, $context);
-                if ($error !== null) {
-                    $errors['cohortids'] = $error;
-                    break;
-                }
-            }
-        }
-
-        return $errors;
+        $this->add(new buttons('buttons'));
+        $this->add(new submit('submit', get_string('update')), 'buttons');
+        $this->add(new cancel(), 'buttons');
     }
 }

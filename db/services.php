@@ -29,43 +29,6 @@
 defined('MOODLE_INTERNAL') || die();
 
 $functions = [
-    // Form element autocompletion WS.
-    'tool_mucertify_form_autocomplete_certification_contextid' => [
-        'classname' => tool_mucertify\external\form_autocomplete\certification_contextid::class,
-        'description' => 'Return list of category contexts for certification editing.',
-        'type' => 'read',
-        'ajax' => true,
-        'loginrequired' => true,
-    ],
-    'tool_mucertify_form_autocomplete_certification_periods_programid' => [
-        'classname' => tool_mucertify\external\form_autocomplete\certification_periods_programid::class,
-        'description' => 'Return list of user candidates for program allocation.',
-        'type' => 'read',
-        'ajax' => true,
-        'loginrequired' => true,
-    ],
-    'tool_mucertify_form_autocomplete_source_manual_assign_users' => [
-        'classname' => tool_mucertify\external\form_autocomplete\source_manual_assign_users::class,
-        'description' => 'Return list of user candidates for certification assignment.',
-        'type' => 'read',
-        'ajax' => true,
-        'loginrequired' => true,
-    ],
-    'tool_mucertify_form_autocomplete_certification_visibility_edit_cohortids' => [
-        'classname' => tool_mucertify\external\form_autocomplete\certification_visibility_edit_cohortids::class,
-        'description' => 'Return list of cohorts for certification visibility.',
-        'type' => 'read',
-        'ajax' => true,
-        'loginrequired' => true,
-    ],
-    'tool_mucertify_form_autocomplete_source_cohort_edit_cohortids' => [
-        'classname' => tool_mucertify\external\form_autocomplete\source_cohort_edit_cohortids::class,
-        'description' => 'Return list of cohorts for cohort allocation.',
-        'type' => 'read',
-        'ajax' => true,
-        'loginrequired' => true,
-    ],
-    // Real web services follow.
     'tool_mucertify_get_certifications' => [
         'classname' => tool_mucertify\external\get_certifications::class,
         'description' => 'Return list of certifications that match the search parameters.',

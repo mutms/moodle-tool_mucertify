@@ -88,23 +88,15 @@ Feature: Certification completion by students tests
     And I follow "Certification 001"
     And I click on "Users" "link" in the ".secondary-navigation" "css_element"
     And I press "Assign users"
-    And I set the following fields to these values:
-      | Users                    | Student 1 |
-      | timewindowstart[day]     | 5         |
-      | timewindowstart[month]   | 11        |
-      | timewindowstart[year]    | 2022      |
-      | timewindowstart[hour]    | 09        |
-      | timewindowstart[minute]  | 00        |
-    And I click on "Assign users" "button" in the ".modal-dialog" "css_element"
+    And I set the following muform fields in the "dialog[open]" "css_element":
+      | Users           | Student 1        |
+      | timewindowstart | 2022-11-05 09:00 |
+    And I click on "Assign users" "button" in the "dialog[open]" "css_element"
     And I press "Assign users"
-    And I set the following fields to these values:
-      | Users                    | Student 2 |
-      | timewindowstart[month]   | 11        |
-      | timewindowstart[year]    | 2022      |
-      | timewindowstart[day]     | 5         |
-      | timewindowstart[hour]    | 09        |
-      | timewindowstart[minute]  | 00        |
-    And I click on "Assign users" "button" in the ".modal-dialog" "css_element"
+    And I set the following muform fields in the "dialog[open]" "css_element":
+      | Users           | Student 2        |
+      | timewindowstart | 2022-11-05 09:00 |
+    And I click on "Assign users" "button" in the "dialog[open]" "css_element"
     And I log out
 
     When I log in as "student1"

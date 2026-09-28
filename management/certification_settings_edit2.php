@@ -28,14 +28,13 @@
  */
 
 use tool_mucertify\local\certification;
+use tool_mulib\muform\handler;
 
 /** @var moodle_database $DB */
 /** @var moodle_page $PAGE */
 /** @var core_renderer $OUTPUT */
 /** @var stdClass $CFG */
 /** @var stdClass $COURSE */
-
-define('AJAX_SCRIPT', true);
 
 require('../../../../config.php');
 
@@ -50,18 +49,33 @@ require_capability('tool/mucertify:edit', $context);
 $currenturl = new \core\url('/admin/tool/mucertify/management/certification_settings_edit2.php', ['id' => $id]);
 $PAGE->set_context($context);
 $PAGE->set_url($currenturl);
+$title = get_string('updaterecertification', 'tool_mucertify');
+$PAGE->set_title($title);
+$PAGE->set_heading($title);
 
-$form = new \tool_mucertify\local\form\certification_settings_edit2(null, ['certification' => $certification, 'context' => $context]);
+$handler = handler::from_request();
+
+$settings = certification::get_periods_settings($certification);
+$current = ['id' => $certification->id];
+foreach (['programid2', 'resettype2', 'grace2', 'valid2'] as $key) {
+    $current[$key] = $settings->$key;
+}
+$current += \tool_mucertify\local\form\certification_settings_edit2::get_delay_current_data('windowend2', $settings->windowend2);
+$current += \tool_mucertify\local\form\certification_settings_edit2::get_delay_current_data('expiration2', $settings->expiration2);
+$form = new \tool_mucertify\local\form\certification_settings_edit2($currenturl, $current);
 
 $returnurl = new \core\url('/admin/tool/mucertify/management/certification_settings.php', ['id' => $certification->id]);
 
 if ($form->is_cancelled()) {
-    $form->ajax_form_cancelled($returnurl);
+    $handler->cancelled($returnurl);
 }
 
 if ($data = $form->get_data()) {
+    $data->id = $certification->id;
+    \tool_mucertify\local\form\certification_settings_edit2::apply_delay($data, 'windowend2');
+    \tool_mucertify\local\form\certification_settings_edit2::apply_delay($data, 'expiration2');
     certification::update_settings($data);
-    $form->ajax_form_submitted($returnurl);
+    $handler->submitted($returnurl);
 }
 
-$form->ajax_form_render();
+$handler->render($form);

@@ -19,9 +19,15 @@
 
 namespace tool_mucertify\local\form;
 
-use tool_mucertify\local\util;
+use tool_mulib\muform\element\autocomplete;
+use tool_mulib\muform\element\buttons;
+use tool_mulib\muform\element\cancel;
+use tool_mulib\muform\element\duration;
+use tool_mulib\muform\element\select;
+use tool_mulib\muform\element\submit;
+use tool_mulib\muform\form;
 use tool_mucertify\local\certification;
-use tool_mucertify\external\form_autocomplete\certification_periods_programid;
+use tool_mucertify\muform\autocomplete\certification_periods_programid;
 
 /**
  * Edit re-certification settings.
@@ -32,97 +38,36 @@ use tool_mucertify\external\form_autocomplete\certification_periods_programid;
  * @author     Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-final class certification_settings_edit2 extends \tool_mulib\local\ajax_form {
-    /** @var array $arguments for WS call to get candidate programs */
-    protected $arguments;
+final class certification_settings_edit2 extends form {
+    use delay_trait;
 
     #[\Override]
-    protected function definition() {
-        $mform = $this->_form;
-        $certification = $this->_customdata['certification'];
-        $context = $this->_customdata['context'];
-        $this->arguments = ['certificationid' => $certification->id];
-        $settings = certification::get_periods_settings($certification);
+    protected function definition(): void {
+        $certificationid = (int)$this->get_current_data()['id'];
 
-        certification_periods_programid::add_element(
-            $mform,
-            $this->arguments,
-            'programid2',
-            get_string('program', 'tool_muprog'),
-            $context
-        );
-        $mform->setDefault('programid2', $settings->programid2);
-        $mform->addRule('programid2', get_string('required'), 'required', null, 'client');
+        $programid = new autocomplete('programid2', get_string('program', 'tool_muprog'), new certification_periods_programid($certificationid));
+        $programid->set_required(true);
+        $this->add($programid);
 
-        $resettypes = certification::get_resettype_options();
-        $mform->addElement('select', 'resettype2', get_string('resettype2', 'tool_mucertify'), $resettypes);
-        $mform->setDefault('resettype2', $settings->resettype2);
+        $this->add(new select('resettype2', get_string('resettype2', 'tool_mucertify'), array_map('strval', certification::get_resettype_options())));
 
-        $mform->addElement(
-            'duration',
-            'grace2',
-            get_string('graceperiod', 'tool_mucertify'),
-            ['optional' => true, 'defaultunit' => DAYSECS]
-        );
-        $mform->setDefault('grace2', $settings->grace2);
+        $grace = new duration('grace2', get_string('graceperiod', 'tool_mucertify'), ['d', 'h']);
+        $this->add($grace);
 
-        $since = certification::get_valid_options();
-        $mform->addElement('select', 'valid2', get_string('validfrom', 'tool_mucertify'), $since);
-        $mform->setDefault('valid2', $settings->valid2);
+        $this->add(new select('valid2', get_string('validfrom', 'tool_mucertify'), array_map('strval', certification::get_valid_options())));
 
-        $since = certification::get_windowend_options();
-        $timeunits = [
-            'years' => get_string('years'),
-            'months' => get_string('months'),
-            'days' => get_string('days'),
-            'hours' => get_string('hours'),
-        ];
-        $dvalue = $mform->createElement('text', 'number', '', ['size' => 3]);
-        $dunit = $mform->createElement('select', 'timeunit', '', $timeunits);
-        $dsince = $mform->createElement('select', 'since', '', $since);
-        $mform->addGroup([$dvalue, $dunit, $dsince], 'windowend2', get_string('windowendafter', 'tool_mucertify'));
-        $mform->setType('windowend2[number]', PARAM_INT);
-        $mform->setDefault('windowend2', util::get_delay_form_value($settings->windowend2, 'days'));
+        $this->add_delay('windowend2', get_string('windowendafter', 'tool_mucertify'), array_map('strval', certification::get_windowend_options()));
 
-        $since = certification::get_expiration_options();
-        $timeunits = [
-            'years' => get_string('years'),
-            'months' => get_string('months'),
-            'days' => get_string('days'),
-            'hours' => get_string('hours'),
-        ];
-        $dvalue = $mform->createElement('text', 'number', '', ['size' => 3]);
-        $dunit = $mform->createElement('select', 'timeunit', '', $timeunits);
-        $dsince = $mform->createElement('select', 'since', '', $since);
-        $mform->addGroup([$dvalue, $dunit, $dsince], 'expiration2', get_string('expirationafter', 'tool_mucertify'));
-        $mform->setType('expiration2[number]', PARAM_INT);
-        $mform->setDefault('expiration2', util::get_delay_form_value($settings->expiration2, 'months'));
+        $this->add_delay('expiration2', get_string('expirationafter', 'tool_mucertify'), array_map('strval', certification::get_expiration_options()));
 
-        $mform->addElement('hidden', 'id');
-        $mform->setType('id', PARAM_INT);
-        $mform->setDefault('id', $certification->id);
-
-        $this->add_action_buttons(true, get_string('updaterecertification', 'tool_mucertify'));
+        $this->add(new buttons('buttons'));
+        $this->add(new submit('submit', get_string('updaterecertification', 'tool_mucertify')), 'buttons');
+        $this->add(new cancel(), 'buttons');
     }
 
     #[\Override]
-    public function validation($data, $files) {
-        $errors = parent::validation($data, $files);
-        $context = $this->_customdata['context'];
-
-        if ($data['windowend2']['since'] !== certification::SINCE_NEVER && $data['windowend2']['number'] <= 0) {
-            $errors['windowend2'] = get_string('required');
-        }
-
-        if ($data['expiration2']['since'] !== certification::SINCE_NEVER && $data['expiration2']['number'] <= 0) {
-            $errors['expiration2'] = get_string('required');
-        }
-
-        $error = certification_periods_programid::validate_value($data['programid2'], $this->arguments, $context);
-        if ($error !== null) {
-            $errors['programid2'] = $error;
-        }
-
-        return $errors;
+    protected function validation(array $data, array &$allerrors): void {
+        $this->validate_delay($data, 'windowend2', $allerrors);
+        $this->validate_delay($data, 'expiration2', $allerrors);
     }
 }

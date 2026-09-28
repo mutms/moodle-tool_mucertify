@@ -63,7 +63,7 @@ class renderer extends \plugin_renderer_base {
         $category = $context->get_context_name(false);
         if (has_capability('tool/mucertify:edit', $context)) {
             $url = new url('/admin/tool/mucertify/management/certification_move.php', ['id' => $certification->id]);
-            $action = new \tool_mulib\output\ajax_form\icon($url, get_string('certification_move', 'tool_mucertify'), 'i/edit');
+            $action = new \tool_mulib\output\muform\dialog\icon($url, get_string('certification_move', 'tool_mucertify'), 'i/edit');
             $category .= $this->output->render($action);
         }
         $details->add(get_string('category'), $category);
@@ -85,10 +85,10 @@ class renderer extends \plugin_renderer_base {
         if (has_capability('tool/mucertify:edit', $context)) {
             if ($certification->archived) {
                 $url = new \core\url('/admin/tool/mucertify/management/certification_restore.php', ['id' => $certification->id]);
-                $action = new \tool_mulib\output\ajax_form\icon($url, get_string('certification_restore', 'tool_mucertify'), 'i/settings');
+                $action = new \tool_mulib\output\muform\dialog\icon($url, get_string('certification_restore', 'tool_mucertify'), 'i/settings');
             } else {
                 $url = new \core\url('/admin/tool/mucertify/management/certification_archive.php', ['id' => $certification->id]);
-                $action = new \tool_mulib\output\ajax_form\icon($url, get_string('certification_archive', 'tool_mucertify'), 'i/settings');
+                $action = new \tool_mulib\output\muform\dialog\icon($url, get_string('certification_archive', 'tool_mucertify'), 'i/settings');
             }
             $action->set_form_size('sm');
             $archived .= $this->output->render($action);
@@ -351,21 +351,21 @@ class renderer extends \plugin_renderer_base {
             if (has_capability('tool/mucertify:admin', $context)) {
                 if ($sourceclass::is_assignment_update_possible($certification, $source, $assignment)) {
                     $url = new \core\url('/admin/tool/mucertify/management/assignment_update.php', ['id' => $assignment->id]);
-                    $button = new \tool_mulib\output\ajax_form\button($url, get_string('assignment_update', 'tool_mucertify'));
+                    $button = new \tool_mulib\output\muform\dialog\button($url, get_string('assignment_update', 'tool_mucertify'));
                     $buttons[] = $this->output->render($button);
                 }
             }
             if (has_capability('tool/mucertify:unassign', $context)) {
                 if ($sourceclass::is_assignment_delete_possible($certification, $source, $assignment)) {
                     $url = new \core\url('/admin/tool/mucertify/management/assignment_delete.php', ['id' => $assignment->id]);
-                    $button = new \tool_mulib\output\ajax_form\button($url, get_string('assignment_delete', 'tool_mucertify'));
-                    $button->set_submitted_action($button::SUBMITTED_ACTION_REDIRECT);
+                    $button = new \tool_mulib\output\muform\dialog\button($url, get_string('assignment_delete', 'tool_mucertify'));
+                    $button->set_submitted_action(\tool_mulib\muform\handler\dialog::ACTION_REDIRECT);
                     $buttons[] = $this->output->render($button);
                 }
             }
             if (!$certification->archived && !$assignment->archived && has_capability('tool/mucertify:admin', $context)) {
                 $url = new \core\url('/admin/tool/mucertify/management/period_create.php', ['assignmentid' => $assignment->id]);
-                $button = new \tool_mulib\output\ajax_form\button($url, get_string('period_create', 'tool_mucertify'));
+                $button = new \tool_mulib\output\muform\dialog\button($url, get_string('period_create', 'tool_mucertify'));
                 $buttons[] = $this->output->render($button);
             }
         }
@@ -395,7 +395,7 @@ class renderer extends \plugin_renderer_base {
             if ($assignment->archived && has_capability('tool/mucertify:assign', $context)) {
                 if ($sourceclass::is_assignment_restore_possible($certification, $source, $assignment)) {
                     $url = new \core\url('/admin/tool/mucertify/management/assignment_restore.php', ['id' => $assignment->id]);
-                    $action = new \tool_mulib\output\ajax_form\icon($url, get_string('assignment_restore', 'tool_mucertify'), 'i/settings');
+                    $action = new \tool_mulib\output\muform\dialog\icon($url, get_string('assignment_restore', 'tool_mucertify'), 'i/settings');
                     $action->set_form_size('sm');
                     $archived .= $this->output->render($action);
                 }
@@ -403,7 +403,7 @@ class renderer extends \plugin_renderer_base {
             if (!$assignment->archived && has_capability('tool/mucertify:unassign', $context)) {
                 if ($sourceclass::is_assignment_archive_possible($certification, $source, $assignment)) {
                     $url = new \core\url('/admin/tool/mucertify/management/assignment_archive.php', ['id' => $assignment->id]);
-                    $action = new \tool_mulib\output\ajax_form\icon($url, get_string('assignment_archive', 'tool_mucertify'), 'i/settings');
+                    $action = new \tool_mulib\output\muform\dialog\icon($url, get_string('assignment_archive', 'tool_mucertify'), 'i/settings');
                     $action->set_form_size('sm');
                     $archived .= $this->output->render($action);
                 }
@@ -484,13 +484,13 @@ class renderer extends \plugin_renderer_base {
 
         if (!$certification->archived && (!$assignment || !$assignment->archived) && has_capability('tool/mucertify:admin', $context)) {
             $updateurl = new \core\url('/admin/tool/mucertify/management/period_update.php', ['id' => $period->id]);
-            $updatebutton = new \tool_mulib\output\ajax_form\button($updateurl, get_string('period_update', 'tool_mucertify'));
+            $updatebutton = new \tool_mulib\output\muform\dialog\button($updateurl, get_string('period_update', 'tool_mucertify'));
             $buttons[] = $this->output->render($updatebutton);
 
             if ($period->timerevoked) {
                 $deleteurl = new \core\url('/admin/tool/mucertify/management/period_delete.php', ['id' => $period->id]);
-                $deletebutton = new \tool_mulib\output\ajax_form\button($deleteurl, get_string('period_delete', 'tool_mucertify'));
-                $deletebutton->set_submitted_action($deletebutton::SUBMITTED_ACTION_REDIRECT);
+                $deletebutton = new \tool_mulib\output\muform\dialog\button($deleteurl, get_string('period_delete', 'tool_mucertify'));
+                $deletebutton->set_submitted_action(\tool_mulib\muform\handler\dialog::ACTION_REDIRECT);
                 $buttons[] = $this->output->render($deletebutton);
             }
         }

@@ -19,6 +19,14 @@
 
 namespace tool_mucertify\local\form;
 
+use tool_mulib\muform\element\buttons;
+use tool_mulib\muform\element\cancel;
+use tool_mulib\muform\element\datetime;
+use tool_mulib\muform\element\info;
+use tool_mulib\muform\element\submit;
+use tool_mulib\muform\element\textarea;
+use tool_mulib\muform\form;
+
 /**
  * Edit user period.
  *
@@ -28,80 +36,60 @@ namespace tool_mucertify\local\form;
  * @author     Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-final class period_update extends \tool_mulib\local\ajax_form {
+final class period_update extends form {
     #[\Override]
-    protected function definition() {
-        $mform = $this->_form;
-        $period = $this->_customdata['period'];
-        $user = $this->_customdata['user'];
-        $program = $this->_customdata['program'];
-        $context = $this->_customdata['context'];
+    protected function definition(): void {
+        $this->add(new info('programname', get_string('program', 'tool_muprog')));
 
-        $mform->addElement('static', 'programname', get_string('program', 'tool_muprog'), format_string($program->fullname ?? null));
+        $this->add(new info('userfullname', get_string('user')));
 
-        $mform->addElement('static', 'userfullname', get_string('user'), fullname($user));
+        $timewindowstart = new datetime('timewindowstart', get_string('windowstartdate', 'tool_mucertify'));
+        $timewindowstart->set_required(true);
+        $this->add($timewindowstart);
 
-        $mform->addElement('date_time_selector', 'timewindowstart', get_string('windowstartdate', 'tool_mucertify'), ['optional' => false]);
-        $mform->setDefault('timewindowstart', $period->timewindowstart);
+        $timewindowdue = new datetime('timewindowdue', get_string('windowduedate', 'tool_mucertify'));
+        $this->add($timewindowdue);
 
-        $mform->addElement('date_time_selector', 'timewindowdue', get_string('windowduedate', 'tool_mucertify'), ['optional' => true]);
-        $mform->setDefault('timewindowdue', $period->timewindowdue);
+        $timewindowend = new datetime('timewindowend', get_string('windowenddate', 'tool_mucertify'));
+        $this->add($timewindowend);
 
-        $mform->addElement('date_time_selector', 'timewindowend', get_string('windowenddate', 'tool_mucertify'), ['optional' => true]);
-        $mform->setDefault('timewindowend', $period->timewindowend);
+        $timefrom = new datetime('timefrom', get_string('fromdate', 'tool_mucertify'));
+        $this->add($timefrom);
 
-        $mform->addElement('date_time_selector', 'timefrom', get_string('fromdate', 'tool_mucertify'), ['optional' => true]);
-        $mform->setDefault('timefrom', $period->timefrom);
+        $timeuntil = new datetime('timeuntil', get_string('untildate', 'tool_mucertify'));
+        $this->add($timeuntil);
 
-        $mform->addElement('date_time_selector', 'timeuntil', get_string('untildate', 'tool_mucertify'), ['optional' => true]);
-        $mform->setDefault('timeuntil', $period->timeuntil);
+        $timecertified = new datetime('timecertified', get_string('certifieddate', 'tool_mucertify'));
+        $this->add($timecertified);
 
-        $mform->addElement('date_time_selector', 'timecertified', get_string('certifieddate', 'tool_mucertify'), ['optional' => true]);
-        $mform->setDefault('timecertified', $period->timecertified);
+        $timerevoked = new datetime('timerevoked', get_string('revokeddate', 'tool_mucertify'));
+        $this->add($timerevoked);
 
-        $mform->addElement('date_time_selector', 'timerevoked', get_string('revokeddate', 'tool_mucertify'), ['optional' => true]);
-        $mform->setDefault('timerevoked', $period->timerevoked);
+        $evidencedetails = new textarea('evidencedetails', get_string('evidence_details', 'tool_mucertify'));
+        $evidencedetails->add_help_button('evidence_details', 'tool_mucertify');
+        $this->add($evidencedetails);
 
-        $mform->addElement('textarea', 'evidencedetails', get_string('evidence_details', 'tool_mucertify'));
-        $mform->addHelpButton('evidencedetails', 'evidence_details', 'tool_mucertify');
-        $mform->setType('evidencedetails', PARAM_RAW); // Plain text only.
-        if ($period->evidencejson) {
-            $jsondata = (object)json_decode($period->evidencejson);
-            if (isset($jsondata->details)) {
-                $mform->setDefault('evidencedetails', $jsondata->details);
-            }
-        }
-
-        $mform->addElement('hidden', 'id');
-        $mform->setType('id', PARAM_INT);
-        $mform->setDefault('id', $period->id);
-
-        $this->add_action_buttons(true, get_string('period_update', 'tool_mucertify'));
+        $this->add(new buttons('buttons'));
+        $this->add(new submit('submit', get_string('period_update', 'tool_mucertify')), 'buttons');
+        $this->add(new cancel(), 'buttons');
     }
 
     #[\Override]
-    public function validation($data, $files) {
-        $errors = parent::validation($data, $files);
-
+    protected function validation(array $data, array &$allerrors): void {
         if ($data['timewindowdue'] && $data['timewindowdue'] <= $data['timewindowstart']) {
-            $errors['timewindowdue'] = get_string('error');
+            $allerrors['timewindowdue'][] = get_string('error');
         }
         if ($data['timewindowend'] && $data['timewindowend'] <= $data['timewindowstart']) {
-            $errors['timewindowend'] = get_string('error');
+            $allerrors['timewindowend'][] = get_string('error');
         }
         if ($data['timewindowdue'] && $data['timewindowend'] && $data['timewindowend'] < $data['timewindowdue']) {
-            $errors['timewindowend'] = get_string('error');
+            $allerrors['timewindowend'][] = get_string('error');
         }
-
-        if ($data['timecertified']) {
-            if (!$data['timefrom']) {
-                $errors['timefrom'] = get_string('required');
-            }
+        if ($data['timecertified'] && !$data['timefrom']) {
+            $allerrors['timefrom'][] = get_string('required');
         }
         if ($data['timefrom'] && $data['timeuntil'] && $data['timefrom'] >= $data['timeuntil']) {
-            $errors['timeuntil'] = get_string('error');
+            $allerrors['timeuntil'][] = get_string('error');
         }
-
-        return $errors;
     }
 }

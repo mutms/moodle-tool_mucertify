@@ -28,14 +28,14 @@
  */
 
 use tool_mucertify\local\certification;
+use tool_mulib\muform\handler;
+use tool_mulib\muform\util\file_area;
 
 /** @var moodle_database $DB */
 /** @var moodle_page $PAGE */
 /** @var core_renderer $OUTPUT */
 /** @var stdClass $CFG */
 /** @var stdClass $COURSE */
-
-define('AJAX_SCRIPT', true);
 
 require('../../../../config.php');
 
@@ -52,26 +52,34 @@ if ($context->contextlevel != CONTEXT_SYSTEM && $context->contextlevel != CONTEX
 $currenturl = new \core\url('/admin/tool/mucertify/management/certification_create.php', ['contextid' => $context->id]);
 $PAGE->set_context($context);
 $PAGE->set_url($currenturl);
+$title = get_string('certification_create', 'tool_mucertify');
+$PAGE->set_title($title);
+$PAGE->set_heading($title);
 
-$certification = new stdClass();
-$certification->contextid = $context->id;
-$certification->fullname = '';
-$certification->idnumber = '';
-$certification->description = '';
-$certification->descriptionformat = FORMAT_HTML;
+$handler = handler::from_request();
 
-$editoroptions = certification::get_description_editor_options();
-
-$form = new \tool_mucertify\local\form\certification_create(null, ['data' => $certification, 'editoroptions' => $editoroptions, 'context' => $context]);
+$current = [
+    'contextid' => $context->id,
+    'descriptionformat' => FORMAT_HTML,
+    'descriptionfilearea' => new file_area(context_system::instance(), 'tool_mucertify', 'description', null),
+];
+$form = new \tool_mucertify\local\form\certification_create($currenturl, $current);
 
 if ($form->is_cancelled()) {
-    redirect(new \core\url('/admin/tool/mucertify/management/index.php', ['contextid' => $context->id]));
+    $handler->cancelled(new \core\url('/admin/tool/mucertify/management/index.php', ['contextid' => $context->id]));
 }
 
 if ($data = $form->get_data()) {
-    $certification = certification::create($data);
+    // Custom fields and description files are saved by the form elements.
+    $record = (object)array_filter((array)$data, fn($key) => !str_starts_with($key, 'customfield_'), ARRAY_FILTER_USE_KEY);
+    $record->addsources = array_fill_keys($data->addsources ?? [], 1);
+    $certification = certification::create($record);
+    $description = $form->get_element('description');
+    $description->get_file_area()->set_itemid($certification->id);
+    $description->save_area();
+    $form->get_element('customfields')->save($certification->id);
     $returnurl = new \core\url('/admin/tool/mucertify/management/certification_settings.php', ['id' => $certification->id]);
-    $form->ajax_form_submitted($returnurl);
+    $handler->submitted($returnurl);
 }
 
-$form->ajax_form_render();
+$handler->render($form);

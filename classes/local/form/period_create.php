@@ -19,8 +19,14 @@
 
 namespace tool_mucertify\local\form;
 
-use tool_mucertify\local\period;
-use tool_mucertify\external\form_autocomplete\certification_periods_programid;
+use tool_mulib\muform\element\autocomplete;
+use tool_mulib\muform\element\buttons;
+use tool_mulib\muform\element\cancel;
+use tool_mulib\muform\element\datetime;
+use tool_mulib\muform\element\info;
+use tool_mulib\muform\element\submit;
+use tool_mulib\muform\form;
+use tool_mucertify\muform\autocomplete\certification_periods_programid;
 
 /**
  * Edit user period.
@@ -31,89 +37,51 @@ use tool_mucertify\external\form_autocomplete\certification_periods_programid;
  * @author     Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-final class period_create extends \tool_mulib\local\ajax_form {
-    /** @var array autocompletion arguments */
-    protected $arguments;
-
+final class period_create extends form {
     #[\Override]
-    protected function definition() {
-        global $DB;
+    protected function definition(): void {
+        $certificationid = (int)$this->get_extra_data()['certificationid'];
 
-        $mform = $this->_form;
-        $certification = $this->_customdata['certification'];
-        $assignment = $this->_customdata['assignment'];
-        $user = $this->_customdata['user'];
-        $context = $this->_customdata['context'];
-        $now = time();
+        $this->add(new info('userfullname', get_string('user')));
 
-        $firstperiod = $DB->get_record('tool_mucertify_period', ['certificationid' => $certification->id, 'userid' => $user->id, 'first' => 1]);
+        $programid = new autocomplete('programid', get_string('program', 'tool_muprog'), new certification_periods_programid($certificationid));
+        $programid->set_required(true);
+        $this->add($programid);
 
-        $mform->addElement('static', 'userfullname', get_string('user'), fullname($user));
+        $timewindowstart = new datetime('timewindowstart', get_string('windowstartdate', 'tool_mucertify'));
+        $timewindowstart->set_required(true);
+        $this->add($timewindowstart);
 
-        $this->arguments = ['certificationid' => $certification->id];
-        $settings = \tool_mucertify\local\certification::get_periods_settings($certification);
+        $timewindowdue = new datetime('timewindowdue', get_string('windowduedate', 'tool_mucertify'));
+        $this->add($timewindowdue);
 
-        $defaultdates = period::get_default_dates($certification, $user->id, []);
+        $timewindowend = new datetime('timewindowend', get_string('windowenddate', 'tool_mucertify'));
+        $this->add($timewindowend);
 
-        certification_periods_programid::add_element(
-            $mform,
-            $this->arguments,
-            'programid',
-            get_string('program', 'tool_muprog'),
-            $context
-        );
-        if ($firstperiod) {
-            $mform->setDefault('programid', $settings->programid2);
-        } else {
-            $mform->setDefault('programid', $settings->programid1);
-        }
-        $mform->addRule('programid', get_string('required'), 'required', null, 'client');
+        $timefrom = new datetime('timefrom', get_string('fromdate', 'tool_mucertify'));
+        $this->add($timefrom);
 
-        $mform->addElement('date_time_selector', 'timewindowstart', get_string('windowstartdate', 'tool_mucertify'), ['optional' => false]);
-        $mform->setDefault('timewindowstart', $defaultdates['timewindowstart']);
+        $timeuntil = new datetime('timeuntil', get_string('untildate', 'tool_mucertify'));
+        $this->add($timeuntil);
 
-        $mform->addElement('date_time_selector', 'timewindowdue', get_string('windowduedate', 'tool_mucertify'), ['optional' => true]);
-        $mform->setDefault('timewindowdue', $defaultdates['timewindowdue']);
-
-        $mform->addElement('date_time_selector', 'timewindowend', get_string('windowenddate', 'tool_mucertify'), ['optional' => true]);
-        $mform->setDefault('timewindowend', $defaultdates['timewindowend']);
-
-        $mform->addElement('date_time_selector', 'timefrom', get_string('fromdate', 'tool_mucertify'), ['optional' => true]);
-        $mform->setDefault('timefrom', $defaultdates['timefrom']);
-
-        $mform->addElement('date_time_selector', 'timeuntil', get_string('untildate', 'tool_mucertify'), ['optional' => true]);
-        $mform->setDefault('timeuntil', $defaultdates['timeuntil']);
-
-        $mform->addElement('hidden', 'assignmentid');
-        $mform->setType('assignmentid', PARAM_INT);
-        $mform->setDefault('assignmentid', $assignment->id);
-
-        $this->add_action_buttons(true, get_string('period_create', 'tool_mucertify'));
+        $this->add(new buttons('buttons'));
+        $this->add(new submit('submit', get_string('period_create', 'tool_mucertify')), 'buttons');
+        $this->add(new cancel(), 'buttons');
     }
 
     #[\Override]
-    public function validation($data, $files) {
-        $errors = parent::validation($data, $files);
-        $context = $this->_customdata['context'];
-
+    protected function validation(array $data, array &$allerrors): void {
         if ($data['timewindowdue'] && $data['timewindowdue'] <= $data['timewindowstart']) {
-            $errors['timewindowdue'] = get_string('error');
+            $allerrors['timewindowdue'][] = get_string('error');
         }
         if ($data['timewindowend'] && $data['timewindowend'] <= $data['timewindowstart']) {
-            $errors['timewindowend'] = get_string('error');
+            $allerrors['timewindowend'][] = get_string('error');
         }
         if ($data['timewindowdue'] && $data['timewindowend'] && $data['timewindowend'] < $data['timewindowdue']) {
-            $errors['timewindowend'] = get_string('error');
+            $allerrors['timewindowend'][] = get_string('error');
         }
         if ($data['timefrom'] && $data['timeuntil'] && $data['timefrom'] >= $data['timeuntil']) {
-            $errors['timeuntil'] = get_string('error');
+            $allerrors['timeuntil'][] = get_string('error');
         }
-
-        $error = certification_periods_programid::validate_value($data['programid'], $this->arguments, $context);
-        if ($error !== null) {
-            $errors['programid'] = $error;
-        }
-
-        return $errors;
     }
 }

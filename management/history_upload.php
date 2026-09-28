@@ -26,18 +26,20 @@
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use tool_mucertify\local\form\history_upload_file;
+use tool_mucertify\local\form\history_upload_options;
+use tool_mulib\muform\handler;
+
 /** @var moodle_database $DB */
 /** @var moodle_page $PAGE */
 /** @var core_renderer $OUTPUT */
 /** @var stdClass $CFG */
 /** @var stdClass $COURSE */
 
-define('AJAX_SCRIPT', true);
-
 require('../../../../config.php');
 
 $certificationid = required_param('certificationid', PARAM_INT);
-$draftitemid = optional_param('csvfile', null, PARAM_INT);
+$csvfile = optional_param('csvfile', 0, PARAM_INT);
 
 require_login();
 
@@ -46,9 +48,12 @@ $source = $DB->get_record('tool_mucertify_source', ['certificationid' => $certif
 $context = context::instance_by_id($certification->contextid);
 require_capability('tool/mucertify:admin', $context);
 
-$currenturl = new \core\url('/admin/tool/mucertify/management/history_upload.php', ['certification' => $certificationid]);
+$currenturl = new \core\url('/admin/tool/mucertify/management/history_upload.php', ['certificationid' => $certification->id]);
 $PAGE->set_context($context);
 $PAGE->set_url($currenturl);
+$title = get_string('history_upload', 'tool_mucertify');
+$PAGE->set_title($title);
+$PAGE->set_heading($title);
 
 $returnurl = new \core\url('/admin/tool/mucertify/management/certification_users.php', ['id' => $certification->id]);
 
@@ -57,55 +62,57 @@ if (!$sourceclass::is_assignment_possible($certification, $source)) {
     redirect($returnurl);
 }
 
-$filedata = null;
-if ($draftitemid && confirm_sesskey()) {
-    $filedata = \tool_mucertify\local\util::get_uploaded_data($draftitemid);
-}
+$handler = handler::from_request();
+
+// Rows parsed in the first step are stored in the user's upload area.
+$filedata = \tool_mucertify\local\util::get_uploaded_data($csvfile);
+$extra = ['filedata' => $filedata, 'source' => $source, 'context' => $context];
 
 if (!$filedata) {
-    $form = new \tool_mucertify\local\form\history_upload_file(null, [
-        'certification' => $certification, 'context' => $context]);
-} else {
-    $form = new \tool_mucertify\local\form\history_upload_options(null, [
-        'certification' => $certification, 'source' => $source,
-        'context' => $context, 'csvfile' => $draftitemid, 'filedata' => $filedata]);
+    $form = new history_upload_file($currenturl, []);
+    if ($form->is_cancelled()) {
+        $handler->cancelled($returnurl);
+    }
+    if ($data = $form->get_data()) {
+        $nexturl = new \core\url($currenturl, ['csvfile' => $data->csvfile]);
+        if ($handler->is_dialog()) {
+            // The dialog continues with the second step, the page gets it from the next URL.
+            $extra['filedata'] = \tool_mucertify\local\util::get_uploaded_data((int)$data->csvfile);
+            $handler->render(new history_upload_options($nexturl, [], $extra));
+        }
+        redirect($nexturl);
+    }
+    $handler->render($form);
 }
 
+$form = new history_upload_options(new \core\url($currenturl, ['csvfile' => $csvfile]), [], $extra);
+
 if ($form->is_cancelled()) {
-    $form->ajax_form_cancelled($returnurl);
+    $handler->cancelled($returnurl);
 }
 
 if ($data = $form->get_data()) {
-    if ($filedata && $form instanceof \tool_mucertify\local\form\history_upload_options) {
-        $result = \tool_mucertify\local\period::process_history_upload($data, $filedata);
+    $data->certificationid = $certification->id;
+    $result = \tool_mucertify\local\period::process_history_upload($data, $filedata);
 
-        if ($result['assigned']) {
-            $message = get_string('history_upload_result_assigned', 'tool_mucertify', $result['assigned']);
-            \core\notification::add($message, \core\output\notification::NOTIFY_SUCCESS);
-        }
-        if ($result['periods']) {
-            $message = get_string('history_upload_result_periods', 'tool_mucertify', $result['periods']);
-            \core\notification::add($message, \core\output\notification::NOTIFY_SUCCESS);
-        }
-        if ($result['skipped']) {
-            $message = get_string('history_upload_result_skipped', 'tool_mucertify', $result['skipped']);
-            \core\notification::add($message, \core\output\notification::NOTIFY_INFO);
-        }
-        if ($result['errors']) {
-            $message = get_string('history_upload_result_errors', 'tool_mucertify', $result['errors']);
-            \core\notification::add($message, \core\output\notification::NOTIFY_WARNING);
-        }
+    if ($result['assigned']) {
+        $message = get_string('history_upload_result_assigned', 'tool_mucertify', $result['assigned']);
+        \core\notification::add($message, \core\output\notification::NOTIFY_SUCCESS);
+    }
+    if ($result['periods']) {
+        $message = get_string('history_upload_result_periods', 'tool_mucertify', $result['periods']);
+        \core\notification::add($message, \core\output\notification::NOTIFY_SUCCESS);
+    }
+    if ($result['skipped']) {
+        $message = get_string('history_upload_result_skipped', 'tool_mucertify', $result['skipped']);
+        \core\notification::add($message, \core\output\notification::NOTIFY_INFO);
+    }
+    if ($result['errors']) {
+        $message = get_string('history_upload_result_errors', 'tool_mucertify', $result['errors']);
+        \core\notification::add($message, \core\output\notification::NOTIFY_WARNING);
+    }
 
-        $form->ajax_form_submitted($returnurl);
-    }
-    if (!$filedata && $form instanceof \tool_mucertify\local\form\history_upload_file) {
-        $filedata = \tool_mucertify\local\util::get_uploaded_data($draftitemid);
-        if ($filedata) {
-            $form = new \tool_mucertify\local\form\history_upload_options(null, [
-                'certification' => $certification, 'source' => $source,
-                'context' => $context, 'csvfile' => $draftitemid, 'filedata' => $filedata]);
-        }
-    }
+    $handler->submitted($returnurl);
 }
 
-$form->ajax_form_render();
+$handler->render($form);

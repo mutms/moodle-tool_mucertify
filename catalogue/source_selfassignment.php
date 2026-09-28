@@ -26,14 +26,14 @@
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use tool_mulib\muform\handler;
+
 /** @var moodle_database $DB */
 /** @var moodle_page $PAGE */
 /** @var core_renderer $OUTPUT */
 /** @var stdClass $CFG */
 /** @var stdClass $COURSE */
 /** @var stdClass $USER */
-
-define('AJAX_SCRIPT', true);
 
 require('../../../../config.php');
 
@@ -59,15 +59,17 @@ if (!\tool_mucertify\local\source\selfassignment::can_user_request($certificatio
 
 $returnurl = new \core\url('/admin/tool/mucertify/catalogue/certification.php', ['id' => $certification->id]);
 
-$form = new tool_mucertify\local\form\source_selfassignment(null, ['source' => $source, 'certification' => $certification]);
+$handler = handler::from_request();
+
+$form = new tool_mucertify\local\form\source_selfassignment($PAGE->url, [], ['source' => $source]);
 
 if ($form->is_cancelled()) {
-    $form->ajax_form_cancelled($returnurl);
+    $handler->cancelled($returnurl);
 }
 
 if ($data = $form->get_data()) {
     tool_mucertify\local\source\selfassignment::signup($certification->id, $source->id);
-    $form->ajax_form_submitted($returnurl);
+    $handler->submitted($returnurl);
 }
 
-$form->ajax_form_render();
+$handler->render($form, get_string('source_selfassignment_assign', 'tool_mucertify'));

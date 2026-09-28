@@ -58,7 +58,7 @@ echo $OUTPUT->header();
 $updateicon = '';
 if (has_capability('tool/mucertify:edit', $context)) {
     $editurl = new \core\url('/admin/tool/mucertify/management/certification_settings_edit1.php', ['id' => $certification->id]);
-    $updateicon = new tool_mulib\output\ajax_form\icon($editurl, get_string('certification_update', 'tool_mucertify'), 'i/settings');
+    $updateicon = new tool_mulib\output\muform\dialog\icon($editurl, get_string('certification_update', 'tool_mucertify'), 'i/settings');
     $updateicon = ' <span style="font-size: .9375rem !important">' . $OUTPUT->render($updateicon) . '</span>';
 }
 echo $OUTPUT->heading(get_string('certification', 'tool_mucertify') . $updateicon, 3);
@@ -68,7 +68,7 @@ if ($certification->recertify !== null) {
     $updateicon = '';
     if (has_capability('tool/mucertify:edit', $context)) {
         $editurl = new \core\url('/admin/tool/mucertify/management/certification_settings_edit2.php', ['id' => $certification->id]);
-        $updateicon = new tool_mulib\output\ajax_form\icon($editurl, get_string('updaterecertification', 'tool_mucertify'), 'i/settings');
+        $updateicon = new tool_mulib\output\muform\dialog\icon($editurl, get_string('updaterecertification', 'tool_mucertify'), 'i/settings');
         $updateicon = ' <span style="font-size: .9375rem !important">' . $OUTPUT->render($updateicon) . '</span>';
     }
     echo $OUTPUT->heading(get_string('recertification', 'tool_mucertify') . $updateicon, 3);
@@ -79,7 +79,7 @@ if (\tool_mucertify\local\certificate::is_available()) {
     $updateicon = '';
     if (has_capability('tool/mucertify:edit', $context)) {
         $editurl = new \core\url('/admin/tool/mucertify/management/certification_certificate_edit.php', ['id' => $certification->id]);
-        $updateicon = new tool_mulib\output\ajax_form\icon($editurl, get_string('updatecertificatetemplate', 'tool_mucertify'), 'i/settings');
+        $updateicon = new tool_mulib\output\muform\dialog\icon($editurl, get_string('updatecertificatetemplate', 'tool_mucertify'), 'i/settings');
         $updateicon = ' <span style="font-size: .9375rem !important">' . $OUTPUT->render($updateicon) . '</span>';
     }
     echo $OUTPUT->heading(get_string('certificates', 'tool_mucertify') . $updateicon, 3);

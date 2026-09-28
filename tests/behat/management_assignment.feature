@@ -36,10 +36,10 @@ Feature: Certification assignment management tests
     And I am on the "tool_mucertify > All certifications management" page
 
     And I press "Add certification"
-    And I set the following fields in the ".modal-dialog" "css_element" to these values:
+    And I set the following muform fields in the "dialog[open]" "css_element":
       | Certification name | Certification 001 |
       | Certification ID   | PR01              |
-    And I click on "Add certification" "button" in the ".modal-dialog" "css_element"
+    And I click on "Add certification" "button" in the "dialog[open]" "css_element"
     And I click on "Assignment settings" "link" in the ".secondary-navigation" "css_element"
     And I should see "Inactive" in the "Manual assignment" definition list item
     And I should see "Inactive" in the "Self assignment" definition list item

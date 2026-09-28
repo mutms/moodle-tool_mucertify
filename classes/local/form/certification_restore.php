@@ -19,6 +19,13 @@
 
 namespace tool_mucertify\local\form;
 
+use tool_mulib\muform\element\buttons;
+use tool_mulib\muform\element\cancel;
+use tool_mulib\muform\element\info;
+use tool_mulib\muform\element\inforawhtml;
+use tool_mulib\muform\element\submit;
+use tool_mulib\muform\form;
+
 /**
  * Restore certification.
  *
@@ -26,23 +33,18 @@ namespace tool_mucertify\local\form;
  * @copyright  2025 Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-final class certification_restore extends \tool_mulib\local\ajax_form {
+final class certification_restore extends form {
     #[\Override]
-    protected function definition() {
-        $mform = $this->_form;
-        $certification = $this->_customdata['certification'];
-
+    protected function definition(): void {
         $info = '<div class="alert alert-info">' . markdown_to_html(get_string('certification_restore_info', 'tool_mucertify')) . '</div>';
-        $mform->addElement('html', $info);
+        $this->add(new inforawhtml('info', '', $info));
 
-        $mform->addElement('static', 'fullname', get_string('certificationname', 'tool_mucertify'), format_string($certification->fullname));
+        $this->add(new info('fullname', get_string('certificationname', 'tool_mucertify')));
 
-        $mform->addElement('static', 'idnumber', get_string('certificationidnumber', 'tool_mucertify'), format_string($certification->idnumber));
+        $this->add(new info('idnumber', get_string('certificationidnumber', 'tool_mucertify'), null, info::PLAIN));
 
-        $mform->addElement('hidden', 'id');
-        $mform->setType('id', PARAM_INT);
-        $mform->setDefault('id', $certification->id);
-
-        $this->add_action_buttons(true, get_string('certification_restore', 'tool_mucertify'));
+        $this->add(new buttons('buttons'));
+        $this->add(new submit('submit', get_string('certification_restore', 'tool_mucertify')), 'buttons');
+        $this->add(new cancel(), 'buttons');
     }
 }

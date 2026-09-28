@@ -27,13 +27,13 @@
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use tool_mulib\muform\handler;
+
 /** @var moodle_database $DB */
 /** @var moodle_page $PAGE */
 /** @var core_renderer $OUTPUT */
 /** @var stdClass $CFG */
 /** @var stdClass $COURSE */
-
-define('AJAX_SCRIPT', true);
 
 require('../../../../config.php');
 
@@ -47,9 +47,12 @@ $source = $DB->get_record('tool_mucertify_source', ['certificationid' => $certif
 $context = context::instance_by_id($certification->contextid);
 require_capability('tool/mucertify:edit', $context);
 
-$currenturl = new \core\url('/admin/tool/mucertify/management/source_edit.php', ['id' => $certification->id]);
+$currenturl = new \core\url('/admin/tool/mucertify/management/certification_source_edit.php', ['certificationid' => $certification->id, 'type' => $type]);
 $PAGE->set_context($context);
 $PAGE->set_url($currenturl);
+$title = get_string('update');
+$PAGE->set_title($title);
+$PAGE->set_heading($title);
 
 $returnurl = new \core\url('/admin/tool/mucertify/management/certification_assignment.php', ['id' => $certification->id]);
 
@@ -80,15 +83,23 @@ if ($source) {
 $source = $sourceclass::decode_datajson($source);
 
 $formclass = $sourceclass::get_edit_form_class();
-$form = new $formclass(null, ['source' => $source, 'certification' => $certification, 'context' => $context]);
+$handler = handler::from_request();
+
+$form = new $formclass($currenturl, $source, ['source' => $source, 'certification' => $certification]);
 
 if ($form->is_cancelled()) {
-    $form->ajax_form_cancelled($returnurl);
+    $handler->cancelled($returnurl);
 }
 
 if ($data = $form->get_data()) {
+    $data->certificationid = $certification->id;
+    $data->type = $type;
+    if (property_exists($data, 'selfassignment_key') && $data->selfassignment_key === null) {
+        // Shared keys are not submitted unless changed.
+        $data->selfassignment_key = $source->selfassignment_key;
+    }
     tool_mucertify\local\source\base::update_source($data);
-    $form->ajax_form_submitted($returnurl);
+    $handler->submitted($returnurl);
 }
 
-$form->ajax_form_render();
+$handler->render($form);

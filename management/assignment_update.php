@@ -28,14 +28,13 @@
  */
 
 use tool_mucertify\local\assignment;
+use tool_mulib\muform\handler;
 
 /** @var moodle_database $DB */
 /** @var moodle_page $PAGE */
 /** @var core_renderer $OUTPUT */
 /** @var stdClass $CFG */
 /** @var stdClass $COURSE */
-
-define('AJAX_SCRIPT', true);
 
 require('../../../../config.php');
 
@@ -53,6 +52,9 @@ require_capability('tool/mucertify:admin', $context);
 $currenturl = new \core\url('/admin/tool/mucertify/management/assignment_update.php', ['id' => $assignment->id]);
 $PAGE->set_context($context);
 $PAGE->set_url($currenturl);
+$title = get_string('assignment_update', 'tool_mucertify');
+$PAGE->set_title($title);
+$PAGE->set_heading($title);
 
 $returnurl = new \core\url('/admin/tool/mucertify/management/assignment.php', ['id' => $assignment->id]);
 
@@ -63,18 +65,30 @@ if (!$sourceclass || !$sourceclass::is_assignment_update_possible($certification
     redirect($returnurl);
 }
 
-$form = new \tool_mucertify\local\form\assignment_update(
-    null,
-    ['certification' => $certification, 'assignment' => $assignment, 'user' => $user, 'context' => $context]
-);
+$handler = handler::from_request();
+
+$current = [
+    'userfullname' => fullname($user),
+    'timecertifiedtemp' => $assignment->timecertifiedtemp,
+    'stoprecertify' => (int)!$DB->record_exists('tool_mucertify_period', [
+        'certificationid' => $assignment->certificationid,
+        'userid' => $assignment->userid,
+        'recertifiable' => 1,
+    ]),
+];
+$form = new \tool_mucertify\local\form\assignment_update($currenturl, $current, ['certification' => $certification, 'assignment' => $assignment]);
 
 if ($form->is_cancelled()) {
-    $form->ajax_form_cancelled($returnurl);
+    $handler->cancelled($returnurl);
 }
 
 if ($data = $form->get_data()) {
-    $sourceclass::assignment_update($data);
-    $form->ajax_form_submitted($returnurl);
+    // Custom fields are saved by the form element.
+    $record = (object)array_filter((array)$data, fn($key) => !str_starts_with($key, 'customfield_'), ARRAY_FILTER_USE_KEY);
+    $record->id = $assignment->id;
+    $sourceclass::assignment_update($record);
+    $form->get_element('customfields')->save($assignment->id);
+    $handler->submitted($returnurl);
 }
 
-$form->ajax_form_render();
+$handler->render($form);

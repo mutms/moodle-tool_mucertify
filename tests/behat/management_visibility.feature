@@ -67,29 +67,29 @@ Feature: Certification visibility management tests
     When I follow "Certification 000"
     And I click on "Catalogue visibility" "link" in the ".secondary-navigation" "css_element"
     And I press "Edit"
-    And the following fields match these values:
+    And the following muform fields in the "dialog[open]" "css_element" match:
       | Public             | No             |
       | Visible to cohorts |                |
-    And I set the following fields to these values:
+    And I set the following muform fields in the "dialog[open]" "css_element":
       | Public             | Yes            |
-    And I click on "Update certification" "button" in the ".modal-dialog" "css_element"
+    And I click on "Update certification" "button" in the "dialog[open]" "css_element"
     Then I press "Edit"
-    And the following fields match these values:
+    And the following muform fields in the "dialog[open]" "css_element" match:
       | Public             | Yes            |
-    And I click on "Cancel" "button" in the ".modal-dialog" "css_element"
+    And I click on "Cancel" "button" in the "dialog[open]" "css_element"
     And I am on the "tool_mucertify > All certifications management" page
     And "Certification 000" row "Public" column of "reportbuilder-table" table should contain "Yes"
 
     When I click on "No" "link" in the "Certification 001" "table_row"
     And I press "Edit"
-    And I set the following fields to these values:
+    And I set the following muform fields in the "dialog[open]" "css_element":
       | Visible to cohorts | Cohort 1 |
-    And I click on "Update certification" "button" in the ".modal-dialog" "css_element"
+    And I click on "Update certification" "button" in the "dialog[open]" "css_element"
     Then I should see "Cohort 1"
     And I press "Edit"
-    And I set the following fields to these values:
+    And I set the following muform fields in the "dialog[open]" "css_element":
       | Visible to cohorts | Cohort 2 |
-    And I click on "Update certification" "button" in the ".modal-dialog" "css_element"
+    And I click on "Update certification" "button" in the "dialog[open]" "css_element"
     And I should see "Cohort 2"
     And I am on the "tool_mucertify > All certifications management" page
     And "Certification 001" row "Public" column of "reportbuilder-table" table should contain "No"
@@ -97,9 +97,9 @@ Feature: Certification visibility management tests
     When I follow "Certification 002"
     And I click on "Catalogue visibility" "link" in the ".secondary-navigation" "css_element"
     And I press "Edit"
-    And I set the following fields to these values:
+    And I set the following muform fields in the "dialog[open]" "css_element":
       | Visible to cohorts | Cohort 2, Cohort 1 |
-    And I click on "Update certification" "button" in the ".modal-dialog" "css_element"
+    And I click on "Update certification" "button" in the "dialog[open]" "css_element"
     Then I should see "Cohort 1"
     And I should see "Cohort 2"
 

@@ -19,6 +19,13 @@
 
 namespace tool_mucertify\local\form;
 
+use tool_mulib\muform\element\buttons;
+use tool_mulib\muform\element\cancel;
+use tool_mulib\muform\element\datetime;
+use tool_mulib\muform\element\info;
+use tool_mulib\muform\element\submit;
+use tool_mulib\muform\form;
+
 /**
  * Delete revoked user period.
  *
@@ -28,35 +35,21 @@ namespace tool_mucertify\local\form;
  * @author     Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-final class period_delete extends \tool_mulib\local\ajax_form {
+final class period_delete extends form {
     #[\Override]
-    protected function definition() {
-        $mform = $this->_form;
-        $period = $this->_customdata['period'];
-        $user = $this->_customdata['user'];
-        $context = $this->_customdata['context'];
+    protected function definition(): void {
+        $this->add(new info('userfullname', get_string('user')));
 
-        $mform->addElement('static', 'userfullname', get_string('user'), fullname($user));
+        $timewindowstart = new datetime('timewindowstart', get_string('windowstartdate', 'tool_mucertify'));
+        $timewindowstart->set_frozen(true);
+        $this->add($timewindowstart);
 
-        $mform->addElement('date_time_selector', 'timewindowstart', get_string('windowstartdate', 'tool_mucertify'), ['optional' => false]);
-        $mform->setDefault('timewindowstart', $period->timewindowstart);
-        $mform->hardFreeze('timewindowstart');
+        $timerevoked = new datetime('timerevoked', get_string('revokeddate', 'tool_mucertify'));
+        $timerevoked->set_frozen(true);
+        $this->add($timerevoked);
 
-        $mform->addElement('date_time_selector', 'timerevoked', get_string('revokeddate', 'tool_mucertify'), ['optional' => true]);
-        $mform->setDefault('timerevoked', $period->timerevoked);
-        $mform->hardFreeze('timerevoked');
-
-        $mform->addElement('hidden', 'id');
-        $mform->setType('id', PARAM_INT);
-        $mform->setDefault('id', $period->id);
-
-        $this->add_action_buttons(true, get_string('period_delete', 'tool_mucertify'));
-    }
-
-    #[\Override]
-    public function validation($data, $files) {
-        $errors = parent::validation($data, $files);
-
-        return $errors;
+        $this->add(new buttons('buttons'));
+        $this->add(new submit('submit', get_string('period_delete', 'tool_mucertify')), 'buttons');
+        $this->add(new cancel(), 'buttons');
     }
 }

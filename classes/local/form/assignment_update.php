@@ -19,6 +19,16 @@
 
 namespace tool_mucertify\local\form;
 
+use tool_mulib\muform\element\buttons;
+use tool_mulib\muform\element\cancel;
+use tool_mulib\muform\element\checkbox;
+use tool_mulib\muform\element\customfields;
+use tool_mulib\muform\element\datetime;
+use tool_mulib\muform\element\info;
+use tool_mulib\muform\element\submit;
+use tool_mulib\muform\form;
+use tool_mucertify\customfield\assignment_handler;
+
 /**
  * Update user assignment.
  *
@@ -28,67 +38,23 @@ namespace tool_mucertify\local\form;
  * @author     Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-final class assignment_update extends \tool_mulib\local\ajax_form {
-    /** @var \tool_mucertify\customfield\assignment_handler */
-    protected $handler;
-
+final class assignment_update extends form {
     #[\Override]
-    protected function definition() {
-        global $DB;
+    protected function definition(): void {
+        $extra = $this->get_extra_data();
 
-        $mform = $this->_form;
-        $certification = $this->_customdata['certification'];
-        $assignment = $this->_customdata['assignment'];
-        $user = $this->_customdata['user'];
-        $context = $this->_customdata['context'];
+        $this->add(new info('userfullname', get_string('user')));
 
-        $mform->addElement('static', 'userfullname', get_string('user'), fullname($user));
-
-        if ($certification->recertify !== null) {
-            $stoprecertify = !$DB->record_exists('tool_mucertify_period', [
-                'certificationid' => $assignment->certificationid,
-                'userid' => $assignment->userid,
-                'recertifiable' => 1,
-            ]);
-
-            $mform->addElement('advcheckbox', 'stoprecertify', get_string('stoprecertify', 'tool_mucertify'), ' ');
-            $mform->setDefault('stoprecertify', $stoprecertify);
+        if ($extra['certification']->recertify !== null) {
+            $this->add(new checkbox('stoprecertify', get_string('stoprecertify', 'tool_mucertify')));
         }
 
-        $mform->addElement('date_time_selector', 'timecertifiedtemp', get_string('certifieduntiltemporary', 'tool_mucertify'), ['optional' => true]);
-        $mform->setDefault('timecertifiedtemp', $assignment->timecertifiedtemp);
+        $this->add(new datetime('timecertifiedtemp', get_string('certifieduntiltemporary', 'tool_mucertify')));
 
-        $mform->addElement('hidden', 'id');
-        $mform->setType('id', PARAM_INT);
-        $mform->setDefault('id', $assignment->id);
+        $this->add(new customfields('customfields', assignment_handler::create(), (int)$extra['assignment']->id));
 
-        // Add custom fields to the form.
-        $this->handler = \tool_mucertify\customfield\assignment_handler::create();
-        $this->handler->instance_form_definition($mform);
-
-        $this->add_action_buttons(true, get_string('assignment_update', 'tool_mucertify'));
-
-        // Prepare custom fields data.
-        $data = (object)['id' => $assignment->id];
-        $this->handler->instance_form_before_set_data($data);
-        $this->set_data($data);
-    }
-
-    #[\Override]
-    public function definition_after_data() {
-        parent::definition_after_data();
-        $mform = $this->_form;
-        $assignment = $this->_customdata['assignment'];
-        $this->handler->instance_form_definition_after_data($mform, $assignment->id);
-    }
-
-    #[\Override]
-    public function validation($data, $files) {
-        $errors = parent::validation($data, $files);
-
-        // Add the custom fields validation.
-        $errors = array_merge($errors, $this->handler->instance_form_validation($data, $files));
-
-        return $errors;
+        $this->add(new buttons('buttons'));
+        $this->add(new submit('submit', get_string('assignment_update', 'tool_mucertify')), 'buttons');
+        $this->add(new cancel(), 'buttons');
     }
 }

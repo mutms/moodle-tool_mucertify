@@ -28,14 +28,13 @@
  */
 
 use tool_mucertify\local\certification;
+use tool_mulib\muform\handler;
 
 /** @var moodle_database $DB */
 /** @var moodle_page $PAGE */
 /** @var core_renderer $OUTPUT */
 /** @var stdClass $CFG */
 /** @var stdClass $COURSE */
-
-define('AJAX_SCRIPT', true);
 
 require('../../../../config.php');
 
@@ -50,21 +49,26 @@ require_capability('tool/mucertify:delete', $context);
 $currenturl = new \core\url('/admin/tool/mucertify/management/certification_delete.php', ['id' => $certification->id]);
 $PAGE->set_context($context);
 $PAGE->set_url($currenturl);
+$title = get_string('certification_delete', 'tool_mucertify');
+$PAGE->set_title($title);
+$PAGE->set_heading($title);
 
-$form = new \tool_mucertify\local\form\certification_delete(null, ['certification' => $certification]);
+$handler = handler::from_request();
+
+$form = new \tool_mucertify\local\form\certification_delete($currenturl, $certification);
 $returnurl = new \core\url('/admin/tool/mucertify/management/certification.php', ['id' => $certification->id]);
 if (!$certification->archived) {
     redirect($returnurl);
 }
 
 if ($form->is_cancelled()) {
-    $form->ajax_form_cancelled($returnurl);
+    $handler->cancelled($returnurl);
 }
 
 if ($data = $form->get_data()) {
     certification::delete($certification->id);
     $returnurl = new \core\url('/admin/tool/mucertify/management/index.php', ['contextid' => $certification->contextid]);
-    $form->ajax_form_submitted($returnurl);
+    $handler->submitted($returnurl);
 }
 
-$form->ajax_form_render();
+$handler->render($form);

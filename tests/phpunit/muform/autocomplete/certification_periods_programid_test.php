@@ -15,32 +15,40 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 // phpcs:disable moodle.Files.BoilerplateComment.CommentEndedTooSoon
-// phpcs:disable moodle.Files.LineLength.TooLong
 
-namespace tool_mucertify\phpunit\external\form_autocomplete;
+namespace tool_mucertify\phpunit\muform\autocomplete;
 
-use tool_mucertify\external\form_autocomplete\certification_periods_programid;
+use tool_mucertify\muform\autocomplete\certification_periods_programid;
 use tool_mulib\local\mulib;
 
 /**
- * External API for form program selection.
+ * Certification periods program autocomplete source test.
  *
  * @group      MuTMS
  * @package    tool_mucertify
- * @copyright  2023 Open LMS (https://www.openlms.net/)
- * @copyright  2025 Petr Skoda
- * @author     Petr Skoda
+ * @copyright  2026 Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
- * @covers \tool_mucertify\external\form_autocomplete\certification_periods_programid
+ * @covers \tool_mucertify\muform\autocomplete\certification_periods_programid
  */
 final class certification_periods_programid_test extends \advanced_testcase {
+    #[\Override]
     public function setUp(): void {
         parent::setUp();
         $this->resetAfterTest();
     }
 
-    public function test_execute(): void {
+    public function test_get_args(): void {
+        /** @var \tool_mucertify_generator $generator */
+        $generator = $this->getDataGenerator()->get_plugin_generator('tool_mucertify');
+        $certification1 = $generator->create_certification([]);
+
+        $this->setAdminUser();
+        $source = new certification_periods_programid((int)$certification1->id);
+        $this->assertSame([(int)$certification1->id], $source->get_args());
+    }
+
+    public function test_search(): void {
         /** @var \tool_mucertify_generator $generator */
         $generator = $this->getDataGenerator()->get_plugin_generator('tool_mucertify');
 
@@ -109,38 +117,28 @@ final class certification_periods_programid_test extends \advanced_testcase {
         ]);
 
         $this->setAdminUser();
-        $response = certification_periods_programid::execute('', $certification1->id);
-        $results = certification_periods_programid::clean_returnvalue(
-            certification_periods_programid::execute_returns(),
-            $response
-        );
-        $this->assertFalse($results['overflow']);
-        $this->assertCount(2, $results['list']);
-        $this->assertSame((int)$program1->id, $results['list'][0]['value']);
-        $this->assertSame((int)$program2->id, $results['list'][1]['value']);
+        $source = new certification_periods_programid((int)$certification1->id);
+        $this->assertSame(50, $source->get_maxitems());
+        $results = $source->search('', 50);
+        $this->assertSame([
+            (int)$program1->id => $program1->fullname,
+            (int)$program2->id => $program2->fullname,
+        ], $results);
 
-        $response = certification_periods_programid::execute('hoku', $certification1->id);
-        $results = certification_periods_programid::clean_returnvalue(
-            certification_periods_programid::execute_returns(),
-            $response
-        );
-        $this->assertFalse($results['overflow']);
-        $this->assertCount(1, $results['list']);
-        $this->assertSame((int)$program1->id, $results['list'][0]['value']);
+        $results = $source->search('hoku', 50);
+        $this->assertSame([(int)$program1->id => $program1->fullname], $results);
+
+        $this->assertNull($source->search('', 1));
+        $this->assertSame([(int)$program1->id => $program1->fullname], $source->search('hoku', 1));
 
         $this->setUser($user1);
-        $response = certification_periods_programid::execute('', $certification2->id);
-        $results = certification_periods_programid::clean_returnvalue(
-            certification_periods_programid::execute_returns(),
-            $response
-        );
-        $this->assertFalse($results['overflow']);
-        $this->assertCount(1, $results['list']);
-        $this->assertSame((int)$program2->id, $results['list'][0]['value']);
+        $source = new certification_periods_programid((int)$certification2->id);
+        $results = $source->search('', 50);
+        $this->assertSame([(int)$program2->id => $program2->fullname], $results);
 
         $this->setUser($user1);
         try {
-            certification_periods_programid::execute('', $certification1->id);
+            new certification_periods_programid((int)$certification1->id);
             $this->fail('Exception excepted');
         } catch (\moodle_exception $ex) {
             $this->assertInstanceOf(\required_capability_exception::class, $ex);
@@ -151,7 +149,7 @@ final class certification_periods_programid_test extends \advanced_testcase {
         }
     }
 
-    public function test_execute_tenant(): void {
+    public function test_search_tenant(): void {
         if (!mulib::is_mutenancy_available()) {
             $this->markTestSkipped('tenant support not available');
         }
@@ -168,27 +166,28 @@ final class certification_periods_programid_test extends \advanced_testcase {
         $programgenerator = $this->getDataGenerator()->get_plugin_generator('tool_muprog');
 
         $tenant1 = $tenantgenerator->create_tenant();
-        $tenant1context = \context_tenant::instance($tenant1->id);
         $tenant1catcontext = \context_coursecat::instance($tenant1->categoryid);
         $tenant2 = $tenantgenerator->create_tenant();
-        $tenant2context = \context_tenant::instance($tenant2->id);
         $tenant2catcontext = \context_coursecat::instance($tenant2->categoryid);
 
         $syscontext = \context_system::instance();
 
         $program0 = $programgenerator->create_program([
+            'fullname' => 'Program 0',
             'publicaccess' => 1,
             'archived' => 0,
             'contextid' => $syscontext->id,
             'sources' => ['mucertify' => []],
         ]);
         $program1 = $programgenerator->create_program([
+            'fullname' => 'Program 1',
             'publicaccess' => 1,
             'archived' => 0,
             'contextid' => $tenant1catcontext->id,
             'sources' => ['mucertify' => []],
         ]);
         $program2 = $programgenerator->create_program([
+            'fullname' => 'Program 2',
             'publicaccess' => 1,
             'archived' => 0,
             'contextid' => $tenant2catcontext->id,
@@ -217,42 +216,20 @@ final class certification_periods_programid_test extends \advanced_testcase {
         ]);
 
         $this->setAdminUser();
-        $response = certification_periods_programid::execute('', $certification0->id);
-        $results = certification_periods_programid::clean_returnvalue(
-            certification_periods_programid::execute_returns(),
-            $response
-        );
-        $this->assertFalse($results['overflow']);
-        $this->assertCount(3, $results['list']);
-        $this->assertSame((int)$program0->id, $results['list'][0]['value']);
-        $this->assertSame((int)$program1->id, $results['list'][1]['value']);
-        $this->assertSame((int)$program2->id, $results['list'][2]['value']);
+        $source = new certification_periods_programid((int)$certification0->id);
+        $this->assertSame([(int)$program0->id, (int)$program1->id, (int)$program2->id], array_keys($source->search('', 50)));
 
         $this->setAdminUser();
-        $response = certification_periods_programid::execute('', $certification1->id);
-        $results = certification_periods_programid::clean_returnvalue(
-            certification_periods_programid::execute_returns(),
-            $response
-        );
-        $this->assertFalse($results['overflow']);
-        $this->assertCount(2, $results['list']);
-        $this->assertSame((int)$program0->id, $results['list'][0]['value']);
-        $this->assertSame((int)$program1->id, $results['list'][1]['value']);
+        $source = new certification_periods_programid((int)$certification1->id);
+        $this->assertSame([(int)$program0->id, (int)$program1->id], array_keys($source->search('', 50)));
 
         $this->setUser($user1);
-        $response = certification_periods_programid::execute('', $certification0->id);
-        $results = certification_periods_programid::clean_returnvalue(
-            certification_periods_programid::execute_returns(),
-            $response
-        );
-        $this->assertFalse($results['overflow']);
-        $this->assertCount(2, $results['list']);
-        $this->assertSame((int)$program0->id, $results['list'][0]['value']);
-        $this->assertSame((int)$program1->id, $results['list'][1]['value']);
+        $source = new certification_periods_programid((int)$certification0->id);
+        $this->assertSame([(int)$program0->id, (int)$program1->id], array_keys($source->search('', 50)));
 
         $this->setUser($user1);
         try {
-            certification_periods_programid::execute('', $certification2->id);
+            new certification_periods_programid((int)$certification2->id);
             $this->fail('Exception excepted');
         } catch (\moodle_exception $ex) {
             $this->assertInstanceOf(\required_capability_exception::class, $ex);
@@ -261,5 +238,77 @@ final class certification_periods_programid_test extends \advanced_testcase {
                 $ex->getMessage()
             );
         }
+
+        // Programs of other tenants are not allowed.
+        $this->setAdminUser();
+        $source = new certification_periods_programid((int)$certification1->id);
+        $this->assertSame($program0->fullname, $source->label((string)$program0->id));
+        $this->assertSame($program1->fullname, $source->label((string)$program1->id));
+        $this->assertNull($source->label((string)$program2->id));
+        $this->assertNull($source->validate((string)$program2->id));
+    }
+
+    public function test_label(): void {
+        /** @var \tool_mucertify_generator $generator */
+        $generator = $this->getDataGenerator()->get_plugin_generator('tool_mucertify');
+
+        /** @var \tool_muprog_generator $programgenerator */
+        $programgenerator = $this->getDataGenerator()->get_plugin_generator('tool_muprog');
+
+        $syscontext = \context_system::instance();
+        $category1 = $this->getDataGenerator()->create_category([]);
+        $catcontext1 = \context_coursecat::instance($category1->id);
+
+        $program1 = $programgenerator->create_program([
+            'fullname' => 'hokus',
+            'idnumber' => 'p1',
+            'contextid' => $syscontext->id,
+            'sources' => ['mucertify' => []],
+        ]);
+        $program2 = $programgenerator->create_program([
+            'fullname' => 'pokus',
+            'idnumber' => 'p2',
+            'contextid' => $catcontext1->id,
+            'sources' => ['mucertify' => []],
+        ]);
+
+        $user1 = $this->getDataGenerator()->create_user();
+
+        $editorroleid = $this->getDataGenerator()->create_role();
+        assign_capability('tool/mucertify:edit', CAP_ALLOW, $editorroleid, $syscontext);
+        assign_capability('tool/muprog:addtocertifications', CAP_ALLOW, $editorroleid, $syscontext);
+        role_assign($editorroleid, $user1->id, $catcontext1->id);
+
+        $certification1 = $generator->create_certification([
+            'contextid' => $syscontext->id,
+        ]);
+        $certification2 = $generator->create_certification([
+            'contextid' => $catcontext1->id,
+        ]);
+        $certification3 = $generator->create_certification([
+            'contextid' => $catcontext1->id,
+            'program1' => 'p1',
+        ]);
+
+        $this->setAdminUser();
+        $source = new certification_periods_programid((int)$certification1->id);
+        $this->assertSame($program1->fullname, $source->label((string)$program1->id));
+        $this->assertSame($program2->fullname, $source->label((string)$program2->id));
+        $this->assertNull($source->label('-1'));
+        $this->assertNull($source->label('0'));
+        $this->assertNull($source->label('abc'));
+        $this->assertNull($source->label(''));
+        $this->assertNull($source->label((string)($program2->id + 100)));
+        $this->assertNull($source->validate((string)$program1->id));
+
+        $this->setUser($user1);
+        $source = new certification_periods_programid((int)$certification2->id);
+        $this->assertNull($source->label((string)$program1->id));
+        $this->assertSame($program2->fullname, $source->label((string)$program2->id));
+
+        // Current value is always allowed.
+        $source = new certification_periods_programid((int)$certification3->id);
+        $this->assertSame($program1->fullname, $source->label((string)$program1->id));
+        $this->assertSame($program2->fullname, $source->label((string)$program2->id));
     }
 }

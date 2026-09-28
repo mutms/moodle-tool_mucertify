@@ -26,14 +26,13 @@
  */
 
 use tool_mucertify\local\assignment;
+use tool_mulib\muform\handler;
 
 /** @var moodle_database $DB */
 /** @var moodle_page $PAGE */
 /** @var core_renderer $OUTPUT */
 /** @var stdClass $CFG */
 /** @var stdClass $COURSE */
-
-define('AJAX_SCRIPT', true);
 
 require('../../../../config.php');
 
@@ -51,6 +50,9 @@ require_capability('tool/mucertify:unassign', $context);
 $currenturl = new \core\url('/admin/tool/mucertify/management/assignment_archive.php', ['id' => $assignment->id]);
 $PAGE->set_context($context);
 $PAGE->set_url($currenturl);
+$title = get_string('assignment_archive', 'tool_mucertify');
+$PAGE->set_title($title);
+$PAGE->set_heading($title);
 
 $returnurl = new \core\url('/admin/tool/mucertify/management/assignment.php', ['id' => $assignment->id]);
 
@@ -61,18 +63,18 @@ if (!$sourceclass || !$sourceclass::is_assignment_archive_possible($certificatio
     redirect($returnurl);
 }
 
-$form = new \tool_mucertify\local\form\assignment_archive(
-    null,
-    ['certification' => $certification, 'assignment' => $assignment, 'user' => $user, 'context' => $context]
-);
+$handler = handler::from_request();
+
+$current = ['certificationfullname' => $certification->fullname, 'userfullname' => fullname($user)];
+$form = new \tool_mucertify\local\form\assignment_archive($currenturl, $current);
 
 if ($form->is_cancelled()) {
-    $form->ajax_form_cancelled($returnurl);
+    $handler->cancelled($returnurl);
 }
 
 if ($data = $form->get_data()) {
     $sourceclass::assignment_archive($assignment->id);
-    $form->ajax_form_submitted($returnurl);
+    $handler->submitted($returnurl);
 }
 
-$form->ajax_form_render();
+$handler->render($form);

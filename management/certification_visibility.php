@@ -58,7 +58,7 @@ echo $OUTPUT->header();
 $buttons = [];
 if (has_capability('tool/mucertify:edit', $context)) {
     $editurl = new \core\url('/admin/tool/mucertify/management/certification_visibility_edit.php', ['id' => $certification->id]);
-    $editbutton = new tool_mulib\output\ajax_form\button($editurl, get_string('edit'));
+    $editbutton = new tool_mulib\output\muform\dialog\button($editurl, get_string('edit'));
     $buttons[] = $OUTPUT->render($editbutton);
 }
 

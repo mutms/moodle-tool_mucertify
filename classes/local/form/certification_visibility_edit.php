@@ -19,8 +19,13 @@
 
 namespace tool_mucertify\local\form;
 
-use tool_mucertify\local\management;
-use tool_mucertify\external\form_autocomplete\certification_visibility_edit_cohortids;
+use tool_mulib\muform\element\autocompletemany;
+use tool_mulib\muform\element\buttons;
+use tool_mulib\muform\element\cancel;
+use tool_mulib\muform\element\select;
+use tool_mulib\muform\element\submit;
+use tool_mulib\muform\form;
+use tool_mucertify\muform\autocompletemany\certification_visibility_edit_cohortids;
 
 /**
  * Edit certification visibility.
@@ -31,49 +36,20 @@ use tool_mucertify\external\form_autocomplete\certification_visibility_edit_coho
  * @author     Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-final class certification_visibility_edit extends \tool_mulib\local\ajax_form {
+final class certification_visibility_edit extends form {
     #[\Override]
-    protected function definition() {
-        $mform = $this->_form;
-        $data = $this->_customdata['data'];
-        $context = $this->_customdata['context'];
+    protected function definition(): void {
+        $certificationid = (int)$this->get_current_data()['id'];
 
-        $mform->addElement('select', 'publicaccess', get_string('publicaccess', 'tool_mucertify'), [0 => get_string('no'), 1 => get_string('yes')]);
-        $mform->setDefault('publicaccess', $data->publicaccess);
-        $mform->addHelpButton('publicaccess', 'publicaccess', 'tool_mucertify');
+        $publicaccess = new select('publicaccess', get_string('publicaccess', 'tool_mucertify'), [0 => get_string('no'), 1 => get_string('yes')]);
+        $publicaccess->add_help_button('publicaccess', 'tool_mucertify');
+        $this->add($publicaccess);
 
-        certification_visibility_edit_cohortids::add_element(
-            $mform,
-            ['certificationid' => $data->id],
-            'cohortids',
-            get_string('cohorts', 'tool_mucertify'),
-            $context
-        );
-        $cohorts = management::fetch_current_cohorts_menu($data->id);
-        $mform->setDefault('cohortids', array_keys($cohorts));
+        $source = new certification_visibility_edit_cohortids($certificationid);
+        $this->add(new autocompletemany('cohortids', get_string('cohorts', 'tool_mucertify'), $source));
 
-        $mform->addElement('hidden', 'id');
-        $mform->setType('id', PARAM_INT);
-        $mform->setDefault('id', $data->id);
-
-        $this->add_action_buttons(true, get_string('certification_update', 'tool_mucertify'));
-    }
-
-    #[\Override]
-    public function validation($data, $files) {
-        $errors = parent::validation($data, $files);
-        $certification = $this->_customdata['data'];
-        $context = $this->_customdata['context'];
-        $args = ['certificationid' => $certification->id];
-
-        foreach ($data['cohortids'] as $cohortid) {
-            $error = certification_visibility_edit_cohortids::validate_value($cohortid, $args, $context);
-            if ($error !== null) {
-                $errors['cohorts'] = $error;
-                break;
-            }
-        }
-
-        return $errors;
+        $this->add(new buttons('buttons'));
+        $this->add(new submit('submit', get_string('certification_update', 'tool_mucertify')), 'buttons');
+        $this->add(new cancel(), 'buttons');
     }
 }
