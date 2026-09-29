@@ -24,10 +24,10 @@ use tool_mulib\muform\element\cancel;
 use tool_mulib\muform\element\customfields;
 use tool_mulib\muform\element\editor;
 use tool_mulib\muform\element\filemanager;
-use tool_mulib\muform\element\select;
 use tool_mulib\muform\element\submit;
 use tool_mulib\muform\element\tags;
 use tool_mulib\muform\element\text;
+use tool_mulib\muform\element\yesno;
 use tool_mulib\muform\form;
 use tool_mucertify\customfield\certification_handler;
 use tool_mucertify\muform\tagarea\certification as certification_tagarea;
@@ -62,7 +62,7 @@ final class certification_update extends form {
 
         $this->add(new editor('description', get_string('description'), -1));
 
-        $archived = new select('archived', get_string('archived', 'tool_mucertify'), [0 => get_string('no'), 1 => get_string('yes')]);
+        $archived = new yesno('archived', get_string('archived', 'tool_mucertify'));
         $archived->set_frozen(true);
         $this->add($archived);
 

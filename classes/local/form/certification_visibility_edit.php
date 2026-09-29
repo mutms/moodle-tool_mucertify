@@ -22,8 +22,8 @@ namespace tool_mucertify\local\form;
 use tool_mulib\muform\element\autocompletemany;
 use tool_mulib\muform\element\buttons;
 use tool_mulib\muform\element\cancel;
-use tool_mulib\muform\element\select;
 use tool_mulib\muform\element\submit;
+use tool_mulib\muform\element\yesno;
 use tool_mulib\muform\form;
 use tool_mucertify\muform\autocompletemany\certification_visibility_edit_cohortids;
 
@@ -41,7 +41,7 @@ final class certification_visibility_edit extends form {
     protected function definition(): void {
         $certificationid = (int)$this->get_current_data()['id'];
 
-        $publicaccess = new select('publicaccess', get_string('publicaccess', 'tool_mucertify'), [0 => get_string('no'), 1 => get_string('yes')]);
+        $publicaccess = new yesno('publicaccess', get_string('publicaccess', 'tool_mucertify'));
         $publicaccess->add_help_button('publicaccess', 'tool_mucertify');
         $this->add($publicaccess);
 

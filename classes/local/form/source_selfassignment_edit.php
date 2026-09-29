@@ -22,9 +22,9 @@ namespace tool_mucertify\local\form;
 use tool_mulib\muform\element\buttons;
 use tool_mulib\muform\element\cancel;
 use tool_mulib\muform\element\number;
-use tool_mulib\muform\element\select;
 use tool_mulib\muform\element\sharedkey;
 use tool_mulib\muform\element\submit;
+use tool_mulib\muform\element\yesno;
 use tool_mulib\muform\form;
 
 /**
@@ -40,15 +40,14 @@ final class source_selfassignment_edit extends form {
     #[\Override]
     protected function definition(): void {
         $source = $this->get_extra_data()['source'];
-        $yesno = ['1' => get_string('yes'), '0' => get_string('no')];
 
-        $enable = new select('enable', get_string('active'), $yesno);
+        $enable = new yesno('enable', get_string('active'));
         $enable->set_frozen($source->hasassignments);
         $this->add($enable);
 
         $dm = $this->get_display_manager();
 
-        $allowsignup = new select('selfassignment_allowsignup', get_string('source_selfassignment_allowsignup', 'tool_mucertify'), $yesno);
+        $allowsignup = new yesno('selfassignment_allowsignup', get_string('source_selfassignment_allowsignup', 'tool_mucertify'));
         $this->add($allowsignup);
         $dm->hide_if('selfassignment_allowsignup', 'enable', 'eq', '0');
 
