@@ -77,7 +77,6 @@ final class certifications extends system_report {
             'certification:idnumber',
             'certification:context',
             'certification:assignmentcount',
-            'certification:publicaccess',
             'certification:archived',
         ];
         $this->add_columns_from_entities($columns);
@@ -92,7 +91,6 @@ final class certifications extends system_report {
         $filters = [
             'certification:fullname',
             'certification:idnumber',
-            'certification:publicaccess',
             'certification:archived',
         ];
         $this->add_filters_from_entities($filters);

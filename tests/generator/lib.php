@@ -112,15 +112,6 @@ class tool_mucertify_generator extends component_generator_base {
         }
         unset($record->sources);
 
-        $cohorts = [];
-        if (!empty($record->cohortids)) {
-            $cohorts = $record->cohortids;
-        } else if (!empty($record->cohorts)) {
-            $cohorts = $record->cohorts;
-        }
-        unset($record->cohorts);
-        unset($record->cohortids);
-
         $image = null;
         if (!empty($record->image)) {
             $image = $record->image;
@@ -141,23 +132,6 @@ class tool_mucertify_generator extends component_generator_base {
             $periods[$k] = $value;
         }
         $certification = certification::create($record);
-
-        if ($cohorts) {
-            $cohortids = [];
-            if (!is_array($cohorts)) {
-                $cohorts = explode(',', $cohorts);
-            }
-            foreach ($cohorts as $cohort) {
-                $cohort = trim($cohort);
-                if (is_number($cohort)) {
-                    $cohortids[] = $cohort;
-                } else {
-                    $record = $DB->get_record('cohort', ['name' => $cohort], '*', MUST_EXIST);
-                    $cohortids[] = $record->id;
-                }
-            }
-            certification::update_visibility((object)['id' => $certification->id, 'publicaccess' => $certification->publicaccess, 'cohortids' => $cohortids]);
-        }
 
         if ($periods) {
             $periods['id'] = $certification->id;

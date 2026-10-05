@@ -194,9 +194,9 @@ class renderer extends \plugin_renderer_base {
      * @return string
      */
     public function render_block_footer(): string {
-        $url = \tool_mucertify\local\catalogue::get_catalogue_url();
+        $url = \tool_mucatalog\local\catalogue::get_catalogue_url();
         if ($url) {
-            return '<div class="float-end">' . \html_writer::link($url, get_string('catalogue', 'tool_mucertify')) . '</div>';
+            return '<div class="float-end">' . \html_writer::link($url, get_string('catalogue', 'tool_mucatalog')) . '</div>';
         }
         return '';
     }

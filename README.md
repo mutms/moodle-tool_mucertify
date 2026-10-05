@@ -14,7 +14,8 @@ compliance with industry standards and regulations.
 * Certification periods tied to designated programs for compliance tracking
 * Multiple sources for assigning certifications to users
 * Advanced recertification rules to match organisational needs
-* Certification catalogue — users can browse available certifications
+* Certifications can be offered to users in the Universal catalogue, including self-assignment
+  and assignment requests
 * My certifications profile page and dashboard block for quick access
 * Configurable notifications, including supervisors receiving copies of learner notifications
 
@@ -26,6 +27,7 @@ compliance with industry standards and regulations.
 Required plugins:
 
 * [Additional tools library plugin](https://github.com/mutms/moodle-tool_mulib)
+* [Universal catalogue plugin](https://github.com/mutms/moodle-tool_mucatalog)
 * [My certifications block](https://github.com/mutms/moodle-block_mucertify_my)
 * [Programs plugin](https://github.com/mutms/moodle-tool_muprog)
 * [Program enrolment plugin](https://github.com/mutms/moodle-enrol_muprog)
@@ -44,7 +46,6 @@ Recommended plugins:
 
 ## Roadmap
 
-* Universal catalogue plugin replacing current Certification catalogue
 * Supervisor approval workflows via Supervisors and teams plugin
 * Script for migration from Certifications by Open LMS
 

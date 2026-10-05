@@ -76,7 +76,6 @@ final class get_certification_periods_test extends \advanced_testcase {
             'idnumber' => 'CT1',
             'contextid' => $catcontext1->id,
             'sources' => 'manual',
-            'publicaccess' => 1,
             'programid1' => $program1->id,
             'programid2' => $program2->id,
             'recertify' => 604800,
@@ -86,7 +85,6 @@ final class get_certification_periods_test extends \advanced_testcase {
             'contextid' => $syscontext->id,
             'idnumber' => 'CT2',
             'sources' => 'manual',
-            'publicaccess' => 0,
             'programid1' => $program2->id,
         ]);
 

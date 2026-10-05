@@ -40,8 +40,6 @@ class behat_tool_mucertify extends behat_base {
         switch (strtolower($page)) {
             case 'all certifications management':
                 return new \core\url('/admin/tool/mucertify/management/index.php');
-            case 'certification catalogue':
-                return new \core\url('/admin/tool/mucertify/catalogue/index.php');
             case 'my certifications':
                 return new \core\url('/admin/tool/mucertify/my/index.php');
 

@@ -114,24 +114,16 @@ class renderer extends \plugin_renderer_base {
     }
 
     /**
-     * Render certification visibility.
+     * Render list of catalogue sections that include the certification.
      *
      * @param stdClass $certification
      * @return string
      */
     public function render_certification_visibility(stdClass $certification): string {
-        $details = new \tool_mulib\output\entity_details();
+        /** @var \tool_mucatalog\output\management\renderer $catalogoutput */
+        $catalogoutput = $this->page->get_renderer('tool_mucatalog', 'management');
 
-        $details->add(get_string('publicaccess', 'tool_mucertify'), ($certification->publicaccess ? get_string('yes') : get_string('no')));
-        $cohorts = management::fetch_current_cohorts_menu($certification->id);
-        if ($cohorts) {
-            $cohortsstr = implode(', ', array_map('format_string', $cohorts));
-        } else {
-            $cohortsstr = '-';
-        }
-        $details->add(get_string('cohorts', 'tool_mucertify'), $cohortsstr);
-
-        return $this->output->render($details);
+        return $catalogoutput->render_reference_sections('certification', $certification->id);
     }
 
     /**

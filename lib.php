@@ -39,7 +39,7 @@
  * @return void
  */
 function tool_mucertify_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options = []) {
-    global $DB;
+    global $DB, $USER;
 
     if ($context->contextlevel != CONTEXT_SYSTEM) {
         send_file_not_found();
@@ -63,9 +63,14 @@ function tool_mucertify_pluginfile($course, $cm, $context, $filearea, $args, $fo
         send_file_not_found();
     }
     $certificationcontext = context::instance_by_id($certification->contextid);
+    $assigned = $DB->record_exists(
+        'tool_mucertify_assignment',
+        ['certificationid' => $certification->id, 'userid' => $USER->id, 'archived' => 0]
+    );
     if (
-        !has_capability('tool/mucertify:view', $certificationcontext)
-        && !\tool_mucertify\local\catalogue::is_certification_visible($certification)
+        !$assigned
+        && !has_capability('tool/mucertify:view', $certificationcontext)
+        && !\tool_mucertify\local\certification::get_catalogue_item($certification)
     ) {
         send_file_not_found();
     }
@@ -123,7 +128,6 @@ function tool_mucertify_pre_course_category_delete(\stdClass $category) {
  */
 function tool_mucertify_get_fontawesome_icon_map() {
     return [
-        'tool_mucertify:catalogue' => 'fa-cubes',
         'tool_mucertify:certification' => 'fa-certificate',
         'tool_mucertify:mycertifications' => 'fa-certificate',
         'tool_mucertify:requestapprove' => 'fa-check-square-o',
@@ -150,7 +154,7 @@ function tool_mucertify_get_tagged_certifications($tag, $exclusivemode = false, 
 
     $perpage = $exclusivemode ? 20 : 5;
 
-    $result = \tool_mucertify\local\catalogue::get_tagged_certifications($tag->id, $exclusivemode, $page * $perpage, $perpage);
+    $result = \tool_mucertify\local\certification::get_tagged_certifications($tag->id, $exclusivemode, $page * $perpage, $perpage);
 
     $content = $result['content'];
     $totalpages = ceil($result['totalcount'] / $perpage);

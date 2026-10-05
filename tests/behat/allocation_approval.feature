@@ -64,11 +64,19 @@ Feature: Certification approval assignments tests
       | Program 002 | PR2      | Cat 2    | mucertify |
       | Program 003 | PR3      | Cat 3    | mucertify |
     And the following "tool_mucertify > certifications" exist:
-      | fullname          | idnumber | category | program1 | cohorts  | publicaccess |
-      | Certification 000 | CT0      |          | PR0      | Cohort 2 | 0            |
-      | Certification 001 | CT1      | Cat 1    | PR1      |          | 1            |
-      | Certification 002 | CT2      | Cat 2    | PR2      |          | 0            |
-      | Certification 003 | CT3      | Cat 3    | PR3      |          | 0            |
+      | fullname          | idnumber | category | program1 |
+      | Certification 000 | CT0      |          | PR0      |
+      | Certification 001 | CT1      | Cat 1    | PR1      |
+      | Certification 002 | CT2      | Cat 2    | PR2      |
+      | Certification 003 | CT3      | Cat 3    | PR3      |
+    And the following "tool_mucatalog > sections" exist:
+      | name           | status | guestvisible | uservisible | cohortvisible |
+      | Public section | active | 0            | 1           |               |
+      | Cohort section | active | 0            | 0           | CH2           |
+    And the following "tool_mucatalog > items" exist:
+      | section        | type          | reference         |
+      | Cohort section | certification | Certification 000 |
+      | Public section | certification | Certification 001 |
 
   @javascript
   Scenario: Allocator approves student assignment request for a certification
@@ -85,7 +93,7 @@ Feature: Certification approval assignments tests
     And I log out
 
     When I log in as "student2"
-    And I am on the "tool_mucertify > Certification catalogue" page
+    And I am on the "tool_mucatalog > Catalogue All Items" page
     And I follow "Certification 001"
     And I should not see "Request access"
     And I log out
@@ -102,7 +110,7 @@ Feature: Certification approval assignments tests
     And I log out
 
     When I log in as "student2"
-    And I am on the "tool_mucertify > Certification catalogue" page
+    And I am on the "tool_mucatalog > Catalogue All Items" page
     And I follow "Certification 001"
     And I press "Request access"
     And I click on "Cancel" "button" in the "dialog[open]" "css_element"
@@ -161,7 +169,7 @@ Feature: Certification approval assignments tests
     And I log out
 
     When I log in as "student2"
-    And I am on the "tool_mucertify > Certification catalogue" page
+    And I am on the "tool_mucatalog > Catalogue All Items" page
     And I follow "Certification 001"
     And I press "Request access"
     And I click on "Request access" "button" in the "dialog[open]" "css_element"
@@ -183,7 +191,7 @@ Feature: Certification approval assignments tests
     And I log out
 
     When I log in as "student2"
-    And I am on the "tool_mucertify > Certification catalogue" page
+    And I am on the "tool_mucatalog > Catalogue All Items" page
     And I follow "Certification 001"
     Then I should see "Access request was rejected"
     And I log out
@@ -199,7 +207,7 @@ Feature: Certification approval assignments tests
     And I log out
 
     When I log in as "student2"
-    And I am on the "tool_mucertify > Certification catalogue" page
+    And I am on the "tool_mucatalog > Catalogue All Items" page
     And I follow "Certification 001"
     And I press "Request access"
     And I click on "Request access" "button" in the "dialog[open]" "css_element"

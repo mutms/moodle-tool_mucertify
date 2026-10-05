@@ -65,7 +65,6 @@ Feature: General Certification management tests
     And I am on the "tool_mucertify > All certifications management" page
     And "Certification 001" row "Category" column of "reportbuilder-table" table should contain "System"
     And "Certification 001" row "Certification ID" column of "reportbuilder-table" table should contain "CT01"
-    And "Certification 001" row "Public" column of "reportbuilder-table" table should contain "No"
 
   @javascript @_file_upload
   Scenario: Manager may create a new certifications with all settings
@@ -93,7 +92,6 @@ Feature: General Certification management tests
     And I should see "Mathematics" in the "Tags" definition list item
     And I should see "Algebra" in the "Tags" definition list item
     And I am on the "Cat 2" "tool_mucertify > Certification management" page
-    And "CT01" row "Public" column of "reportbuilder-table" table should contain "No"
     And "CT01" row "Assignments" column of "reportbuilder-table" table should contain "0"
 
   @javascript

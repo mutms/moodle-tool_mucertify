@@ -42,6 +42,7 @@ Feature: Certification visibility management tests
       | tool/mucertify:delete          | Allow      | pmanager | System       |           |
       | tool/mucertify:assign          | Allow      | pmanager | System       |           |
       | moodle/cohort:view           | Allow      | pmanager | System       |           |
+      | tool/mucatalog:view          | Allow      | pmanager | System       |           |
     And the following "role assigns" exist:
       | user      | role          | contextlevel | reference |
       | manager1  | pmanager      | System       |           |
@@ -50,68 +51,112 @@ Feature: Certification visibility management tests
       | viewer1   | pviewer       | System       |           |
 
   @javascript
-  Scenario: Manager may update certification Catalogue visibility
+  Scenario: Manager may view catalogue sections on certification Catalogue visibility tab
     Given the following "tool_mucertify > certifications" exist:
       | fullname          | idnumber | category |
       | Certification 000 | CT0      |          |
       | Certification 001 | CT1      | Cat 1    |
       | Certification 002 | CT2      | Cat 2    |
       | Certification 003 | CT3      | Cat 3    |
+    And the following "tool_mucatalog > sections" exist:
+      | name           | status | guestvisible | uservisible | cohortvisible | contextlevel | reference |
+      | Public section | active | 1            | 1           |               |              |           |
+      | Cohort section | active | 0            | 0           | CH1, CH2      | Category     | CAT1      |
+      | Draft section  | draft  | 0            | 1           |               |              |           |
+    And the following "tool_mucatalog > items" exist:
+      | section        | type          | reference         | hiddenbefore           | hiddenafter            |
+      | Public section | certification | Certification 000 |                        |                        |
+      | Cohort section | certification | Certification 001 |                        |                        |
+      | Cohort section | certification | Certification 002 |                        |                        |
+      | Draft section  | certification | Certification 002 | ## 2025-12-24 10:30 ## | ## 2035-01-02 08:05 ## |
     And I log in as "manager1"
     And I am on the "tool_mucertify > All certifications management" page
-    And "Certification 000" row "Public" column of "reportbuilder-table" table should contain "No"
-    And "Certification 001" row "Public" column of "reportbuilder-table" table should contain "No"
-    And "Certification 002" row "Public" column of "reportbuilder-table" table should contain "No"
-    And "Certification 003" row "Public" column of "reportbuilder-table" table should contain "No"
 
     When I follow "Certification 000"
-    And I click on "Catalogue visibility" "link" in the ".secondary-navigation" "css_element"
-    And I press "Edit"
-    And the following muform fields in the "dialog[open]" "css_element" match:
-      | Public             | No             |
-      | Visible to cohorts |                |
-    And I set the following muform fields in the "dialog[open]" "css_element":
-      | Public             | Yes            |
-    And I click on "Update certification" "button" in the "dialog[open]" "css_element"
-    Then I press "Edit"
-    And the following muform fields in the "dialog[open]" "css_element" match:
-      | Public             | Yes            |
-    And I click on "Cancel" "button" in the "dialog[open]" "css_element"
-    And I am on the "tool_mucertify > All certifications management" page
-    And "Certification 000" row "Public" column of "reportbuilder-table" table should contain "Yes"
+    And I follow "Catalogue visibility"
+    Then I should not see "Not included in any catalogue section"
+    And I should see "Section status"
+    And I should see "Visible to"
+    And I should see "Item status"
+    And I should see "System" in the "Public section" "table_row"
+    And I should see "Active" in the "Public section" "table_row"
+    And I should see "Guests, All users" in the "Public section" "table_row"
+    And I should not see "Cohort section"
+    And I should not see "Draft section"
 
-    When I click on "No" "link" in the "Certification 001" "table_row"
-    And I press "Edit"
-    And I set the following muform fields in the "dialog[open]" "css_element":
-      | Visible to cohorts | Cohort 1 |
-    And I click on "Update certification" "button" in the "dialog[open]" "css_element"
-    Then I should see "Cohort 1"
-    And I press "Edit"
-    And I set the following muform fields in the "dialog[open]" "css_element":
-      | Visible to cohorts | Cohort 2 |
-    And I click on "Update certification" "button" in the "dialog[open]" "css_element"
-    And I should see "Cohort 2"
-    And I am on the "tool_mucertify > All certifications management" page
-    And "Certification 001" row "Public" column of "reportbuilder-table" table should contain "No"
+    When I am on the "tool_mucertify > All certifications management" page
+    And I follow "Certification 002"
+    And I follow "Catalogue visibility"
+    Then I should see "Cat 1" in the "Cohort section" "table_row"
+    And I should see "Active" in the "Cohort section" "table_row"
+    And I should see "Cohort 1, Cohort 2" in the "Cohort section" "table_row"
+    And I should see "System" in the "Draft section" "table_row"
+    And I should see "Draft" in the "Draft section" "table_row"
+    And I should see "All users" in the "Draft section" "table_row"
+    And I should not see "Guests" in the "Draft section" "table_row"
+    And I should see "Hidden before"
+    And I should see "Hidden after"
+    And I should see "24/12/25, 10:30" in the "Draft section" "table_row"
+    And I should see "2/01/35, 08:05" in the "Draft section" "table_row"
+    And I should not see "24/12/25" in the "Cohort section" "table_row"
+    And I should not see "2/01/35" in the "Cohort section" "table_row"
+    And I should not see "Public section"
 
-    When I follow "Certification 002"
-    And I click on "Catalogue visibility" "link" in the ".secondary-navigation" "css_element"
-    And I press "Edit"
-    And I set the following muform fields in the "dialog[open]" "css_element":
-      | Visible to cohorts | Cohort 2, Cohort 1 |
-    And I click on "Update certification" "button" in the "dialog[open]" "css_element"
-    Then I should see "Cohort 1"
-    And I should see "Cohort 2"
+    When I am on the "tool_mucertify > All certifications management" page
+    And I follow "Certification 003"
+    And I follow "Catalogue visibility"
+    Then I should see "Not included in any catalogue section"
+    And I should not see "Public section"
+    And I should not see "Cohort section"
 
-    When I am on the "tool_mucertify > Certification catalogue" page
-    Then I should see "Certification 000"
-    And I should not see "Certification 001"
-    And I should not see "Certification 002"
-    And I should not see "Certification 003"
+    When I am on the "tool_mucertify > All certifications management" page
+    And I follow "Certification 001"
+    And I follow "Catalogue visibility"
+    And I click on "Cohort section" "link" in the "Cohort section" "table_row"
+    Then I should see "Cat 1" in the "Management category" definition list item
+    And I should see "Active" in the "Section status" definition list item
+
+    When I am on the "tool_mucertify > All certifications management" page
+    And I follow "Certification 000"
+    And I follow "Catalogue visibility"
+    And I click on "Active" "link" in the "Public section" "table_row"
+    Then I should see "Certification 000" in the "Certification" definition list item
+    And I should see "Active" in the "Item status" definition list item
     And I log out
 
+    When I log in as "viewer1"
+    And I am on the "tool_mucertify > All certifications management" page
+    And I follow "Certification 000"
+    And I follow "Catalogue visibility"
+    Then I should see "Active" in the "Public section" "table_row"
+    And "Public section" "link" should not exist
+    And "Active" "link" should not exist in the "Public section" "table_row"
+
+  @javascript
+  Scenario: Students see certifications in Universal catalogue according to section visibility
+    Given the following "tool_mucertify > certifications" exist:
+      | fullname          | idnumber | category |
+      | Certification 000 | CT0      |          |
+      | Certification 001 | CT1      | Cat 1    |
+      | Certification 002 | CT2      | Cat 2    |
+      | Certification 003 | CT3      | Cat 3    |
+    And the following "tool_mucatalog > sections" exist:
+      | name             | status   | guestvisible | uservisible | cohortvisible |
+      | Public section   | active   | 0            | 1           |               |
+      | Cohort 2 section | active   | 0            | 0           | CH2           |
+      | Cohorts section  | active   | 0            | 0           | CH1, CH2      |
+      | Draft section    | draft    | 0            | 1           |               |
+      | Old section      | archived | 0            | 1           |               |
+    And the following "tool_mucatalog > items" exist:
+      | section          | type          | reference         |
+      | Public section   | certification | Certification 000 |
+      | Cohort 2 section | certification | Certification 001 |
+      | Cohorts section  | certification | Certification 002 |
+      | Draft section    | certification | Certification 003 |
+      | Old section      | certification | Certification 003 |
+
     When I log in as "student1"
-    And I am on the "tool_mucertify > Certification catalogue" page
+    And I am on the "tool_mucatalog > Catalogue All Items" page
     Then I should see "Certification 000"
     And I should not see "Certification 001"
     And I should see "Certification 002"
@@ -119,7 +164,7 @@ Feature: Certification visibility management tests
     And I log out
 
     When I log in as "student2"
-    And I am on the "tool_mucertify > Certification catalogue" page
+    And I am on the "tool_mucatalog > Catalogue All Items" page
     Then I should see "Certification 000"
     And I should see "Certification 001"
     And I should see "Certification 002"
@@ -127,7 +172,7 @@ Feature: Certification visibility management tests
     And I log out
 
     When I log in as "student3"
-    And I am on the "tool_mucertify > Certification catalogue" page
+    And I am on the "tool_mucatalog > Catalogue All Items" page
     Then I should see "Certification 000"
     And I should not see "Certification 001"
     And I should see "Certification 002"
@@ -135,9 +180,78 @@ Feature: Certification visibility management tests
     And I log out
 
     When I log in as "student4"
-    And I am on the "tool_mucertify > Certification catalogue" page
+    And I am on the "tool_mucatalog > Catalogue All Items" page
     Then I should see "Certification 000"
     And I should not see "Certification 001"
     And I should not see "Certification 002"
     And I should not see "Certification 003"
-    And I log out
+
+    When I follow "Certification 000"
+    Then I should see "Certification 000" in the "#tool_mucatalog-item" "css_element"
+    And I should see "Certification" in the "#tool_mucatalog-item" "css_element"
+
+  @javascript
+  Scenario: Manager may add certification to catalogue section from Catalogue visibility tab
+    Given the following "permission overrides" exist:
+      | capability                      | permission | role     | contextlevel | reference |
+      | tool/mucatalog:manage           | Allow      | pmanager | System       |           |
+      | tool/mucatalog:addcertification | Allow      | pmanager | System       |           |
+    And the following "tool_mucertify > certifications" exist:
+      | fullname          | idnumber | category |
+      | Certification 000 | CT0      |          |
+      | Certification 001 | CT1      | Cat 1    |
+    And the following "tool_mucatalog > sections" exist:
+      | name             | status   | guestvisible | uservisible | contextlevel | reference |
+      | Public section   | active   | 0            | 1           |              |           |
+      | Draft section    | draft    | 0            | 1           | Category     | CAT1      |
+      | Archived section | archived | 0            | 1           |              |           |
+    And the following "tool_mucatalog > items" exist:
+      | section        | type          | reference         |
+      | Public section | certification | Certification 000 |
+    And I log in as "manager1"
+    And I am on the "tool_mucertify > All certifications management" page
+
+    When I follow "Certification 000"
+    And I follow "Catalogue visibility"
+    And I should see "Active" in the "Public section" "table_row"
+    And I should not see "Draft section"
+    And I press "Add to catalogue section"
+    And I should see "Certification 000" in the "dialog[open]" "css_element"
+    And I set the following muform fields in the "dialog[open]" "css_element":
+      | Section     | Draft section |
+      | Item status | Draft         |
+    And I click on "Add to catalogue section" "button" in the "dialog[open]" "css_element"
+    Then I should see "Cat 1" in the "Draft section" "table_row"
+    And I should see "All users" in the "Draft section" "table_row"
+    And I should see "Active" in the "Public section" "table_row"
+
+    When I click on "Draft section" "link" in the "Draft section" "table_row"
+    And I click on "Items" "link" in the ".secondary-navigation" "css_element"
+    Then the following should exist in the "reportbuilder-table" table:
+      | Item name         | Item type     |
+      | Certification 000 | Certification |
+
+    When I am on the "tool_mucertify > All certifications management" page
+    And I follow "Certification 001"
+    And I follow "Catalogue visibility"
+    And I should see "Not included in any catalogue section"
+    And I press "Add to catalogue section"
+    And I set the following muform fields in the "dialog[open]" "css_element":
+      | Section | Public section |
+    And I click on "Add to catalogue section" "button" in the "dialog[open]" "css_element"
+    Then I should see "Active" in the "Public section" "table_row"
+    And I should not see "Not included in any catalogue section"
+
+    When I click on "Section management" action from "Catalogue actions" dropdown
+    Then I should see "Section management"
+    And I should see "Draft section"
+    And I should not see "Public section"
+
+    When I log out
+    And I log in as "viewer1"
+    And I am on the "tool_mucertify > All certifications management" page
+    And I follow "Certification 000"
+    And I follow "Catalogue visibility"
+    Then I should see "Public section"
+    And "Add to catalogue section" "button" should not exist
+    And I should not see "Catalogue actions"

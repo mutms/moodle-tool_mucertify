@@ -66,7 +66,7 @@ final class selfassignment extends base {
             return false;
         }
 
-        if (!\tool_mucertify\local\catalogue::is_certification_visible($certification, $userid)) {
+        if (!\tool_mucertify\local\certification::get_catalogue_item($certification, $userid)) {
             return false;
         }
 
@@ -112,8 +112,11 @@ final class selfassignment extends base {
             }
         }
 
-        $url = new \core\url('/admin/tool/mucertify/catalogue/source_selfassignment.php', ['sourceid' => $source->id]);
+        $url = new \core\url('/admin/tool/mucertify/my/source_selfassignment.php', ['sourceid' => $source->id]);
         $button = new \tool_mulib\output\muform\dialog\button($url, get_string('source_selfassignment_assign', 'tool_mucertify'));
+
+        // Open My certification page after sign up.
+        $button->set_submitted_action(\tool_mulib\muform\handler\dialog::ACTION_REDIRECT);
 
         $button = $OUTPUT->render($button);
 

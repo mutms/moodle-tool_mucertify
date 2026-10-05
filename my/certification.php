@@ -84,24 +84,27 @@ if (!$certification || $certification->archived) {
             redirect(new core\url('/admin/tool/mucertify/management/index.php'));
         }
     } else {
-        redirect(new core\url('/admin/tool/mucertify/catalogue/index.php'));
+        redirect(\tool_mucatalog\local\catalogue::get_catalogue_url() ?? new core\url('/'));
     }
 }
 $certificationcontext = context::instance_by_id($certification->contextid);
 
 $assignment = $DB->get_record('tool_mucertify_assignment', ['certificationid' => $certification->id, 'userid' => $user->id]);
-// Make sure the enrolments are 100% up-to-date for the current user,
-// this is where are they going to look first in case of any problems.
-$assignment = \tool_mucertify\local\assignment::sync_current_status($assignment);
+if ($assignment) {
+    // Make sure the enrolments are 100% up-to-date for the current user,
+    // this is where are they going to look first in case of any problems.
+    $assignment = \tool_mucertify\local\assignment::sync_current_status($assignment);
+}
 
 if (!$assignment || $assignment->archived) {
-    if (\tool_mucertify\local\catalogue::is_certification_visible($certification)) {
-        redirect(new \core\url('/admin/tool/mucertify/catalogue/certification.php', ['id' => $id]));
+    $catalogueitemurl = \tool_mucertify\local\certification::get_catalogue_item_url($certification);
+    if ($catalogueitemurl) {
+        redirect($catalogueitemurl);
     } else {
         if (has_capability('tool/mucertify:view', $certificationcontext)) {
             redirect(new \core\url('/admin/tool/mucertify/management/certification.php', ['id' => $certification->id]));
         } else {
-            redirect(new \core\url('/admin/tool/mucertify/catalogue/index.php'));
+            redirect(\tool_mucatalog\local\catalogue::get_catalogue_url() ?? new core\url('/'));
         }
     }
 }

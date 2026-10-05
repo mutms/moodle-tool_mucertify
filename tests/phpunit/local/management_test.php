@@ -109,40 +109,6 @@ final class management_test extends \advanced_testcase {
         $this->assertSame((string)$expected, (string)management::get_management_url());
     }
 
-    public function test_fetch_current_cohorts_menu(): void {
-        /** @var \tool_mucertify_generator $generator */
-        $generator = $this->getDataGenerator()->get_plugin_generator('tool_mucertify');
-
-        $cohort1 = $this->getDataGenerator()->create_cohort(['name' => 'Cohort A']);
-        $cohort2 = $this->getDataGenerator()->create_cohort(['name' => 'Cohort B']);
-        $cohort3 = $this->getDataGenerator()->create_cohort(['name' => 'Cohort C']);
-
-        $certification1 = $generator->create_certification();
-        $certification2 = $generator->create_certification();
-        $certification3 = $generator->create_certification();
-
-        \tool_mucertify\local\certification::update_visibility((object)[
-            'id' => $certification1->id,
-            'publicaccess' => 0,
-            'cohortids' => [$cohort1->id, $cohort2->id],
-        ]);
-        \tool_mucertify\local\certification::update_visibility((object)[
-            'id' => $certification2->id,
-            'publicaccess' => 1,
-            'cohortids' => [$cohort3->id],
-        ]);
-
-        $expected = [
-            $cohort1->id => $cohort1->name,
-            $cohort2->id => $cohort2->name,
-        ];
-        $menu = management::fetch_current_cohorts_menu($certification1->id);
-        $this->assertSame($expected, $menu);
-
-        $menu = management::fetch_current_cohorts_menu($certification3->id);
-        $this->assertSame([], $menu);
-    }
-
     public function test_setup_index_page(): void {
         global $PAGE;
 

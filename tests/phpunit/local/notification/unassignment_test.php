@@ -104,7 +104,7 @@ final class unassignment_test extends \advanced_testcase {
         $this->assertStringContainsString('you have been un-assigned from certification', $message->fullmessage);
         $this->assertSame('tool_mucertify', $message->component);
         $this->assertSame('unassignment_notification', $message->eventtype);
-        $this->assertSame("$CFG->wwwroot/admin/tool/mucertify/catalogue/certification.php?id=$certification->id", $message->contexturl);
+        $this->assertSame("$CFG->wwwroot/admin/tool/mucertify/my/certification.php?id=$certification->id", $message->contexturl);
         $this->assertSame('1', $message->notification);
 
         $sink = $this->redirectMessages();
@@ -118,7 +118,7 @@ final class unassignment_test extends \advanced_testcase {
         $this->assertStringContainsString('you have been un-assigned from certification', $message->fullmessage);
         $this->assertSame('tool_mucertify', $message->component);
         $this->assertSame('unassignment_notification', $message->eventtype);
-        $this->assertSame("$CFG->wwwroot/admin/tool/mucertify/catalogue/certification.php?id=$certification->id", $message->contexturl);
+        $this->assertSame("$CFG->wwwroot/admin/tool/mucertify/my/certification.php?id=$certification->id", $message->contexturl);
         $this->assertSame('1', $message->notification);
 
         \tool_mucertify\local\source\manual::assign_users($certification->id, $source->id, [$user1->id], []);

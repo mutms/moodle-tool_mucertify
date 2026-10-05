@@ -37,12 +37,6 @@ $string['assignment_restore'] = 'Restore assignment';
 $string['assignment_update'] = 'Update assignment';
 $string['assignments'] = 'Assignments';
 $string['assignmentsources'] = 'Assignment sources';
-$string['catalogue'] = 'Certification catalogue';
-$string['catalogue_actions'] = 'Catalogue actions';
-$string['catalogue_dofilter'] = 'Search';
-$string['catalogue_resetfilter'] = 'Clear';
-$string['catalogue_searchtext'] = 'Search text';
-$string['catalogue_tag'] = 'Filter by tag';
 $string['certificates'] = 'Certificates';
 $string['certification'] = 'Certification';
 $string['certification_actions'] = 'Certification actions';
@@ -80,10 +74,6 @@ $string['certificationstatus_valid'] = 'Valid';
 $string['certificationurl'] = 'Certification URL';
 $string['certifieddate'] = 'Certification completion date';
 $string['certifieduntiltemporary'] = 'Temporary certification until';
-$string['cohorts'] = 'Visible to cohorts';
-$string['cohorts_help'] = 'Non-public certifications can be made visible to specified cohort members.
-
-Visibility status does not affect already assigned certifications.';
 $string['columnusedalready'] = 'Column is used already';
 $string['currentcontextonly'] = 'Exclude sub-categories';
 $string['customfields'] = 'Certification custom fields';
@@ -152,7 +142,6 @@ $string['mucertify:delete'] = 'Delete certifications';
 $string['mucertify:edit'] = 'Add and update certifications';
 $string['mucertify:unassign'] = 'Unassign users from certifications';
 $string['mucertify:view'] = 'View certification management';
-$string['mucertify:viewcatalogue'] = 'Access certifications catalogue';
 $string['mucertify:viewusercertifications'] = 'View other users certifications';
 $string['mycertifications'] = 'My certifications';
 $string['never'] = 'Never';
@@ -234,10 +223,6 @@ $string['privacy:metadata:table:tool_mucertify_period'] = 'Certification periods
 $string['privacy:metadata:table:tool_mucertify_request'] = 'Certification requests table';
 $string['program1'] = 'Certification program';
 $string['program2'] = 'Re-certification program';
-$string['publicaccess'] = 'Public';
-$string['publicaccess_help'] = 'Public certifications are visible to all users.
-
-Visibility status does not affect already assigned certifications.';
 $string['purchaseaccess'] = 'Purchase access';
 $string['recertification'] = 'Re-certification';
 $string['recertifications'] = 'Re-certifications';

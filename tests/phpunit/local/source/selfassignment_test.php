@@ -63,9 +63,13 @@ final class selfassignment_test extends \advanced_testcase {
         /** @var \tool_mucertify_generator $generator */
         $generator = $this->getDataGenerator()->get_plugin_generator('tool_mucertify');
 
-        $certification1 = $generator->create_certification(['sources' => ['manual' => [], 'selfassignment' => []], 'publicaccess' => 1]);
+        $certification1 = $generator->create_certification(['sources' => ['manual' => [], 'selfassignment' => []]]);
         $source1m = $DB->get_record('tool_mucertify_source', ['certificationid' => $certification1->id, 'type' => 'manual'], '*', MUST_EXIST);
         $source1a = $DB->get_record('tool_mucertify_source', ['certificationid' => $certification1->id, 'type' => 'selfassignment'], '*', MUST_EXIST);
+        /** @var \tool_mucatalog_generator $cataloggenerator */
+        $cataloggenerator = $this->getDataGenerator()->get_plugin_generator('tool_mucatalog');
+        $section1 = $cataloggenerator->create_section(['uservisible' => 1, 'status' => \tool_mucatalog\local\util::STATUS_ACTIVE]);
+        $item1 = $cataloggenerator->create_item(['sectionid' => $section1->id, 'type' => 'certification', 'referenceid' => $certification1->id]);
 
         $certification2 = $generator->create_certification(['sources' => ['manual' => [], 'selfassignment' => []]]);
         $source2m = $DB->get_record('tool_mucertify_source', ['certificationid' => $certification2->id, 'type' => 'manual'], '*', MUST_EXIST);
@@ -100,22 +104,24 @@ final class selfassignment_test extends \advanced_testcase {
 
         $this->assertFalse(\tool_mucertify\local\source\selfassignment::can_user_request($certification1, $source1a, 0));
 
-        // Must be visible.
+        // Must be visible in catalogue.
 
-        $certification1 = certification::update_visibility((object)['id' => $certification1->id,
-            'publicaccess' => 1]);
+        $section1 = \tool_mucatalog\local\section::update((object)['id' => $section1->id,
+            'uservisible' => 0, 'cohortvisible' => [$cohort1->id]]);
         $this->assertTrue(\tool_mucertify\local\source\selfassignment::can_user_request($certification1, $source1a, $user1->id));
 
-        $certification1 = certification::update_visibility((object)['id' => $certification1->id,
-            'publicaccess' => 0, 'cohortids' => [$cohort1->id]]);
-        $this->assertTrue(\tool_mucertify\local\source\selfassignment::can_user_request($certification1, $source1a, $user1->id));
-
-        $certification1 = certification::update_visibility((object)['id' => $certification1->id,
-            'publicaccess' => 0, 'cohortids' => []]);
+        $section1 = \tool_mucatalog\local\section::update((object)['id' => $section1->id,
+            'uservisible' => 0, 'cohortvisible' => []]);
         $this->assertFalse(\tool_mucertify\local\source\selfassignment::can_user_request($certification1, $source1a, $user1->id));
 
-        $certification1 = certification::update_visibility((object)['id' => $certification1->id,
-            'publicaccess' => 1, 'cohortids' => [$cohort1->id]]);
+        $section1 = \tool_mucatalog\local\section::update((object)['id' => $section1->id,
+            'uservisible' => 1]);
+        $this->assertTrue(\tool_mucertify\local\source\selfassignment::can_user_request($certification1, $source1a, $user1->id));
+
+        $item1 = \tool_mucatalog\local\item\certification::archive($item1->id);
+        $this->assertFalse(\tool_mucertify\local\source\selfassignment::can_user_request($certification1, $source1a, $user1->id));
+
+        $item1 = \tool_mucatalog\local\item\certification::restore($item1->id);
         $this->assertTrue(\tool_mucertify\local\source\selfassignment::can_user_request($certification1, $source1a, $user1->id));
 
         // Assigned already.
@@ -161,9 +167,13 @@ final class selfassignment_test extends \advanced_testcase {
         /** @var \tool_mucertify_generator $generator */
         $generator = $this->getDataGenerator()->get_plugin_generator('tool_mucertify');
 
-        $certification1 = $generator->create_certification(['sources' => ['manual' => [], 'selfassignment' => []], 'publicaccess' => 1]);
+        $certification1 = $generator->create_certification(['sources' => ['manual' => [], 'selfassignment' => []]]);
         $source1m = $DB->get_record('tool_mucertify_source', ['certificationid' => $certification1->id, 'type' => 'manual'], '*', MUST_EXIST);
         $source1a = $DB->get_record('tool_mucertify_source', ['certificationid' => $certification1->id, 'type' => 'selfassignment'], '*', MUST_EXIST);
+        /** @var \tool_mucatalog_generator $cataloggenerator */
+        $cataloggenerator = $this->getDataGenerator()->get_plugin_generator('tool_mucatalog');
+        $section1 = $cataloggenerator->create_section(['uservisible' => 1, 'status' => \tool_mucatalog\local\util::STATUS_ACTIVE]);
+        $item1 = $cataloggenerator->create_item(['sectionid' => $section1->id, 'type' => 'certification', 'referenceid' => $certification1->id]);
 
         $user1 = $this->getDataGenerator()->create_user();
         $user2 = $this->getDataGenerator()->create_user();

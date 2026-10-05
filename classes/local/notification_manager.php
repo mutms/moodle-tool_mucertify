@@ -279,7 +279,7 @@ final class notification_manager extends \tool_mulib\local\notification\manager 
     public static function delete_certification_notifications(stdClass $certification) {
         global $DB;
 
-        if (!property_exists($certification, 'publicaccess')) {
+        if (!property_exists($certification, 'presentationjson')) {
             debugging('Invalid certification parameter', DEBUG_DEVELOPER);
             return;
         }

@@ -36,7 +36,7 @@ use core\exception\invalid_parameter_exception;
  */
 final class get_certifications extends external_api {
     /** @var string[] */
-    public const SEARCH_FIELDS = ['id', 'contextid', 'fullname', 'idnumber', 'publicaccess', 'archived', 'tenantid'];
+    public const SEARCH_FIELDS = ['id', 'contextid', 'fullname', 'idnumber', 'archived', 'tenantid'];
 
     /**
      * Describes the external function arguments.
@@ -49,7 +49,7 @@ final class get_certifications extends external_api {
                 new external_single_structure(
                     [
                         'field' => new external_value(PARAM_ALPHANUM, 'The name of the field to be searched by list of'
-                            . ' acceptable fields is : id, contextid, fullname, idnumber, publicaccess, archived, tenantid'),
+                            . ' acceptable fields is : id, contextid, fullname, idnumber, archived, tenantid'),
                         'value' => new external_value(PARAM_RAW, 'Value of the field to be searched, NULL allowed only for tenantid'),
                     ]
                 ),
@@ -131,17 +131,6 @@ final class get_certifications extends external_api {
                 'type'
             );
             $certification->sources = array_keys($sources);
-            if ($certification->publicaccess) {
-                $certification->cohortids = [];
-            } else {
-                $cohorts = $DB->get_records_menu(
-                    'tool_mucertify_cohort',
-                    ['certificationid' => $certification->id],
-                    'cohortid ASC',
-                    'cohortid'
-                );
-                $certification->cohortids = array_keys($cohorts);
-            }
             $results[] = $certification;
         }
 
@@ -162,7 +151,6 @@ final class get_certifications extends external_api {
                 'idnumber' => new external_value(PARAM_RAW, 'Certification ID'),
                 'description' => new external_value(PARAM_RAW, 'Certification description text (in original text format)'),
                 'descriptionformat' => new external_value(PARAM_INT, 'Certification description text format'),
-                'publicaccess' => new external_value(PARAM_BOOL, 'Public flag'),
                 'archived' => new external_value(PARAM_BOOL, 'Archived flag (archived certifications should not change)'),
                 'programid1' => new external_value(PARAM_INT, 'First program id'),
                 'programid2' => new external_value(PARAM_INT, 'Re-certification program id'),
@@ -173,10 +161,6 @@ final class get_certifications extends external_api {
                 'sources' => new external_multiple_structure(
                     new external_value(PARAM_ALPHANUMEXT, 'Internal source name'),
                     'Enabled assignment sources'
-                ),
-                'cohortids' => new external_multiple_structure(
-                    new external_value(PARAM_INT, 'Cohort id'),
-                    'Visible cohorts for non-public certifications'
                 ),
             ], 'List of certifications')
         );

@@ -94,27 +94,5 @@ final class certification_updated_test extends \advanced_testcase {
         $description = $event->get_description();
         $certificationurl = new \core\url('/admin/tool/mucertify/management/certification.php', ['id' => $certification->id]);
         $this->assertSame($certificationurl->out(false), $event->get_url()->out(false));
-
-        $sink = $this->redirectEvents();
-        $data = (object)[
-            'id' => $certification->id,
-            'publicaccess' => '1',
-        ];
-        $certification = certification::update_visibility($data);
-        $events = $sink->get_events();
-        $sink->close();
-
-        $this->assertCount(1, $events);
-        $event = reset($events);
-        $this->assertInstanceOf(\tool_mucertify\event\certification_updated::class, $event);
-        $this->assertEquals($syscontext->id, $event->contextid);
-        $this->assertSame($certification->id, $event->objectid);
-        $this->assertSame('u', $event->crud);
-        $this->assertSame($event::LEVEL_OTHER, $event->edulevel);
-        $this->assertSame('tool_mucertify_certification', $event->objecttable);
-        $this->assertSame('Certification updated', $event::get_name());
-        $description = $event->get_description();
-        $certificationurl = new \core\url('/admin/tool/mucertify/management/certification.php', ['id' => $certification->id]);
-        $this->assertSame($certificationurl->out(false), $event->get_url()->out(false));
     }
 }

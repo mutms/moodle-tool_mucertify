@@ -136,26 +136,6 @@ final class certification extends base {
             });
 
         $columns[] = (new column(
-            'publicaccess',
-            new lang_string('publicaccess', 'tool_mucertify'),
-            $this->get_entity_name()
-        ))
-            ->add_joins($this->get_joins())
-            ->set_type(column::TYPE_BOOLEAN)
-            ->add_fields("{$certificationalias}.publicaccess, {$certificationalias}.id, {$certificationalias}.contextid")
-            ->set_is_sortable(true)
-            ->set_callback([format::class, 'boolean_as_text'])
-            ->add_callback(static function (string $value, \stdClass $row): string {
-                $context = \context::instance_by_id($row->contextid);
-                if (!has_capability('tool/mucertify:view', $context)) {
-                    return $value;
-                }
-                $url = new \core\url('/admin/tool/mucertify/management/certification_visibility.php', ['id' => $row->id]);
-                $value = \html_writer::link($url, $value);
-                return $value;
-            });
-
-        $columns[] = (new column(
             'archived',
             new lang_string('archived', 'tool_mucertify'),
             $this->get_entity_name()
@@ -245,15 +225,6 @@ final class certification extends base {
             new lang_string('certificationidnumber', 'tool_mucertify'),
             $this->get_entity_name(),
             "{$certificationalias}.idnumber"
-        ))
-            ->add_joins($this->get_joins());
-
-        $filters[] = (new filter(
-            boolean_select::class,
-            'publicaccess',
-            new lang_string('publicaccess', 'tool_mucertify'),
-            $this->get_entity_name(),
-            "{$certificationalias}.publicaccess"
         ))
             ->add_joins($this->get_joins());
 

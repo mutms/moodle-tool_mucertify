@@ -100,7 +100,7 @@ abstract class base extends \tool_mulib\local\notification\notificationtype {
             if (has_capability('tool/mucertify:view', $context, $supervisoruser)) {
                 $a['certification_url'] = (new \core\url('/admin/tool/mucertify/management/assignment.php', ['id' => $assignment->id]))->out(false);
             } else {
-                $a['certification_url'] = (new \core\url('/admin/tool/mucertify/catalogue/certification.php', ['id' => $certification->id]))->out(false);
+                $a['certification_url'] = (new \core\url('/admin/tool/mucertify/my/certification.php', ['id' => $certification->id]))->out(false);
             }
             if (isset($supervisoruser->supervisortitle)) {
                 $a['supervisor_title'] = format_string($supervisoruser->supervisortitle);
@@ -179,7 +179,7 @@ abstract class base extends \tool_mulib\local\notification\notificationtype {
             if (has_capability('tool/mucertify:view', $context, $supervisoruser)) {
                 $a['certification_url'] = (new \core\url('/admin/tool/mucertify/management/assignment.php', ['id' => $assignment->id]))->out(false);
             } else {
-                $a['certification_url'] = (new \core\url('/admin/tool/mucertify/catalogue/certification.php', ['id' => $certification->id]))->out(false);
+                $a['certification_url'] = (new \core\url('/admin/tool/mucertify/my/certification.php', ['id' => $certification->id]))->out(false);
             }
             if (isset($supervisoruser->supervisortitle)) {
                 $a['supervisor_title'] = format_string($supervisoruser->supervisortitle);

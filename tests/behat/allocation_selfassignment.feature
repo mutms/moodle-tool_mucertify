@@ -56,11 +56,19 @@ Feature: Certification self-assignment tests
       | Program 002 | PR2      | Cat 2    | mucertify |
       | Program 003 | PR3      | Cat 3    | mucertify |
     And the following "tool_mucertify > certifications" exist:
-      | fullname          | idnumber | category | program1 | cohorts  | publicaccess |
-      | Certification 000 | CT0      |          | PR0      | Cohort 2 | 0            |
-      | Certification 001 | CT1      | Cat 1    | PR1      |          | 1            |
-      | Certification 002 | CT2      | Cat 2    | PR2      |          | 0            |
-      | Certification 003 | CT3      | Cat 3    | PR3      |          | 0            |
+      | fullname          | idnumber | category | program1 |
+      | Certification 000 | CT0      |          | PR0      |
+      | Certification 001 | CT1      | Cat 1    | PR1      |
+      | Certification 002 | CT2      | Cat 2    | PR2      |
+      | Certification 003 | CT3      | Cat 3    | PR3      |
+    And the following "tool_mucatalog > sections" exist:
+      | name           | status | guestvisible | uservisible | cohortvisible |
+      | Public section | active | 0            | 1           |               |
+      | Cohort section | active | 0            | 0           | CH2           |
+    And the following "tool_mucatalog > items" exist:
+      | section        | type          | reference         |
+      | Cohort section | certification | Certification 000 |
+      | Public section | certification | Certification 001 |
 
   @javascript
   Scenario: Student may self assign to certification without a key
@@ -77,7 +85,7 @@ Feature: Certification self-assignment tests
     And I log out
 
     When I log in as "student2"
-    And I am on the "tool_mucertify > Certification catalogue" page
+    And I am on the "tool_mucatalog > Catalogue All Items" page
     And I should see "Certification 000"
     And I should see "Certification 001"
     And I follow "Certification 000"
@@ -96,7 +104,7 @@ Feature: Certification self-assignment tests
     And I log out
 
     When I log in as "student2"
-    And I am on the "tool_mucertify > Certification catalogue" page
+    And I am on the "tool_mucatalog > Catalogue All Items" page
     And I should see "Certification 000"
     And I should see "Certification 001"
     And I follow "Certification 000"
@@ -123,7 +131,7 @@ Feature: Certification self-assignment tests
     And I log out
 
     When I log in as "student2"
-    And I am on the "tool_mucertify > Certification catalogue" page
+    And I am on the "tool_mucatalog > Catalogue All Items" page
     And I follow "Certification 000"
     And I press "Sign up"
     And I click on "Sign up" "button" in the "dialog[open]" "css_element"
@@ -154,20 +162,46 @@ Feature: Certification self-assignment tests
     And I log out
 
     And I log in as "student1"
-    And I am on the "tool_mucertify > Certification catalogue" page
+    And I am on the "tool_mucatalog > Catalogue All Items" page
     And I follow "Certification 001"
     And I press "Sign up"
     And I click on "Sign up" "button" in the "dialog[open]" "css_element"
     And I should see "Not certified" in the "Certification status" definition list item
     And I log out
     And I log in as "student2"
-    And I am on the "tool_mucertify > Certification catalogue" page
+    And I am on the "tool_mucatalog > Catalogue All Items" page
     And I follow "Certification 001"
     And I press "Sign up"
     And I click on "Sign up" "button" in the "dialog[open]" "css_element"
     And I log out
 
     When I log in as "student3"
-    And I am on the "tool_mucertify > Certification catalogue" page
+    And I am on the "tool_mucatalog > Catalogue All Items" page
     And I follow "Certification 001"
     Then I should see "Maximum number of users self-assigned already"
+
+  @javascript
+  Scenario: Student cannot see or sign up to certification in catalogue section not visible to them
+    Given I log in as "manager1"
+    And I am on the "tool_mucertify > All certifications management" page
+    And I follow "Certification 000"
+    And I follow "Assignment settings"
+    And I click on "Update Self assignment" "link"
+    And I set the following muform fields in the "dialog[open]" "css_element":
+      | Active | Yes |
+    And I click on "Update" "button" in the "dialog[open]" "css_element"
+    And I should see "Active; Sign ups are allowed" in the "Self assignment" definition list item
+    And I log out
+
+    When I log in as "student1"
+    And I am on the "tool_mucatalog > Catalogue All Items" page
+    Then I should see "Certification 001"
+    And I should not see "Certification 000"
+    And I log out
+
+    When I log in as "student4"
+    And I am on the "tool_mucatalog > Catalogue All Items" page
+    And I should see "Certification 001"
+    And I follow "Certification 000"
+    Then I should see "Certification 000" in the "#tool_mucatalog-item" "css_element"
+    And "Sign up" "button" should exist in the ".item-detail-actions" "css_element"

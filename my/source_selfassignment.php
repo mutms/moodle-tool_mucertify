@@ -15,10 +15,9 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 // phpcs:disable moodle.Files.BoilerplateComment.CommentEndedTooSoon
-// phpcs:disable moodle.Files.LineLength.TooLong
 
 /**
- * certification management interface.
+ * Confirm self-assignment to certification.
  *
  * @package    tool_mucertify
  * @copyright  2023 Open LMS (https://www.openlms.net/)
@@ -27,8 +26,6 @@
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use tool_mucertify\local\certification;
-use tool_mucertify\local\management;
 use tool_mulib\muform\handler;
 
 /** @var moodle_database $DB */
@@ -36,43 +33,43 @@ use tool_mulib\muform\handler;
 /** @var core_renderer $OUTPUT */
 /** @var stdClass $CFG */
 /** @var stdClass $COURSE */
+/** @var stdClass $USER */
 
 require('../../../../config.php');
 
-$id = required_param('id', PARAM_INT);
+$sourceid = required_param('sourceid', PARAM_INT);
+
+$PAGE->set_context(context_system::instance());
+$PAGE->set_url(new \core\url('/admin/tool/mucertify/my/source_selfassignment.php', ['sourceid' => $sourceid]));
 
 require_login();
 
-$certification = $DB->get_record('tool_mucertify_certification', ['id' => $id], '*', MUST_EXIST);
-$context = context::instance_by_id($certification->contextid);
-require_capability('tool/mucertify:edit', $context);
+if (!\tool_mulib\local\mulib::is_mucertify_active()) {
+    redirect(new \core\url('/'));
+}
 
-$currenturl = new \core\url('/admin/tool/mucertify/management/certification_visibility_edit.php', ['id' => $id]);
-$PAGE->set_context($context);
-$PAGE->set_url($currenturl);
-$title = get_string('certification_update', 'tool_mucertify');
-$PAGE->set_title($title);
-$PAGE->set_heading($title);
+$source = $DB->get_record('tool_mucertify_source', ['id' => $sourceid, 'type' => 'selfassignment'], '*', MUST_EXIST);
+$certification = $DB->get_record('tool_mucertify_certification', ['id' => $source->certificationid], '*', MUST_EXIST);
+$certificationcontext = context::instance_by_id($certification->contextid);
+
+if (!\tool_mucertify\local\source\selfassignment::can_user_request($certification, $source, $USER->id)) {
+    redirect(new \core\url('/admin/tool/mucertify/my/certification.php', ['id' => $certification->id]));
+}
+
+// Certification page redirects back to catalogue if user is not assigned.
+$returnurl = new \core\url('/admin/tool/mucertify/my/certification.php', ['id' => $certification->id]);
 
 $handler = handler::from_request();
 
-$current = [
-    'id' => $certification->id,
-    'publicaccess' => $certification->publicaccess,
-    'cohortids' => array_keys(management::fetch_current_cohorts_menu($certification->id)),
-];
-$form = new \tool_mucertify\local\form\certification_visibility_edit($currenturl, $current);
-
-$returnurl = new \core\url('/admin/tool/mucertify/management/certification_visibility.php', ['id' => $certification->id]);
+$form = new tool_mucertify\local\form\source_selfassignment($PAGE->url, [], ['source' => $source]);
 
 if ($form->is_cancelled()) {
     $handler->cancelled($returnurl);
 }
 
 if ($data = $form->get_data()) {
-    $data->id = $certification->id;
-    certification::update_visibility($data);
+    tool_mucertify\local\source\selfassignment::signup($certification->id, $source->id);
     $handler->submitted($returnurl);
 }
 
-$handler->render($form);
+$handler->render($form, get_string('source_selfassignment_assign', 'tool_mucertify'));

@@ -67,7 +67,7 @@ final class approval extends base {
             return false;
         }
 
-        if (!\tool_mucertify\local\catalogue::is_certification_visible($certification, $userid)) {
+        if (!\tool_mucertify\local\certification::get_catalogue_item($certification, $userid)) {
             return false;
         }
 
@@ -115,7 +115,7 @@ final class approval extends base {
             }
         }
 
-        $url = new \core\url('/admin/tool/mucertify/catalogue/source_approval_request.php', ['sourceid' => $source->id]);
+        $url = new \core\url('/admin/tool/mucertify/my/source_approval_request.php', ['sourceid' => $source->id]);
         $button = new \tool_mulib\output\muform\dialog\button($url, get_string('source_approval_makerequest', 'tool_mucertify'));
 
         $button = $OUTPUT->render($button);
@@ -223,7 +223,7 @@ final class approval extends base {
             $a->user_lastname = s($user->lastname);
             $a->certification_fullname = format_string($certification->fullname);
             $a->certification_idnumber = s($certification->idnumber);
-            $a->certification_url = (new \core\url('/admin/tool/mucertify/catalogue/certification.php', ['id' => $certification->id]))->out(false);
+            $a->certification_url = (new \core\url('/admin/tool/mucertify/my/certification.php', ['id' => $certification->id]))->out(false);
             $a->requests_url = (new \core\url('/admin/tool/mucertify/management/source_approval_requests.php', ['id' => $certification->id]))->out(false);
 
             $subject = get_string('source_approval_notification_approval_request_subject', 'tool_mucertify', $a);
@@ -330,7 +330,7 @@ final class approval extends base {
         $a->user_lastname = s($user->lastname);
         $a->certification_fullname = format_string($certification->fullname);
         $a->certification_idnumber = s($certification->idnumber);
-        $a->certification_url = (new \core\url('/admin/tool/mucertify/catalogue/certification.php', ['id' => $certification->id]))->out(false);
+        $a->certification_url = (new \core\url('/admin/tool/mucertify/my/certification.php', ['id' => $certification->id]))->out(false);
         $a->reason = $reason;
 
         $subject = get_string('source_approval_notification_approval_reject_subject', 'tool_mucertify', $a);

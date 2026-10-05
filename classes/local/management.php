@@ -64,25 +64,6 @@ final class management {
     }
 
     /**
-     * Fetch cohorts that allow certification visibility.
-     *
-     * @param int $certificationid
-     * @return array
-     */
-    public static function fetch_current_cohorts_menu(int $certificationid): array {
-        global $DB;
-
-        $sql = "SELECT c.id, c.name
-                  FROM {cohort} c
-                  JOIN {tool_mucertify_cohort} pc ON c.id = pc.cohortid
-                 WHERE pc.certificationid = :certificationid
-              ORDER BY c.name ASC, c.id ASC";
-        $params = ['certificationid' => $certificationid];
-
-        return $DB->get_records_sql_menu($sql, $params);
-    }
-
-    /**
      * Set up $PAGE for certification management UI.
      *
      * @param url $pageurl

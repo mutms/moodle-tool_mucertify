@@ -49,10 +49,6 @@ final class get_certifications_test extends \advanced_testcase {
         $category1 = $this->getDataGenerator()->create_category([]);
         $catcontext1 = \context_coursecat::instance($category1->id);
 
-        $cohort1 = $this->getDataGenerator()->create_cohort();
-        $cohort2 = $this->getDataGenerator()->create_cohort();
-        $cohort3 = $this->getDataGenerator()->create_cohort();
-
         $program1 = $programgenerator->create_program([
             'sources' => ['mucertify' => []],
         ]);
@@ -74,7 +70,6 @@ final class get_certifications_test extends \advanced_testcase {
             'idnumber' => 'CT1',
             'contextid' => $syscontext->id,
             'sources' => 'manual',
-            'publicaccess' => 1,
             'programid1' => $program1->id,
             'programid2' => $program2->id,
             'recertify' => 604800,
@@ -84,8 +79,6 @@ final class get_certifications_test extends \advanced_testcase {
             'idnumber' => 'CT2',
             'contextid' => $catcontext1->id,
             'sources' => 'manual',
-            'publicaccess' => 0,
-            'cohorts' => [$cohort1->id, $cohort2->id],
             'programid1' => $program2->id,
         ]);
 
@@ -99,7 +92,6 @@ final class get_certifications_test extends \advanced_testcase {
         $this->assertSame((int)$certification1->id, $result->id);
         $this->assertSame($certification1->fullname, $result->fullname);
         $this->assertSame($certification1->idnumber, $result->idnumber);
-        $this->assertSame(true, $result->publicaccess);
         $this->assertSame(false, $result->archived);
         $this->assertSame((int)$program1->id, $result->programid1);
         $this->assertSame((int)$program2->id, $result->programid2);
@@ -108,18 +100,15 @@ final class get_certifications_test extends \advanced_testcase {
         $this->assertStringStartsWith('{', $result->periodsjson);
         $this->assertSame((int)$certification1->timecreated, $result->timecreated);
         $this->assertSame(['manual'], $result->sources);
-        $this->assertSame([], $result->cohortids);
 
         $result = (object)$results[1];
         $this->assertSame((int)$certification2->id, $result->id);
-        $this->assertSame(false, $result->publicaccess);
         $this->assertSame(false, $result->archived);
         $this->assertSame((int)$program2->id, $result->programid1);
         $this->assertSame(null, $result->programid2);
         $this->assertSame(null, $result->recertify);
         $this->assertStringStartsWith('{', $result->periodsjson);
         $this->assertSame(['manual'], $result->sources);
-        $this->assertEquals([$cohort1->id, $cohort2->id], $result->cohortids);
 
         $this->setUser($user1);
 
@@ -154,11 +143,6 @@ final class get_certifications_test extends \advanced_testcase {
         $this->assertSame((int)$certification2->id, $results[0]['id']);
 
         $response = get_certifications::execute([['field' => 'idnumber', 'value' => $certification2->idnumber]]);
-        $results = get_certifications::clean_returnvalue(get_certifications::execute_returns(), $response);
-        $this->assertCount(1, $results);
-        $this->assertSame((int)$certification2->id, $results[0]['id']);
-
-        $response = get_certifications::execute([['field' => 'publicaccess', 'value' => 0]]);
         $results = get_certifications::clean_returnvalue(get_certifications::execute_returns(), $response);
         $this->assertCount(1, $results);
         $this->assertSame((int)$certification2->id, $results[0]['id']);

@@ -29,15 +29,6 @@
 defined('MOODLE_INTERNAL') || die();
 
 $capabilities = [
-    /* Access certification catalogue - catalogue uses certification.publicaccess, visible cohorts and own assignments. */
-    'tool/mucertify:viewcatalogue' => [
-        'captype' => 'read',
-        'contextlevel' => CONTEXT_SYSTEM,
-        'archetypes' => [
-            'user' => CAP_ALLOW,
-        ],
-    ],
-
 
     /* View certifications in profile of other users */
     'tool/mucertify:viewusercertifications' => [

@@ -53,20 +53,22 @@ $PAGE->set_docs_path('https://github.com/mutms/moodle-tool_mucertify/wiki/Certif
 /** @var \tool_mucertify\output\management\renderer $managementoutput */
 $managementoutput = $PAGE->get_renderer('tool_mucertify', 'management');
 
-echo $OUTPUT->header();
-
-$buttons = [];
-if (has_capability('tool/mucertify:edit', $context)) {
-    $editurl = new \core\url('/admin/tool/mucertify/management/certification_visibility_edit.php', ['id' => $certification->id]);
-    $editbutton = new tool_mulib\output\muform\dialog\button($editurl, get_string('edit'));
-    $buttons[] = $OUTPUT->render($editbutton);
+$actions = new \tool_mulib\output\header_actions(get_string('management_actions', 'tool_mucatalog'));
+$sectionsurl = \tool_mucatalog\local\management::get_sections_management_url($context);
+if ($sectionsurl) {
+    $actions->get_dropdown()->add_item(get_string('management_sections', 'tool_mucatalog'), $sectionsurl, new \core\output\pix_icon('i/menubars', ''));
 }
+if ($actions->has_items()) {
+    $PAGE->add_header_action($OUTPUT->render($actions));
+}
+
+echo $OUTPUT->header();
 
 echo $managementoutput->render_certification_visibility($certification);
 
-if ($buttons) {
-    $buttons = implode(' ', $buttons);
-    echo $OUTPUT->box($buttons, 'buttons');
+$addbutton = \tool_mucatalog\local\management::get_reference_add_button('certification', $certification->id, $currenturl);
+if ($addbutton) {
+    echo $OUTPUT->box($OUTPUT->render($addbutton), 'buttons');
 }
 
 echo $OUTPUT->footer();

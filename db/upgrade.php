@@ -124,5 +124,66 @@ function xmldb_tool_mucertify_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026022045.02, 'tool', 'mucertify');
     }
 
+    if ($oldversion < 2026100553) {
+        $table = new xmldb_table('tool_mucertify_certification');
+        $field = new xmldb_field('publicaccess');
+        $cohorttable = new xmldb_table('tool_mucertify_cohort');
+
+        // Migrate legacy certification catalogue to Universal catalogue sections,
+        // tool_mucatalog is guaranteed to be installed or upgraded already.
+        if ($dbman->field_exists($table, $field)) {
+            $cohortsexist = $dbman->table_exists($cohorttable);
+
+            // Ignore archived and anything with invalid context.
+            $sql = "SELECT p.id, p.contextid, p.publicaccess
+                      FROM {tool_mucertify_certification} p
+                      JOIN {context} ctx ON ctx.id = p.contextid AND ctx.contextlevel IN (:syslevel, :catlevel)
+                     WHERE p.archived = 0
+                  ORDER BY p.contextid ASC, p.fullname ASC, p.id ASC";
+            $records = $DB->get_records_sql($sql, ['syslevel' => CONTEXT_SYSTEM, 'catlevel' => CONTEXT_COURSECAT]);
+
+            $trans = $DB->start_delegated_transaction();
+            foreach ($records as $record) {
+                $cohortids = [];
+                if (!$record->publicaccess) {
+                    if (!$cohortsexist) {
+                        continue;
+                    }
+                    // Ignore deleted cohorts and cohorts with invalid context.
+                    $sql = "SELECT c.id
+                              FROM {tool_mucertify_cohort} pc
+                              JOIN {cohort} c ON c.id = pc.cohortid
+                              JOIN {context} ctx ON ctx.id = c.contextid
+                             WHERE pc.certificationid = :id
+                          ORDER BY c.id ASC";
+                    $cohortids = $DB->get_fieldset_sql($sql, ['id' => $record->id]);
+                    if (!$cohortids) {
+                        // Not visible to anybody in legacy catalogue.
+                        continue;
+                    }
+                }
+                \tool_mucatalog\local\migration::add_migrated_item(
+                    'certification',
+                    (int)$record->id,
+                    (int)$record->contextid,
+                    (bool)$record->publicaccess,
+                    $cohortids
+                );
+            }
+            $trans->allow_commit();
+            unset($records);
+        }
+
+        if ($dbman->table_exists($cohorttable)) {
+            $dbman->drop_table($cohorttable);
+        }
+
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->drop_field($table, $field);
+        }
+
+        upgrade_plugin_savepoint(true, 2026100553, 'tool', 'mucertify');
+    }
+
     return true;
 }

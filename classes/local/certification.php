@@ -117,7 +117,7 @@ final class certification {
         $data->presentationjson = util::json_encode([]);
         unset($data->presentation);
 
-        $data->publicaccess = isset($data->publicaccess) ? (int)(bool)$data->publicaccess : 0;
+        unset($data->publicaccess); // Legacy catalogue visibility.
         $data->archived = isset($data->archived) ? (int)(bool)$data->archived : 0;
 
         $data->periodsjson = util::json_encode(self::get_periods_defaults());
@@ -497,63 +497,6 @@ final class certification {
     }
 
     /**
-     * Update certification visibility.
-     *
-     * @param stdClass $data
-     * @return stdClass certification record
-     */
-    public static function update_visibility(stdClass $data): stdClass {
-        global $DB;
-
-        if (
-            (isset($data->cohortids) && !is_array($data->cohortids))
-            || empty($data->id) || !isset($data->publicaccess)
-        ) {
-            throw new \coding_exception('Invalid data');
-        }
-
-        if (isset($data->cohorts)) {
-            debugging('use cohortids key instead of cohorts', DEBUG_DEVELOPER);
-        }
-
-        $trans = $DB->start_delegated_transaction();
-
-        $oldcertification = $DB->get_record('tool_mucertify_certification', ['id' => $data->id], '*', MUST_EXIST);
-
-        if ($oldcertification->publicaccess != $data->publicaccess) {
-            $DB->set_field('tool_mucertify_certification', 'publicaccess', (int)(bool)$data->publicaccess, ['id' => $data->id]);
-        }
-
-        if (isset($data->cohortids)) {
-            $oldcohorts = management::fetch_current_cohorts_menu($data->id);
-            $oldcohorts = array_keys($oldcohorts);
-            $oldcohorts = array_flip($oldcohorts);
-            foreach ($data->cohortids as $cid) {
-                if (isset($oldcohorts[$cid])) {
-                    unset($oldcohorts[$cid]);
-                    continue;
-                }
-                $record = (object)['certificationid' => $data->id, 'cohortid' => $cid];
-                $DB->insert_record('tool_mucertify_cohort', $record);
-            }
-            foreach ($oldcohorts as $cid => $unused) {
-                $DB->delete_records('tool_mucertify_cohort', ['certificationid' => $data->id, 'cohortid' => $cid]);
-            }
-        }
-
-        $certification = $DB->get_record('tool_mucertify_certification', ['id' => $oldcertification->id], '*', MUST_EXIST);
-
-        $trans->allow_commit();
-
-        \tool_mucertify\event\certification_updated::create_from_certification($certification)->trigger();
-
-        \tool_mucertify\local\assignment::fix_assignment_sources($certification->id, null);
-        \tool_muprog\local\source\mucertify::sync_certifications($certification->id, null);
-
-        return $certification;
-    }
-
-    /**
      * Update certification period settings.
      *
      * @param stdClass $data
@@ -787,7 +730,6 @@ final class certification {
         }
         unset($sources);
         $DB->delete_records('tool_mucertify_source', ['certificationid' => $certification->id]);
-        $DB->delete_records('tool_mucertify_cohort', ['certificationid' => $certification->id]);
         $DB->delete_records('tool_mucertify_period', ['certificationid' => $certification->id]);
 
         // Certification details last.
@@ -982,5 +924,131 @@ final class certification {
             self::SINCE_WINDOWDUE => new \lang_string('windowduedate', 'tool_mucertify'),
             self::SINCE_WINDOWEND => new \lang_string('windowenddate', 'tool_mucertify'),
         ];
+    }
+
+    /**
+     * Returns first Universal catalogue item with this certification that the user may see.
+     *
+     * @param stdClass $certification
+     * @param int|null $userid defaults to current user
+     * @return stdClass|null catalogue item record
+     */
+    public static function get_catalogue_item(stdClass $certification, ?int $userid = null): ?stdClass {
+        global $USER;
+
+        if ($userid === null) {
+            $userid = (int)$USER->id;
+        }
+
+        if ($certification->archived) {
+            return null;
+        }
+
+        $tenantid = null;
+        if (\tool_mulib\local\mulib::is_mutenancy_active()) {
+            if ($userid == $USER->id) {
+                $tenantid = \tool_mutenancy\local\tenancy::get_current_tenantid();
+            } else {
+                $tenantid = \tool_mutenancy\local\tenancy::get_user_tenantid($userid);
+            }
+            if ($tenantid) {
+                $certificationcontext = \context::instance_by_id($certification->contextid);
+                if ($certificationcontext->tenantid && $certificationcontext->tenantid != $tenantid) {
+                    return null;
+                }
+            }
+        }
+
+        return \tool_mucatalog\local\catalogue::get_visible_reference_item('certification', (int)$certification->id, $userid, $tenantid);
+    }
+
+    /**
+     * Returns URL of the first Universal catalogue item with this certification that the current user may see.
+     *
+     * @param stdClass $certification
+     * @return \core\url|null
+     */
+    public static function get_catalogue_item_url(stdClass $certification): ?\core\url {
+        $item = self::get_catalogue_item($certification);
+        if (!$item) {
+            return null;
+        }
+        return new \core\url('/admin/tool/mucatalog/item.php', ['id' => $item->id]);
+    }
+
+    /**
+     * Returns list of actions available to current user in Universal catalogue.
+     *
+     * @param stdClass $certification
+     * @return string[] html fragments
+     */
+    public static function get_catalogue_actions(stdClass $certification): array {
+        global $DB;
+
+        $actions = [];
+        /** @var \tool_mucertify\local\source\base[] $sourceclasses */ // Type hack.
+        $sourceclasses = assignment::get_source_classes();
+        foreach ($sourceclasses as $type => $classname) {
+            $source = $DB->get_record('tool_mucertify_source', ['certificationid' => $certification->id, 'type' => $type]);
+            if (!$source) {
+                continue;
+            }
+            $actions = array_merge($actions, $classname::get_catalogue_actions($certification, $source));
+        }
+
+        return $actions;
+    }
+
+    /**
+     * Render certifications with a tag that current user is assigned to
+     * or can see in Universal catalogue.
+     *
+     * @param int $tagid
+     * @param bool $exclusive
+     * @param int $limitfrom
+     * @param int $limitnum
+     * @return array ['content' => string, 'totalcount' => int]
+     */
+    public static function get_tagged_certifications(int $tagid, bool $exclusive, int $limitfrom, int $limitnum): array {
+        global $DB, $USER, $OUTPUT;
+
+        // NOTE: When learners browse certifications we ignore the contexts, certifications have a flat structure.
+
+        $sql = "SELECT c.*, ca.id AS assignmentid
+                  FROM {tool_mucertify_certification} c
+                  JOIN {tag_instance} tt ON tt.itemid = c.id AND tt.itemtype = 'tool_mucertify_certification' AND tt.tagid = :tagid AND tt.component = 'tool_mucertify'
+             LEFT JOIN {tool_mucertify_assignment} ca ON ca.certificationid = c.id AND ca.userid = :userid AND ca.archived = 0
+                 WHERE c.archived = 0
+                       AND (ca.id IS NOT NULL OR EXISTS (
+                            SELECT 'x'
+                              FROM {tool_mucatalog_item} ci
+                             WHERE ci.type = 'certification' AND ci.referenceid = c.id))
+              ORDER BY c.fullname ASC, c.id ASC";
+        $params = ['tagid' => $tagid, 'userid' => $USER->id];
+        $certifications = $DB->get_records_sql($sql, $params);
+
+        // Catalogue visibility rules are not simple, luckily there should not be many certifications with the same tag.
+        foreach ($certifications as $k => $certification) {
+            if ($certification->assignmentid) {
+                continue;
+            }
+            if (!self::get_catalogue_item($certification)) {
+                unset($certifications[$k]);
+            }
+        }
+
+        $totalcount = count($certifications);
+        $certifications = array_slice($certifications, $limitfrom, $limitnum);
+
+        $result = [];
+        foreach ($certifications as $certification) {
+            $fullname = format_string($certification->fullname);
+            // Certification page redirects to catalogue if user is not assigned.
+            $url = new \core\url('/admin/tool/mucertify/my/certification.php', ['id' => $certification->id]);
+            $icon = $OUTPUT->pix_icon('certification', '', 'tool_mucertify');
+            $result[] = '<div class="certification-link">' . $icon . \html_writer::link($url, $fullname) . '</div>';
+        }
+
+        return ['content' => implode('', $result), 'totalcount' => $totalcount];
     }
 }

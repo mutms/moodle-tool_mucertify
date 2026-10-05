@@ -85,7 +85,6 @@ final class certification_test extends \advanced_testcase {
         $this->assertSame('', $certification->description);
         $this->assertSame('1', $certification->descriptionformat);
         $this->assertSame('[]', $certification->presentationjson);
-        $this->assertSame('0', $certification->publicaccess);
         $this->assertSame('0', $certification->archived);
         $this->assertSame(null, $certification->programid1);
         $this->assertSame(null, $certification->programid2);
@@ -118,7 +117,6 @@ final class certification_test extends \advanced_testcase {
         $this->assertSame('some desc', $certification->description);
         $this->assertSame('4', $certification->descriptionformat);
         $this->assertSame('[]', $certification->presentationjson);
-        $this->assertSame('0', $certification->publicaccess);
         $this->assertSame('0', $certification->archived);
         $this->assertSame($program1->id, $certification->programid1);
         $this->assertSame($program2->id, $certification->programid2);
@@ -184,7 +182,6 @@ final class certification_test extends \advanced_testcase {
             'id' => $certification->id,
             'fullname' => 'Certifikace 2',
             'idnumber' => 'c2',
-            'publicaccess' => '1',
             'description' => 'some desc',
             'descriptionformat' => \FORMAT_MARKDOWN,
             'contextid' => $catcontext->id,
@@ -200,7 +197,6 @@ final class certification_test extends \advanced_testcase {
         $this->assertSame('some desc', $certification2->description);
         $this->assertSame('4', $certification2->descriptionformat);
         $this->assertSame('[]', $certification2->presentationjson);
-        $this->assertSame('0', $certification2->publicaccess);
         $this->assertSame('0', $certification2->archived);
         $this->assertSame(null, $certification2->programid1);
         $this->assertSame(null, $certification2->programid2);
@@ -452,91 +448,6 @@ final class certification_test extends \advanced_testcase {
         $this->assertSame('0', $certification->archived);
     }
 
-    public function test_update_visibility(): void {
-        global $DB;
-
-        $syscontext = \context_system::instance();
-
-        $category = $this->getDataGenerator()->create_category();
-        $catcontext = \context_coursecat::instance($category->id);
-
-        /** @var \tool_mucertify_generator $generator */
-        $generator = $this->getDataGenerator()->get_plugin_generator('tool_mucertify');
-        /** @var \tool_muprog_generator $programgenerator */
-        $programgenerator = $this->getDataGenerator()->get_plugin_generator('tool_muprog');
-
-        $expectedperiods = (array)certification::get_periods_defaults();
-
-        $program1 = $programgenerator->create_program();
-        $program2 = $programgenerator->create_program();
-        $program3 = $programgenerator->create_program();
-
-        $cohort1 = $this->getDataGenerator()->create_cohort();
-        $cohort2 = $this->getDataGenerator()->create_cohort();
-        $cohort3 = $this->getDataGenerator()->create_cohort();
-
-        $data = [
-            'fullname' => 'Certifikace 1',
-            'idnumber' => 'c1',
-            'contextid' => $syscontext->id,
-            'publicaccess' => '0',
-        ];
-        $certification = certification::create((object)$data);
-
-        $data = [
-            'id' => $certification->id,
-            'fullname' => 'Certifikace 2',
-            'idnumber' => 'c2',
-            'archived' => '1',
-            'publicaccess' => '1',
-            'description' => 'some desc',
-            'descriptionformat' => \FORMAT_MARKDOWN,
-            'contextid' => $catcontext->id,
-            'programid1' => $program1->id,
-            'programid2' => $program2->id,
-            'recertify' => '98765',
-        ];
-        $certification2 = certification::update_visibility((object)$data);
-        $this->assertInstanceOf('stdClass', $certification2);
-        $this->assertSame($certification->contextid, $certification2->contextid);
-        $this->assertSame($certification->fullname, $certification2->fullname);
-        $this->assertSame($certification->idnumber, $certification2->idnumber);
-        $this->assertSame($certification->description, $certification2->description);
-        $this->assertSame($certification->descriptionformat, $certification2->descriptionformat);
-        $this->assertSame('[]', $certification2->presentationjson);
-        $this->assertSame('1', $certification2->publicaccess);
-        $this->assertSame('0', $certification2->archived);
-        $this->assertSame(null, $certification2->programid1);
-        $this->assertSame(null, $certification2->programid2);
-        $this->assertSame(null, $certification2->recertify);
-        $this->assertSame($expectedperiods, json_decode($certification2->periodsjson, true));
-        $this->assertSame($certification->timecreated, $certification2->timecreated);
-
-        $data = [
-            'id' => $certification->id,
-            'cohortids' => [$cohort2->id, $cohort1->id],
-            'publicaccess' => 0,
-        ];
-        $certification = certification::update_visibility((object)$data);
-        $cs = $DB->get_records('tool_mucertify_cohort', ['certificationid' => $certification->id], 'cohortid ASC');
-        $this->assertCount(2, $cs);
-        $cs = array_values($cs);
-        $this->assertSame($cohort1->id, $cs[0]->cohortid);
-        $this->assertSame($cohort2->id, $cs[1]->cohortid);
-
-        $data = [
-            'id' => $certification->id,
-            'cohortids' => [$cohort2->id, $cohort3->id],
-            'publicaccess' => 0,
-        ];
-        $certification = certification::update_visibility((object)$data);
-        $cs = $DB->get_records('tool_mucertify_cohort', ['certificationid' => $certification->id], 'cohortid ASC');
-        $this->assertCount(2, $cs);
-        $cs = array_values($cs);
-        $this->assertSame($cohort2->id, $cs[0]->cohortid);
-        $this->assertSame($cohort3->id, $cs[1]->cohortid);
-    }
-
     public function test_update_settings(): void {
         $category = $this->getDataGenerator()->create_category();
         $catcontext = \context_coursecat::instance($category->id);
@@ -556,7 +467,6 @@ final class certification_test extends \advanced_testcase {
             'fullname' => 'Certifikace 1',
             'idnumber' => 'c1',
             'contextid' => $catcontext->id,
-            'publicaccess' => '0',
         ];
         $certification = certification::create((object)$data);
 
@@ -725,8 +635,6 @@ final class certification_test extends \advanced_testcase {
 
         $program1 = $programgenerator->create_program();
         $program2 = $programgenerator->create_program();
-        $cohort1 = $this->getDataGenerator()->create_cohort();
-        $cohort2 = $this->getDataGenerator()->create_cohort();
         $category = $this->getDataGenerator()->create_category([]);
         $catcontext = \context_coursecat::instance($category->id);
 
@@ -739,10 +647,8 @@ final class certification_test extends \advanced_testcase {
             'description' => 'Some desc',
             'descriptionformat' => '2',
             'presentation' => ['some' => 'test'],
-            'publicaccess' => '1',
             'archived' => '1',
             'sources' => ['manual' => []],
-            'cohorts' => [$cohort1->id, $cohort2->name],
             'programid1' => $program1->id,
             'programid2' => $program2->id,
             'recertify' => '77777',
@@ -888,5 +794,364 @@ final class certification_test extends \advanced_testcase {
         $this->assertArrayHasKey(certification::SINCE_WINDOWDUE, $result);
         $this->assertArrayHasKey(certification::SINCE_WINDOWEND, $result);
         $this->assertCount(5, $result);
+    }
+
+    public function test_get_catalogue_item(): void {
+        /** @var \tool_mucertify_generator $generator */
+        $generator = $this->getDataGenerator()->get_plugin_generator('tool_mucertify');
+        /** @var \tool_mucatalog_generator $cataloggenerator */
+        $cataloggenerator = $this->getDataGenerator()->get_plugin_generator('tool_mucatalog');
+
+        $guest = guest_user();
+        $user1 = $this->getDataGenerator()->create_user();
+        $user2 = $this->getDataGenerator()->create_user();
+
+        $cohort1 = $this->getDataGenerator()->create_cohort();
+        cohort_add_member($cohort1->id, $user2->id);
+
+        $certification1 = $generator->create_certification();
+        $certification2 = $generator->create_certification();
+        $certification3 = $generator->create_certification();
+        $certification4 = $generator->create_certification();
+
+        // Catalogue is not active without active sections.
+        $this->setUser($user1);
+        $section0 = $cataloggenerator->create_section(['uservisible' => 1, 'status' => \tool_mucatalog\local\util::STATUS_DRAFT]);
+        $item0 = $cataloggenerator->create_item(['sectionid' => $section0->id, 'type' => 'certification', 'referenceid' => $certification1->id]);
+        $this->assertNull(certification::get_catalogue_item($certification1));
+        $this->assertNull(certification::get_catalogue_item($certification1, $user1->id));
+        $this->assertNull(certification::get_catalogue_item($certification1, $user2->id));
+
+        $section1 = $cataloggenerator->create_section(['uservisible' => 1, 'status' => \tool_mucatalog\local\util::STATUS_ACTIVE]);
+        $section2 = $cataloggenerator->create_section([
+            'uservisible' => 0,
+            'cohortvisible' => [$cohort1->id],
+            'status' => \tool_mucatalog\local\util::STATUS_ACTIVE,
+        ]);
+        $item1 = $cataloggenerator->create_item(['sectionid' => $section1->id, 'type' => 'certification', 'referenceid' => $certification1->id]);
+        $item2 = $cataloggenerator->create_item(['sectionid' => $section2->id, 'type' => 'certification', 'referenceid' => $certification2->id]);
+        $item3 = $cataloggenerator->create_item(['sectionid' => $section1->id, 'type' => 'certification', 'referenceid' => $certification3->id]);
+        $certification3 = certification::archive($certification3->id);
+
+        $this->setUser($user1);
+        $this->assertEquals($item1, certification::get_catalogue_item($certification1));
+        $this->assertNull(certification::get_catalogue_item($certification2));
+        $this->assertNull(certification::get_catalogue_item($certification3));
+        $this->assertNull(certification::get_catalogue_item($certification4));
+        $this->assertEquals($item1, certification::get_catalogue_item($certification1, $user1->id));
+        $this->assertNull(certification::get_catalogue_item($certification2, $user1->id));
+        $this->assertNull(certification::get_catalogue_item($certification3, $user1->id));
+        $this->assertNull(certification::get_catalogue_item($certification4, $user1->id));
+        $this->assertEquals($item1, certification::get_catalogue_item($certification1, $user2->id));
+        $this->assertEquals($item2, certification::get_catalogue_item($certification2, $user2->id));
+        $this->assertNull(certification::get_catalogue_item($certification3, $user2->id));
+        $this->assertNull(certification::get_catalogue_item($certification4, $user2->id));
+        $this->assertNull(certification::get_catalogue_item($certification1, $guest->id));
+        $this->assertNull(certification::get_catalogue_item($certification2, $guest->id));
+        $this->assertNull(certification::get_catalogue_item($certification1, 0));
+
+        $this->setUser($user2);
+        $this->assertEquals($item1, certification::get_catalogue_item($certification1));
+        $this->assertEquals($item2, certification::get_catalogue_item($certification2));
+        $this->assertNull(certification::get_catalogue_item($certification3));
+        $this->assertNull(certification::get_catalogue_item($certification4));
+        $this->assertNull(certification::get_catalogue_item($certification2, $user1->id));
+
+        $this->setUser($guest);
+        $this->assertNull(certification::get_catalogue_item($certification1));
+        $this->setUser(null);
+        $this->assertNull(certification::get_catalogue_item($certification1));
+        $this->assertEquals($item1, certification::get_catalogue_item($certification1, $user1->id));
+
+        $section1 = \tool_mucatalog\local\section::update((object)['id' => $section1->id, 'guestvisible' => 1]);
+        $this->assertEquals($item1, certification::get_catalogue_item($certification1));
+        $this->assertEquals($item1, certification::get_catalogue_item($certification1, $guest->id));
+        $this->setUser($guest);
+        $this->assertEquals($item1, certification::get_catalogue_item($certification1));
+
+        // First visible item is used when there are multiple items.
+        $item4 = $cataloggenerator->create_item(['sectionid' => $section2->id, 'type' => 'certification', 'referenceid' => $certification1->id]);
+        $this->assertEquals($item1, certification::get_catalogue_item($certification1, $user1->id));
+        $this->assertEquals($item1, certification::get_catalogue_item($certification1, $user2->id));
+        $item1 = \tool_mucatalog\local\item\certification::archive($item1->id);
+        $this->assertNull(certification::get_catalogue_item($certification1, $user1->id));
+        $this->assertEquals($item4, certification::get_catalogue_item($certification1, $user2->id));
+    }
+
+    public function test_get_catalogue_item_tenant(): void {
+        if (!\tool_mulib\local\mulib::is_mutenancy_available()) {
+            $this->markTestSkipped('tenant support not available');
+        }
+
+        \tool_mutenancy\local\tenancy::activate();
+
+        /** @var \tool_mutenancy_generator $tenantgenerator */
+        $tenantgenerator = $this->getDataGenerator()->get_plugin_generator('tool_mutenancy');
+        /** @var \tool_mucertify_generator $generator */
+        $generator = $this->getDataGenerator()->get_plugin_generator('tool_mucertify');
+        /** @var \tool_mucatalog_generator $cataloggenerator */
+        $cataloggenerator = $this->getDataGenerator()->get_plugin_generator('tool_mucatalog');
+
+        $tenant1 = $tenantgenerator->create_tenant();
+        $tenant2 = $tenantgenerator->create_tenant();
+
+        $user1 = $this->getDataGenerator()->create_user(['tenantid' => $tenant1->id]);
+        $user2 = $this->getDataGenerator()->create_user(['tenantid' => $tenant2->id]);
+        $user3 = $this->getDataGenerator()->create_user();
+
+        $catcontext1 = \context_coursecat::instance($tenant1->categoryid);
+        $catcontext2 = \context_coursecat::instance($tenant2->categoryid);
+
+        $certification1 = $generator->create_certification();
+        $certification2 = $generator->create_certification();
+
+        $section1 = $cataloggenerator->create_section(['uservisible' => 1, 'status' => \tool_mucatalog\local\util::STATUS_ACTIVE]);
+        $item1 = $cataloggenerator->create_item(['sectionid' => $section1->id, 'type' => 'certification', 'referenceid' => $certification1->id]);
+
+        $this->setUser($user1);
+        $this->assertEquals($item1, certification::get_catalogue_item($certification1));
+        $this->assertNull(certification::get_catalogue_item($certification2));
+        $this->assertEquals($item1, certification::get_catalogue_item($certification1, $user1->id));
+        $this->assertEquals($item1, certification::get_catalogue_item($certification1, $user2->id));
+        $this->assertEquals($item1, certification::get_catalogue_item($certification1, $user3->id));
+        \tool_mutenancy\local\tenancy::force_current_tenantid($tenant2->id);
+        $this->assertEquals($item1, certification::get_catalogue_item($certification1));
+        \tool_mutenancy\local\tenancy::unforce_current_tenantid();
+        \tool_mutenancy\local\tenancy::force_current_tenantid(null);
+        $this->assertEquals($item1, certification::get_catalogue_item($certification1));
+        \tool_mutenancy\local\tenancy::unforce_current_tenantid();
+
+        $certification1 = certification::move($certification1->id, $catcontext1->id);
+
+        $this->setUser($user1);
+        $this->assertEquals($item1, certification::get_catalogue_item($certification1));
+        $this->assertEquals($item1, certification::get_catalogue_item($certification1, $user1->id));
+        $this->assertNull(certification::get_catalogue_item($certification1, $user2->id));
+        $this->assertEquals($item1, certification::get_catalogue_item($certification1, $user3->id));
+        \tool_mutenancy\local\tenancy::force_current_tenantid($tenant2->id);
+        $this->assertNull(certification::get_catalogue_item($certification1));
+        \tool_mutenancy\local\tenancy::unforce_current_tenantid();
+        \tool_mutenancy\local\tenancy::force_current_tenantid(null);
+        $this->assertEquals($item1, certification::get_catalogue_item($certification1));
+        \tool_mutenancy\local\tenancy::unforce_current_tenantid();
+
+        $this->setUser($user2);
+        $this->assertNull(certification::get_catalogue_item($certification1));
+        $this->setUser($user3);
+        $this->assertEquals($item1, certification::get_catalogue_item($certification1));
+
+        $certification1 = certification::move($certification1->id, $catcontext2->id);
+
+        $this->setUser($user1);
+        $this->assertNull(certification::get_catalogue_item($certification1));
+        $this->assertNull(certification::get_catalogue_item($certification1, $user1->id));
+        $this->assertEquals($item1, certification::get_catalogue_item($certification1, $user2->id));
+        $this->assertEquals($item1, certification::get_catalogue_item($certification1, $user3->id));
+        \tool_mutenancy\local\tenancy::force_current_tenantid($tenant2->id);
+        $this->assertEquals($item1, certification::get_catalogue_item($certification1));
+        \tool_mutenancy\local\tenancy::unforce_current_tenantid();
+
+        // Sections may be hidden from tenant members.
+        $section1 = \tool_mucatalog\local\section::update((object)['id' => $section1->id, 'hiddenfromtenants' => 1]);
+        $this->assertNull(certification::get_catalogue_item($certification1, $user1->id));
+        $this->assertNull(certification::get_catalogue_item($certification1, $user2->id));
+        $this->assertEquals($item1, certification::get_catalogue_item($certification1, $user3->id));
+    }
+
+    public function test_get_catalogue_item_url(): void {
+        /** @var \tool_mucertify_generator $generator */
+        $generator = $this->getDataGenerator()->get_plugin_generator('tool_mucertify');
+        /** @var \tool_mucatalog_generator $cataloggenerator */
+        $cataloggenerator = $this->getDataGenerator()->get_plugin_generator('tool_mucatalog');
+
+        $user1 = $this->getDataGenerator()->create_user();
+        $user2 = $this->getDataGenerator()->create_user();
+
+        $cohort1 = $this->getDataGenerator()->create_cohort();
+        cohort_add_member($cohort1->id, $user2->id);
+
+        $certification1 = $generator->create_certification();
+        $certification2 = $generator->create_certification();
+
+        $this->setUser($user2);
+        $this->assertNull(certification::get_catalogue_item_url($certification1));
+
+        $section1 = $cataloggenerator->create_section([
+            'uservisible' => 0,
+            'cohortvisible' => [$cohort1->id],
+            'status' => \tool_mucatalog\local\util::STATUS_ACTIVE,
+        ]);
+        $item1 = $cataloggenerator->create_item(['sectionid' => $section1->id, 'type' => 'certification', 'referenceid' => $certification1->id]);
+
+        $this->setUser($user1);
+        $this->assertNull(certification::get_catalogue_item_url($certification1));
+        $this->assertNull(certification::get_catalogue_item_url($certification2));
+
+        $this->setUser($user2);
+        $url = certification::get_catalogue_item_url($certification1);
+        $this->assertInstanceOf(\core\url::class, $url);
+        $this->assertSame("https://www.example.com/moodle/admin/tool/mucatalog/item.php?id=$item1->id", $url->out(false));
+        $this->assertNull(certification::get_catalogue_item_url($certification2));
+    }
+
+    public function test_get_catalogue_actions(): void {
+        global $DB;
+
+        /** @var \tool_mucertify_generator $generator */
+        $generator = $this->getDataGenerator()->get_plugin_generator('tool_mucertify');
+        /** @var \tool_mucatalog_generator $cataloggenerator */
+        $cataloggenerator = $this->getDataGenerator()->get_plugin_generator('tool_mucatalog');
+
+        $user1 = $this->getDataGenerator()->create_user();
+        $user2 = $this->getDataGenerator()->create_user();
+
+        $cohort1 = $this->getDataGenerator()->create_cohort();
+        cohort_add_member($cohort1->id, $user1->id);
+
+        $certification1 = $generator->create_certification();
+        $certification2 = $generator->create_certification(['sources' => ['manual' => []]]);
+        $certification3 = $generator->create_certification(['sources' => ['manual' => [], 'selfassignment' => []]]);
+        $source3s = $DB->get_record('tool_mucertify_source', ['certificationid' => $certification3->id, 'type' => 'selfassignment'], '*', MUST_EXIST);
+        $certification4 = $generator->create_certification(['sources' => ['selfassignment' => [], 'approval' => []]]);
+        $source4s = $DB->get_record('tool_mucertify_source', ['certificationid' => $certification4->id, 'type' => 'selfassignment'], '*', MUST_EXIST);
+        $source4a = $DB->get_record('tool_mucertify_source', ['certificationid' => $certification4->id, 'type' => 'approval'], '*', MUST_EXIST);
+        $certification5 = $generator->create_certification(['sources' => ['selfassignment' => []]]);
+
+        $section1 = $cataloggenerator->create_section([
+            'uservisible' => 0,
+            'cohortvisible' => [$cohort1->id],
+            'status' => \tool_mucatalog\local\util::STATUS_ACTIVE,
+        ]);
+        $item1 = $cataloggenerator->create_item(['sectionid' => $section1->id, 'type' => 'certification', 'referenceid' => $certification1->id]);
+        $item2 = $cataloggenerator->create_item(['sectionid' => $section1->id, 'type' => 'certification', 'referenceid' => $certification2->id]);
+        $item3 = $cataloggenerator->create_item(['sectionid' => $section1->id, 'type' => 'certification', 'referenceid' => $certification3->id]);
+        $item4 = $cataloggenerator->create_item(['sectionid' => $section1->id, 'type' => 'certification', 'referenceid' => $certification4->id]);
+
+        $this->setUser($user1);
+        $this->assertSame([], certification::get_catalogue_actions($certification1));
+        $this->assertSame([], certification::get_catalogue_actions($certification2));
+        $actions = certification::get_catalogue_actions($certification3);
+        $this->assertCount(1, $actions);
+        $this->assertStringContainsString("/admin/tool/mucertify/my/source_selfassignment.php?sourceid=$source3s->id", $actions[0]);
+        $actions = certification::get_catalogue_actions($certification4);
+        $this->assertCount(2, $actions);
+        $actions = implode('', $actions);
+        $this->assertStringContainsString("/admin/tool/mucertify/my/source_selfassignment.php?sourceid=$source4s->id", $actions);
+        $this->assertStringContainsString("/admin/tool/mucertify/my/source_approval_request.php?sourceid=$source4a->id", $actions);
+        // Not in catalogue.
+        $this->assertSame([], certification::get_catalogue_actions($certification5));
+
+        // Section not visible.
+        $this->setUser($user2);
+        $this->assertSame([], certification::get_catalogue_actions($certification1));
+        $this->assertSame([], certification::get_catalogue_actions($certification2));
+        $this->assertSame([], certification::get_catalogue_actions($certification3));
+        $this->assertSame([], certification::get_catalogue_actions($certification4));
+        $this->assertSame([], certification::get_catalogue_actions($certification5));
+
+        $this->setUser($user1);
+        $certification3 = certification::archive($certification3->id);
+        $this->assertSame([], certification::get_catalogue_actions($certification3));
+    }
+
+    public function test_get_tagged_certifications(): void {
+        global $DB;
+
+        /** @var \tool_mucertify_generator $generator */
+        $generator = $this->getDataGenerator()->get_plugin_generator('tool_mucertify');
+        /** @var \tool_mucatalog_generator $cataloggenerator */
+        $cataloggenerator = $this->getDataGenerator()->get_plugin_generator('tool_mucatalog');
+
+        $syscontext = \context_system::instance();
+
+        $user1 = $this->getDataGenerator()->create_user();
+        $user2 = $this->getDataGenerator()->create_user();
+        $user3 = $this->getDataGenerator()->create_user();
+
+        $category1 = $this->getDataGenerator()->create_category([]);
+        $catcontext1 = \context_coursecat::instance($category1->id);
+
+        $cohort1 = $this->getDataGenerator()->create_cohort();
+        cohort_add_member($cohort1->id, $user2->id);
+        cohort_add_member($cohort1->id, $user3->id);
+
+        $certification1 = $generator->create_certification(['fullname' => 'Prvni']);
+        $certification2 = $generator->create_certification(['fullname' => 'Druhy']);
+        $certification3 = $generator->create_certification(['fullname' => 'Treti', 'archived' => 1, 'sources' => ['manual' => []]]);
+        $source3 = $DB->get_record('tool_mucertify_source', ['certificationid' => $certification3->id, 'type' => 'manual'], '*', MUST_EXIST);
+        $certification4 = $generator->create_certification(['fullname' => 'Ctvrty', 'contextid' => $catcontext1->id]);
+        $certification5 = $generator->create_certification(['fullname' => 'Paty']);
+        $certification6 = $generator->create_certification(['fullname' => 'Sesty', 'contextid' => $catcontext1->id, 'sources' => ['manual' => []]]);
+        $source6 = $DB->get_record('tool_mucertify_source', ['certificationid' => $certification6->id, 'type' => 'manual'], '*', MUST_EXIST);
+
+        \tool_mucertify\local\source\manual::assign_users($certification3->id, $source3->id, [$user3->id]);
+        \tool_mucertify\local\source\manual::assign_users($certification6->id, $source6->id, [$user3->id]);
+
+        $section1 = $cataloggenerator->create_section(['uservisible' => 1, 'status' => \tool_mucatalog\local\util::STATUS_ACTIVE]);
+        $section2 = $cataloggenerator->create_section([
+            'uservisible' => 0,
+            'cohortvisible' => [$cohort1->id],
+            'status' => \tool_mucatalog\local\util::STATUS_ACTIVE,
+        ]);
+        $cataloggenerator->create_item(['sectionid' => $section1->id, 'type' => 'certification', 'referenceid' => $certification1->id]);
+        $cataloggenerator->create_item(['sectionid' => $section2->id, 'type' => 'certification', 'referenceid' => $certification2->id]);
+        $cataloggenerator->create_item(['sectionid' => $section1->id, 'type' => 'certification', 'referenceid' => $certification3->id]);
+        $cataloggenerator->create_item(['sectionid' => $section2->id, 'type' => 'certification', 'referenceid' => $certification4->id]);
+        $cataloggenerator->create_item(['sectionid' => $section1->id, 'type' => 'certification', 'referenceid' => $certification5->id]);
+
+        foreach ([$certification1, $certification2, $certification3, $certification4, $certification6] as $certification) {
+            \core_tag_tag::set_item_tags('tool_mucertify', 'tool_mucertify_certification', $certification->id, $syscontext, ['Tag A']);
+        }
+        \core_tag_tag::set_item_tags('tool_mucertify', 'tool_mucertify_certification', $certification5->id, $syscontext, ['Tag B']);
+        $taga = $DB->get_record('tag', ['rawname' => 'Tag A'], '*', MUST_EXIST);
+        $tagb = $DB->get_record('tag', ['rawname' => 'Tag B'], '*', MUST_EXIST);
+
+        $link = function (\stdClass $certification): string {
+            return 'href="https://www.example.com/moodle/admin/tool/mucertify/my/certification.php?id=' . $certification->id . '"';
+        };
+
+        $this->setUser($user1);
+        $result = certification::get_tagged_certifications($taga->id, true, 0, 10);
+        $this->assertSame(1, $result['totalcount']);
+        $this->assertStringContainsString($link($certification1), $result['content']);
+        $this->assertStringContainsString('Prvni', $result['content']);
+        $this->assertStringNotContainsString($link($certification2), $result['content']);
+        $this->assertStringNotContainsString($link($certification3), $result['content']);
+        $this->assertStringNotContainsString($link($certification4), $result['content']);
+        $this->assertStringNotContainsString($link($certification5), $result['content']);
+        $this->assertStringNotContainsString($link($certification6), $result['content']);
+        $result = certification::get_tagged_certifications($tagb->id, false, 0, 10);
+        $this->assertSame(1, $result['totalcount']);
+        $this->assertStringContainsString($link($certification5), $result['content']);
+        $this->assertStringNotContainsString($link($certification1), $result['content']);
+
+        $this->setUser($user2);
+        $result = certification::get_tagged_certifications($taga->id, true, 0, 10);
+        $this->assertSame(3, $result['totalcount']);
+        $this->assertStringContainsString($link($certification1), $result['content']);
+        $this->assertStringContainsString($link($certification2), $result['content']);
+        $this->assertStringNotContainsString($link($certification3), $result['content']);
+        $this->assertStringContainsString($link($certification4), $result['content']);
+        $this->assertStringNotContainsString($link($certification6), $result['content']);
+
+        $this->setUser($user3);
+        $result = certification::get_tagged_certifications($taga->id, true, 0, 10);
+        $this->assertSame(4, $result['totalcount']);
+        $this->assertStringContainsString($link($certification1), $result['content']);
+        $this->assertStringContainsString($link($certification2), $result['content']);
+        $this->assertStringNotContainsString($link($certification3), $result['content']);
+        $this->assertStringContainsString($link($certification4), $result['content']);
+        $this->assertStringContainsString($link($certification6), $result['content']);
+
+        // Ordered by name with paging.
+        $result = certification::get_tagged_certifications($taga->id, true, 1, 2);
+        $this->assertSame(4, $result['totalcount']);
+        $this->assertStringNotContainsString($link($certification4), $result['content']);
+        $this->assertStringContainsString($link($certification2), $result['content']);
+        $this->assertStringContainsString($link($certification1), $result['content']);
+        $this->assertStringNotContainsString($link($certification6), $result['content']);
+
+        $result = certification::get_tagged_certifications($tagb->id + 1000, true, 0, 10);
+        $this->assertSame(['content' => '', 'totalcount' => 0], $result);
     }
 }

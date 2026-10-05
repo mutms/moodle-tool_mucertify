@@ -27,6 +27,6 @@
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require('../../config.php');
+require('../../../config.php');
 
-redirect(new \core\url('/admin/tool/mucertify/catalogue/index.php'));
+redirect(new \core\url('/admin/tool/mucertify/my/index.php'));

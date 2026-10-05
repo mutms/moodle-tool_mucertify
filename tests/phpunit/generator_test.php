@@ -60,7 +60,6 @@ final class generator_test extends \advanced_testcase {
         $this->assertSame('', $certification->description);
         $this->assertSame('1', $certification->descriptionformat);
         $this->assertSame('[]', $certification->presentationjson);
-        $this->assertSame('0', $certification->publicaccess);
         $this->assertSame('0', $certification->archived);
         $this->assertSame(null, $certification->programid1);
         $this->assertSame(null, $certification->programid2);
@@ -75,9 +74,6 @@ final class generator_test extends \advanced_testcase {
         $program2 = $programgenerator->create_program();
         $program3 = $programgenerator->create_program();
 
-        $cohort1 = $this->getDataGenerator()->create_cohort();
-        $cohort2 = $this->getDataGenerator()->create_cohort();
-
         $category = $this->getDataGenerator()->create_category([]);
         $catcontext = \context_coursecat::instance($category->id);
         $data = (object)[
@@ -87,10 +83,8 @@ final class generator_test extends \advanced_testcase {
             'description' => 'Some desc',
             'descriptionformat' => '2',
             'presentation' => ['some' => 'test'],
-            'publicaccess' => '1',
             'archived' => '1',
             'sources' => ['manual' => []],
-            'cohorts' => [$cohort1->id, $cohort2->name],
             'programid1' => $program1->id,
             'programid2' => $program2->id,
             'recertify' => '77777',
@@ -105,7 +99,6 @@ final class generator_test extends \advanced_testcase {
         $this->assertSame($data->description, $certification->description);
         $this->assertSame($data->descriptionformat, $certification->descriptionformat);
         $this->assertSame('[]', $certification->presentationjson);
-        $this->assertSame($data->publicaccess, $certification->publicaccess);
         $this->assertSame($data->archived, $certification->archived);
         $this->assertSame($program1->id, $certification->programid1);
         $this->assertSame($program2->id, $certification->programid2);
@@ -117,27 +110,11 @@ final class generator_test extends \advanced_testcase {
         $this->assertCount(1, $sources);
         $source = reset($sources);
         $this->assertSame('manual', $source->type);
-        $cs = $DB->get_records('tool_mucertify_cohort', ['certificationid' => $certification->id], 'cohortid ASC');
-        $this->assertCount(2, $cs);
-        $cs = array_values($cs);
-        $this->assertSame($cohort1->id, $cs[0]->cohortid);
-        $this->assertSame($cohort2->id, $cs[1]->cohortid);
 
         $category2 = $this->getDataGenerator()->create_category([]);
         $catcontext2 = \context_coursecat::instance($category2->id);
         $certification = $generator->create_certification(['category' => $category2->name]);
         $this->assertSame((string)$catcontext2->id, $certification->contextid);
-
-        $data = (object)[
-            'cohorts' => "$cohort1->name, $cohort2->id",
-        ];
-        $certification = $generator->create_certification($data);
-        $cs = $DB->get_records('tool_mucertify_cohort', ['certificationid' => $certification->id]);
-        $this->assertCount(2, $cs);
-        $this->assertCount(2, $cs);
-        $cs = array_values($cs);
-        $this->assertSame($cohort1->id, $cs[0]->cohortid);
-        $this->assertSame($cohort2->id, $cs[1]->cohortid);
 
         $data = (object)[
             'recertify' => '1234',

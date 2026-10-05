@@ -13,16 +13,24 @@ Feature: Certifications plugin English wiki documentation image generator
       | IT staff      | itstaff   |
       | All employees | everybody |
     And the following "tool_muprog > programs" exist:
-      | fullname                             | idnumber | category | publicaccess | sources   |
-      | Health and safety - new employees    | HS1      | HS       | 1            | mucertify |
-      | Health and safety - recertification  | HS2      | HS       | 1            | mucertify |
-      | GDPR basics                          | GDPR1    | IT       | 1            | mucertify |
-      | Cybersecurity                        | CS1      | IT       | 1            | mucertify |
+      | fullname                            | idnumber | category | sources   |
+      | Health and safety - new employees   | HS1      | HS       | mucertify |
+      | Health and safety - recertification | HS2      | HS       | mucertify |
+      | GDPR basics                         | GDPR1    | IT       | mucertify |
+      | Cybersecurity                       | CS1      | IT       | mucertify |
     And the following "tool_mucertify > certifications" exist:
-      | fullname          | idnumber | category | publicaccess | program1 | program2| recertify | sources  | image                                            | cohorts  | description                                                  |
-      | Health and safety | CFHS     | EC       | 1            | HS1      | HS2     | 2592000   | manual   | admin/tool/mucertify/tests/fixtures/docs/hs.jpeg |          | Mandatory Health and Safety certification for all employees. |
-      | Customer privacy  | CP       | EC       | 0            | GDPR1    | GDPR1   | 2592000   | manual   |                                                  |          |                                                              |
-      | Cybersecurity     | CS       | EC       | 0            | CS1      | CS1     | 2592000   | manual   | admin/tool/mucertify/tests/fixtures/docs/cs.jpeg | IT staff | IT security certification.                                                             |
+      | fullname          | idnumber | category | program1 | program2 | recertify | sources | image                                            | description                                                  |
+      | Health and safety | CFHS     | EC       | HS1      | HS2      | 2592000   | manual  | admin/tool/mucertify/tests/fixtures/docs/hs.jpeg | Mandatory Health and Safety certification for all employees. |
+      | Customer privacy  | CP       | EC       | GDPR1    | GDPR1    | 2592000   | manual  |                                                  |                                                              |
+      | Cybersecurity     | CS       | EC       | CS1      | CS1      | 2592000   | manual  | admin/tool/mucertify/tests/fixtures/docs/cs.jpeg | IT security certification.                                   |
+    And the following "tool_mucatalog > sections" exist:
+      | name                     | status | guestvisible | uservisible | cohortvisible |
+      | Mandatory certifications | active | 0            | 1           |               |
+      | IT certifications        | active | 0            | 0           | itstaff       |
+    And the following "tool_mucatalog > items" exist:
+      | section                  | type          | reference         |
+      | Mandatory certifications | certification | Health and safety |
+      | IT certifications        | certification | Cybersecurity     |
     And the following "users" exist:
       | username | firstname | lastname | email                |
       | manager  | Site      | Manager  | manager@example.com  |
@@ -156,7 +164,7 @@ Feature: Certifications plugin English wiki documentation image generator
     And I change window size to "1208x780"
 
     When I am on the "tool_mucertify > My certifications" page
-    And I follow "Certification catalogue"
+    And I click on "Catalogue" "link" in the "#page-header" "css_element"
     Then I make documentation screenshot "img_catalogue.png" for "tool_mucertify" plugin
 
     When I skip tests if "block_mucertify_my" is not installed

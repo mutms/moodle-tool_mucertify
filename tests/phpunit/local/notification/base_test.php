@@ -95,7 +95,7 @@ final class base_test extends \advanced_testcase {
         $this->assertSame($user1->lastname, $result['user_lastname']);
         $this->assertSame($certification1->fullname, $result['certification_fullname']);
         $this->assertSame($certification1->idnumber, $result['certification_idnumber']);
-        $this->assertSame("$CFG->wwwroot/admin/tool/mucertify/catalogue/certification.php?id=$certification1->id", $result['certification_url']);
+        $this->assertSame("$CFG->wwwroot/admin/tool/mucertify/my/certification.php?id=$certification1->id", $result['certification_url']);
         $this->assertSame('Manual assignment', $result['certification_sourcename']);
         $this->assertStringContainsString('Not certified', $result['certification_status']);
     }
