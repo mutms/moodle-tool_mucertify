@@ -132,8 +132,10 @@ final class certification_periods_programid extends \tool_mulib\muform\autocompl
         if (!has_capability('tool/muprog:addtocertifications', $programcontext)) {
             return false;
         }
-        if ($programcontext->tenantid && $this->context->tenantid && $programcontext->tenantid != $this->context->tenantid) {
-            return false;
+        if (mulib::is_mutenancy_active()) {
+            if ($programcontext->tenantid && $this->context->tenantid && $programcontext->tenantid != $this->context->tenantid) {
+                return false;
+            }
         }
         return true;
     }
