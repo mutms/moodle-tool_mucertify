@@ -1077,7 +1077,7 @@ final class certification_test extends \advanced_testcase {
 
         $certification1 = $generator->create_certification(['fullname' => 'Prvni']);
         $certification2 = $generator->create_certification(['fullname' => 'Druhy']);
-        $certification3 = $generator->create_certification(['fullname' => 'Treti', 'archived' => 1, 'sources' => ['manual' => []]]);
+        $certification3 = $generator->create_certification(['fullname' => 'Treti', 'sources' => ['manual' => []]]);
         $source3 = $DB->get_record('tool_mucertify_source', ['certificationid' => $certification3->id, 'type' => 'manual'], '*', MUST_EXIST);
         $certification4 = $generator->create_certification(['fullname' => 'Ctvrty', 'contextid' => $catcontext1->id]);
         $certification5 = $generator->create_certification(['fullname' => 'Paty']);
@@ -1098,6 +1098,8 @@ final class certification_test extends \advanced_testcase {
         $cataloggenerator->create_item(['sectionid' => $section1->id, 'type' => 'certification', 'referenceid' => $certification3->id]);
         $cataloggenerator->create_item(['sectionid' => $section2->id, 'type' => 'certification', 'referenceid' => $certification4->id]);
         $cataloggenerator->create_item(['sectionid' => $section1->id, 'type' => 'certification', 'referenceid' => $certification5->id]);
+        // Archived certifications cannot be added to catalogue.
+        $certification3 = certification::archive($certification3->id);
 
         foreach ([$certification1, $certification2, $certification3, $certification4, $certification6] as $certification) {
             \core_tag_tag::set_item_tags('tool_mucertify', 'tool_mucertify_certification', $certification->id, $syscontext, ['Tag A']);
@@ -1153,5 +1155,47 @@ final class certification_test extends \advanced_testcase {
 
         $result = certification::get_tagged_certifications($tagb->id + 1000, true, 0, 10);
         $this->assertSame(['content' => '', 'totalcount' => 0], $result);
+    }
+
+    public function test_draft_program(): void {
+        global $DB;
+
+        /** @var \tool_mucertify_generator $generator */
+        $generator = $this->getDataGenerator()->get_plugin_generator('tool_mucertify');
+        /** @var \tool_muprog_generator $programgenerator */
+        $programgenerator = $this->getDataGenerator()->get_plugin_generator('tool_muprog');
+
+        $program1 = $programgenerator->create_program(['sources' => ['mucertify' => []]]);
+        $program2 = $programgenerator->create_program(['draft' => 1, 'sources' => ['mucertify' => []]]);
+
+        try {
+            $generator->create_certification(['programid1' => $program2->id]);
+            $this->fail('Exception expected');
+        } catch (\core\exception\moodle_exception $ex) {
+            $this->assertInstanceOf(\core\exception\invalid_parameter_exception::class, $ex);
+        }
+        try {
+            $generator->create_certification(['programid1' => $program1->id, 'recertify' => DAYSECS, 'programid2' => $program2->id]);
+            $this->fail('Exception expected');
+        } catch (\core\exception\moodle_exception $ex) {
+            $this->assertInstanceOf(\core\exception\invalid_parameter_exception::class, $ex);
+        }
+
+        $certification = $generator->create_certification(['programid1' => $program1->id]);
+        try {
+            \tool_mucertify\local\certification::update_settings((object)['id' => $certification->id, 'programid1' => $program2->id]);
+            $this->fail('Exception expected');
+        } catch (\core\exception\moodle_exception $ex) {
+            $this->assertInstanceOf(\core\exception\invalid_parameter_exception::class, $ex);
+            $this->assertStringContainsString('Draft program cannot be used in certifications', $ex->getMessage());
+        }
+        $certification = $DB->get_record('tool_mucertify_certification', ['id' => $certification->id], '*', MUST_EXIST);
+        $this->assertSame($program1->id, $certification->programid1);
+
+        \tool_muprog\local\program::release($program2->id);
+        $certification = \tool_mucertify\local\certification::update_settings(
+            (object)['id' => $certification->id, 'programid1' => $program2->id]
+        );
+        $this->assertSame($program2->id, $certification->programid1);
     }
 }

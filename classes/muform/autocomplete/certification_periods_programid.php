@@ -67,7 +67,7 @@ final class certification_periods_programid extends \tool_mulib\muform\autocompl
                   JOIN {tool_muprog_source} s ON s.programid = p.id and s.type = 'mucertify'
                   /* capsubquery */
                   /* tenantjoin */
-                 WHERE p.archived = 0 /* searchsql */
+                 WHERE p.archived = 0 AND p.draft = 0 /* searchsql */
               ORDER BY p.fullname ASC, p.id ASC")
         )
             ->replace_comment(
@@ -125,7 +125,10 @@ final class certification_periods_programid extends \tool_mulib\muform\autocompl
             // Current value is always ok.
             return true;
         }
-        if ($program->archived || !$DB->record_exists('tool_muprog_source', ['programid' => $program->id, 'type' => 'mucertify'])) {
+        if ($program->archived || $program->draft) {
+            return false;
+        }
+        if (!$DB->record_exists('tool_muprog_source', ['programid' => $program->id, 'type' => 'mucertify'])) {
             return false;
         }
         $programcontext = \context::instance_by_id($program->contextid);

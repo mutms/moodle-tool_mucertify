@@ -2134,4 +2134,29 @@ final class period_test extends \advanced_testcase {
         $this->assertSame((string)($now + 1000), $assignment2->timecertifiedfrom);
         $this->assertSame((string)($now + 5000), $assignment2->timecertifieduntil);
     }
+
+    public function test_add_draft_program(): void {
+        /** @var \tool_mucertify_generator $generator */
+        $generator = $this->getDataGenerator()->get_plugin_generator('tool_mucertify');
+        /** @var \tool_muprog_generator $programgenerator */
+        $programgenerator = $this->getDataGenerator()->get_plugin_generator('tool_muprog');
+
+        $program1 = $programgenerator->create_program(['sources' => ['mucertify' => []]]);
+        $program2 = $programgenerator->create_program(['draft' => 1, 'sources' => ['mucertify' => []]]);
+        $certification = $generator->create_certification(['programid1' => $program1->id]);
+        $user = $this->getDataGenerator()->create_user();
+
+        try {
+            \tool_mucertify\local\period::add((object)[
+                'certificationid' => $certification->id,
+                'userid' => $user->id,
+                'programid' => $program2->id,
+                'timewindowstart' => time(),
+            ]);
+            $this->fail('Exception expected');
+        } catch (\core\exception\moodle_exception $ex) {
+            $this->assertInstanceOf(\core\exception\invalid_parameter_exception::class, $ex);
+            $this->assertStringContainsString('Draft program cannot be used in certifications', $ex->getMessage());
+        }
+    }
 }

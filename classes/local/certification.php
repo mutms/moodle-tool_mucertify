@@ -123,12 +123,12 @@ final class certification {
         $data->periodsjson = util::json_encode(self::get_periods_defaults());
 
         if (isset($data->programid1)) {
-            if (!$DB->record_exists('tool_muprog_program', ['id' => $data->programid1])) {
+            if (!$DB->record_exists('tool_muprog_program', ['id' => $data->programid1, 'draft' => 0])) {
                 throw new \invalid_parameter_exception('Invalid programid1');
             }
             if (isset($data->recertify)) {
                 if (isset($data->programid2)) {
-                    if (!$DB->record_exists('tool_muprog_program', ['id' => $data->programid2])) {
+                    if (!$DB->record_exists('tool_muprog_program', ['id' => $data->programid2, 'draft' => 0])) {
                         throw new \invalid_parameter_exception('Invalid programid2');
                     }
                 } else {
@@ -520,6 +520,9 @@ final class certification {
         if (property_exists($data, 'programid1') && $oldcertification->programid1 != $data->programid1) {
             if ($data->programid1) {
                 $program = $DB->get_record('tool_muprog_program', ['id' => $data->programid1], '*', MUST_EXIST);
+                if ($program->draft) {
+                    throw new \invalid_parameter_exception('Draft program cannot be used in certifications');
+                }
                 $record->programid1 = $program->id;
             } else {
                 $record->programid1 = null;
@@ -597,6 +600,9 @@ final class certification {
             if (property_exists($data, 'programid2') && $oldcertification->programid2 != $data->programid2) {
                 if ($data->programid2) {
                     $program = $DB->get_record('tool_muprog_program', ['id' => $data->programid2], '*', MUST_EXIST);
+                    if ($program->draft) {
+                        throw new \invalid_parameter_exception('Draft program cannot be used in certifications');
+                    }
                     $record->programid2 = $program->id;
                 } else {
                     $record->programid2 = null;

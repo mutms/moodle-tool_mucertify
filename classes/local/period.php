@@ -346,6 +346,9 @@ final class period {
         }
         if ($data->programid) {
             $program = $DB->get_record('tool_muprog_program', ['id' => $data->programid], '*', MUST_EXIST);
+            if ($program->draft) {
+                throw new \invalid_parameter_exception('Draft program cannot be used in certifications');
+            }
             $programid = $program->id;
             unset($program);
         } else {
@@ -1000,7 +1003,7 @@ final class period {
                   JOIN {tool_mucertify_certification} c ON c.id = cp.certificationid AND c.archived = 0
                   JOIN {tool_mucertify_assignment} ca ON ca.certificationid = c.id AND ca.userid = cp.userid AND ca.archived = 0
                   JOIN {user} u ON u.id = cp.userid AND u.deleted = 0
-                  JOIN {tool_muprog_program} p ON p.id = c.programid2 AND p.archived = 0
+                  JOIN {tool_muprog_program} p ON p.id = c.programid2 AND p.archived = 0 AND p.draft = 0
                  WHERE cp.timerevoked IS NULL AND cp.recertifiable = 1 AND cp.timecertified IS NOT NULL
                        AND cp.timeuntil - c.recertify < :now
                        AND cp.timeuntil > :cutoff

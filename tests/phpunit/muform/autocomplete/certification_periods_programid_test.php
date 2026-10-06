@@ -299,4 +299,26 @@ final class certification_periods_programid_test extends \advanced_testcase {
         $this->assertSame($program1->fullname, $source->label((string)$program1->id));
         $this->assertSame($program2->fullname, $source->label((string)$program2->id));
     }
+
+    public function test_draft_program(): void {
+        /** @var \tool_mucertify_generator $generator */
+        $generator = $this->getDataGenerator()->get_plugin_generator('tool_mucertify');
+        /** @var \tool_muprog_generator $programgenerator */
+        $programgenerator = $this->getDataGenerator()->get_plugin_generator('tool_muprog');
+
+        $program1 = $programgenerator->create_program(['fullname' => 'Program 1', 'sources' => ['mucertify' => []]]);
+        $program2 = $programgenerator->create_program(['fullname' => 'Program 2', 'draft' => 1, 'sources' => ['mucertify' => []]]);
+        $certification = $generator->create_certification([]);
+
+        $this->setAdminUser();
+
+        $source = new certification_periods_programid((int)$certification->id);
+        $this->assertSame([(int)$program1->id => 'Program 1'], $source->search('', 50));
+        $this->assertSame('Program 1', $source->label((string)$program1->id));
+        $this->assertNull($source->label((string)$program2->id));
+
+        \tool_muprog\local\program::release($program2->id);
+        $this->assertSame([(int)$program1->id => 'Program 1', (int)$program2->id => 'Program 2'], $source->search('', 50));
+        $this->assertSame('Program 2', $source->label((string)$program2->id));
+    }
 }
