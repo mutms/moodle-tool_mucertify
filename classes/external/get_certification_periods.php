@@ -40,8 +40,8 @@ final class get_certification_periods extends external_api {
      */
     public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters([
-            'certificationid' => new external_value(PARAM_INT, 'Certification id'),
-            'userid' => new external_value(PARAM_INT, 'User id'),
+            'certificationid' => new external_value(PARAM_INT, 'Certification id', VALUE_REQUIRED, null, NULL_NOT_ALLOWED),
+            'userid' => new external_value(PARAM_INT, 'User id', VALUE_REQUIRED, null, NULL_NOT_ALLOWED),
         ]);
     }
 

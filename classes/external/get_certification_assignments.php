@@ -40,7 +40,7 @@ final class get_certification_assignments extends external_api {
      */
     public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters([
-            'certificationid' => new external_value(PARAM_INT, 'Certification id'),
+            'certificationid' => new external_value(PARAM_INT, 'Certification id', VALUE_REQUIRED, null, NULL_NOT_ALLOWED),
             'userids' => new external_multiple_structure(
                 new external_value(PARAM_INT, 'User id'),
                 'List of user ids for whom the certification assignment must be fetched, NULL or empty array means all',
