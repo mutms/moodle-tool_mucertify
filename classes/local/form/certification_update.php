@@ -62,6 +62,10 @@ final class certification_update extends form {
 
         $this->add(new editor('description', get_string('description'), -1));
 
+        $blockprogramreuse = new yesno('blockprogramreuse', get_string('blockprogramreuse', 'tool_mucertify'));
+        $blockprogramreuse->add_help_button('blockprogramreuse', 'tool_mucertify');
+        $this->add($blockprogramreuse);
+
         $archived = new yesno('archived', get_string('archived', 'tool_mucertify'));
         $archived->set_frozen(true);
         $this->add($archived);

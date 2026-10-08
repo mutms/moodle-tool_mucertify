@@ -81,6 +81,8 @@ class renderer extends \plugin_renderer_base {
         }
         $details->add(get_string('description'), $description);
 
+        $details->add(get_string('blockprogramreuse', 'tool_mucertify'), $certification->blockprogramreuse ? get_string('yes') : get_string('no'));
+
         $archived = $certification->archived ? get_string('yes') : get_string('no');
         if (has_capability('tool/mucertify:edit', $context)) {
             if ($certification->archived) {

@@ -185,5 +185,16 @@ function xmldb_tool_mucertify_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026100553, 'tool', 'mucertify');
     }
 
+    if ($oldversion < 2026100853) {
+        $table = new xmldb_table('tool_mucertify_certification');
+        $field = new xmldb_field('blockprogramreuse', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'recertify');
+
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        upgrade_plugin_savepoint(true, 2026100853, 'tool', 'mucertify');
+    }
+
     return true;
 }

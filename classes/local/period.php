@@ -312,6 +312,33 @@ final class period {
     }
 
     /**
+     * Is the program blocked for new period of user because they used it already?
+     *
+     * If enabled in certification settings then each program can be used only once
+     * for each user in certification, this includes revoked periods.
+     *
+     * @param stdClass $certification
+     * @param int $userid
+     * @param int|null $programid
+     * @return bool
+     */
+    public static function is_program_reuse_blocked(stdClass $certification, int $userid, ?int $programid): bool {
+        global $DB;
+
+        if (!$programid) {
+            return false;
+        }
+        if (!$certification->blockprogramreuse) {
+            return false;
+        }
+
+        return $DB->record_exists(
+            'tool_mucertify_period',
+            ['certificationid' => $certification->id, 'userid' => $userid, 'programid' => $programid]
+        );
+    }
+
+    /**
      * Add period.
      *
      * @param stdClass $data
@@ -351,6 +378,9 @@ final class period {
             }
             $programid = $program->id;
             unset($program);
+            if (self::is_program_reuse_blocked($certification, $userid, $programid)) {
+                throw new \invalid_parameter_exception('Program was already used in another period of user');
+            }
         } else {
             // Special case - might be some historic data with non-existing program.
             $programid = null;
@@ -1021,6 +1051,10 @@ final class period {
             }
             $assignment = $DB->get_record('tool_mucertify_assignment', ['certificationid' => $certification->id, 'userid' => $period->userid]);
             if (!$assignment || $assignment->archived) {
+                continue;
+            }
+            if (self::is_program_reuse_blocked($certification, $period->userid, $certification->programid2)) {
+                // The renewal is created later when recertification program is changed, see renewalblocked notification.
                 continue;
             }
             $periodsettings = certification::get_periods_settings($certification);

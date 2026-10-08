@@ -146,6 +146,8 @@ final class certification {
             $data->programid2 = null;
         }
 
+        $data->blockprogramreuse = empty($data->blockprogramreuse) ? 0 : 1;
+
         $data->timecreated = time();
         $data->id = $DB->insert_record('tool_mucertify_certification', $data);
 
@@ -261,6 +263,9 @@ final class certification {
         }
         if (isset($data->descriptionformat)) {
             $record->descriptionformat = $data->descriptionformat;
+        }
+        if (isset($data->blockprogramreuse)) {
+            $record->blockprogramreuse = (int)(bool)$data->blockprogramreuse;
         }
         // Do not change archived flag here!
         if (isset($data->archived) && $data->archived != $oldcertification->archived) {

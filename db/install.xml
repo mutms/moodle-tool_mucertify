@@ -18,6 +18,7 @@
         <FIELD NAME="programid2" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Program for recertification, programid1 used if not set"/>
         <FIELD NAME="templateid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Template for certification and recertification certificate"/>
         <FIELD NAME="recertify" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="NULL means no automatic recertification, number is seconds before the end of last period when the next recertification window opens"/>
+        <FIELD NAME="blockprogramreuse" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="1 means each program can be used only once for each user in certification periods, including revoked periods"/>
         <FIELD NAME="periodsjson" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="Various setting for creation of certification periods - length, window size, dates logic, reset type, etc."/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
       </FIELDS>

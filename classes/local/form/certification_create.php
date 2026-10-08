@@ -29,6 +29,7 @@ use tool_mulib\muform\element\filemanager;
 use tool_mulib\muform\element\submit;
 use tool_mulib\muform\element\tags;
 use tool_mulib\muform\element\text;
+use tool_mulib\muform\element\yesno;
 use tool_mulib\muform\form;
 use tool_mucertify\customfield\certification_handler;
 use tool_mucertify\muform\autocomplete\certification_contextid;
@@ -66,6 +67,10 @@ final class certification_create extends form {
         $this->add(new filemanager('image', get_string('certificationimage', 'tool_mucertify'), 1, ['.jpg', '.jpeg', '.jpe', '.png']));
 
         $this->add(new editor('description', get_string('description'), -1));
+
+        $blockprogramreuse = new yesno('blockprogramreuse', get_string('blockprogramreuse', 'tool_mucertify'));
+        $blockprogramreuse->add_help_button('blockprogramreuse', 'tool_mucertify');
+        $this->add($blockprogramreuse);
 
         $sources = [];
         /** @var \tool_mucertify\local\source\base[] $sourceclasses */

@@ -2159,4 +2159,107 @@ final class period_test extends \advanced_testcase {
             $this->assertStringContainsString('Draft program cannot be used in certifications', $ex->getMessage());
         }
     }
+
+    public function test_block_program_reuse(): void {
+        global $DB;
+        /** @var \tool_mucertify_generator $generator */
+        $generator = $this->getDataGenerator()->get_plugin_generator('tool_mucertify');
+        /** @var \tool_muprog_generator $programgenerator */
+        $programgenerator = $this->getDataGenerator()->get_plugin_generator('tool_muprog');
+
+        $now = time();
+
+        $user1 = $this->getDataGenerator()->create_user();
+        $user2 = $this->getDataGenerator()->create_user();
+        $program1 = $programgenerator->create_program(['sources' => 'mucertify']);
+        $program2 = $programgenerator->create_program(['sources' => 'mucertify']);
+
+        $data = [
+            'sources' => 'manual',
+            'programid1' => $program1->id,
+            'recertify' => DAYSECS,
+            'programid2' => $program1->id,
+        ];
+        $certification1 = $generator->create_certification($data);
+        $certification2 = $generator->create_certification($data);
+        $source1 = $DB->get_record('tool_mucertify_source', ['type' => 'manual', 'certificationid' => $certification1->id], '*', MUST_EXIST);
+        $source2 = $DB->get_record('tool_mucertify_source', ['type' => 'manual', 'certificationid' => $certification2->id], '*', MUST_EXIST);
+
+        // Not enabled by default.
+        $this->assertSame('0', $certification1->blockprogramreuse);
+
+        $dates = [
+            'timewindowstart' => $now - YEARSECS,
+            'timewindowdue' => null,
+            'timewindowend' => null,
+            'timefrom' => $now - YEARSECS,
+            'timeuntil' => $now + DAYSECS - 77,
+            'timecertified' => $now - YEARSECS + 10,
+        ];
+        manual::assign_users($certification1->id, $source1->id, [$user1->id], $dates);
+        manual::assign_users($certification2->id, $source2->id, [$user1->id], $dates);
+        $period1 = $DB->get_record('tool_mucertify_period', ['certificationid' => $certification1->id, 'userid' => $user1->id], '*', MUST_EXIST);
+        $this->assertSame($program1->id, $period1->programid);
+
+        $this->assertFalse(period::is_program_reuse_blocked($certification1, $user1->id, $program1->id));
+
+        $certification1 = \tool_mucertify\local\certification::update_general((object)['id' => $certification1->id, 'blockprogramreuse' => 1]);
+        $this->assertSame('1', $certification1->blockprogramreuse);
+        $this->assertSame('0', $certification2->blockprogramreuse);
+
+        $this->assertTrue(period::is_program_reuse_blocked($certification1, $user1->id, $program1->id));
+        $this->assertFalse(period::is_program_reuse_blocked($certification1, $user1->id, $program2->id));
+        $this->assertFalse(period::is_program_reuse_blocked($certification1, $user1->id, null));
+        $this->assertFalse(period::is_program_reuse_blocked($certification1, $user2->id, $program1->id));
+        $this->assertFalse(period::is_program_reuse_blocked($certification2, $user1->id, $program1->id));
+
+        // Recertification is not started with a program that was already used.
+        period::process_recertifications(null, null);
+        $this->assertCount(1, $DB->get_records('tool_mucertify_period', ['certificationid' => $certification1->id, 'userid' => $user1->id]));
+        $this->assertCount(2, $DB->get_records('tool_mucertify_period', ['certificationid' => $certification2->id, 'userid' => $user1->id]));
+        $period1 = $DB->get_record('tool_mucertify_period', ['id' => $period1->id], '*', MUST_EXIST);
+        $this->assertSame('1', $period1->recertifiable);
+
+        // Periods cannot be added manually either.
+        $data = [
+            'certificationid' => $certification1->id,
+            'userid' => $user1->id,
+            'programid' => $program1->id,
+            'timewindowstart' => $now,
+        ];
+        try {
+            period::add((object)$data);
+            $this->fail('Exception expected');
+        } catch (\core\exception\moodle_exception $ex) {
+            $this->assertInstanceOf(\core\exception\invalid_parameter_exception::class, $ex);
+            $this->assertStringContainsString('Program was already used in another period of user', $ex->getMessage());
+        }
+        $this->assertCount(1, $DB->get_records('tool_mucertify_period', ['certificationid' => $certification1->id, 'userid' => $user1->id]));
+
+        // Recertification starts when the recertification program is changed.
+        $certification1 = \tool_mucertify\local\certification::update_settings((object)['id' => $certification1->id, 'programid2' => $program2->id]);
+        period::process_recertifications(null, null);
+        $periods = $DB->get_records('tool_mucertify_period', ['certificationid' => $certification1->id, 'userid' => $user1->id], 'id ASC');
+        $this->assertCount(2, $periods);
+        $period2 = end($periods);
+        $this->assertSame($program2->id, $period2->programid);
+        $period1 = $DB->get_record('tool_mucertify_period', ['id' => $period1->id], '*', MUST_EXIST);
+        $this->assertSame('0', $period1->recertifiable);
+
+        // Revoked periods are included.
+        $this->assertTrue(period::is_program_reuse_blocked($certification1, $user1->id, $program2->id));
+        $DB->set_field('tool_mucertify_period', 'timerevoked', $now, ['id' => $period2->id]);
+        $this->assertTrue(period::is_program_reuse_blocked($certification1, $user1->id, $program2->id));
+        period::delete($period2->id);
+        $this->assertFalse(period::is_program_reuse_blocked($certification1, $user1->id, $program2->id));
+
+        // The setting does not depend on recertification.
+        $certification1 = \tool_mucertify\local\certification::update_settings((object)['id' => $certification1->id, 'recertify' => null]);
+        $this->assertSame('1', $certification1->blockprogramreuse);
+        $this->assertTrue(period::is_program_reuse_blocked($certification1, $user1->id, $program1->id));
+
+        $certification1 = \tool_mucertify\local\certification::update_general((object)['id' => $certification1->id, 'blockprogramreuse' => 0]);
+        $this->assertSame('0', $certification1->blockprogramreuse);
+        $this->assertFalse(period::is_program_reuse_blocked($certification1, $user1->id, $program1->id));
+    }
 }

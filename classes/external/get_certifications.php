@@ -156,6 +156,7 @@ final class get_certifications extends external_api {
                 'programid2' => new external_value(PARAM_INT, 'Re-certification program id'),
                 'templateid' => new external_value(PARAM_INT, 'Certificate template id'),
                 'recertify' => new external_value(PARAM_INT, 'NULL means no automatic recertification, number is seconds before the end of last period when window opens'),
+                'blockprogramreuse' => new external_value(PARAM_BOOL, 'Each program can be used only once for each user in certification periods'),
                 'periodsjson' => new external_value(PARAM_RAW, 'Period defaults'),
                 'timecreated' => new external_value(PARAM_INT, 'Certification creation date'),
                 'sources' => new external_multiple_structure(

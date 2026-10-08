@@ -71,6 +71,14 @@ final class period_create extends form {
 
     #[\Override]
     protected function validation(array $data, array &$allerrors): void {
+        global $DB;
+
+        $extra = $this->get_extra_data();
+        $certification = $DB->get_record('tool_mucertify_certification', ['id' => $extra['certificationid']], '*', MUST_EXIST);
+        if (\tool_mucertify\local\period::is_program_reuse_blocked($certification, (int)$extra['userid'], (int)$data['programid'])) {
+            $allerrors['programid'][] = get_string('error_programreuse', 'tool_mucertify');
+        }
+
         if ($data['timewindowdue'] && $data['timewindowdue'] <= $data['timewindowstart']) {
             $allerrors['timewindowdue'][] = get_string('error');
         }

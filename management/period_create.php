@@ -67,7 +67,7 @@ $firstperiod = $DB->record_exists('tool_mucertify_period', ['certificationid' =>
 $current = period::get_default_dates($certification, $user->id, []);
 $current['userfullname'] = fullname($user);
 $current['programid'] = $firstperiod ? $settings->programid2 : $settings->programid1;
-$form = new \tool_mucertify\local\form\period_create($currenturl, $current, ['certificationid' => $certification->id]);
+$form = new \tool_mucertify\local\form\period_create($currenturl, $current, ['certificationid' => $certification->id, 'userid' => $user->id]);
 
 if ($form->is_cancelled()) {
     $handler->cancelled($returnurl);

@@ -266,3 +266,54 @@ Feature: Certification periods settings management tests
       | Program     | Window opening | Window closing | Expiration                 | Re-certify automatically |
       | Program 002 | 5/10/23        | Not set        | 5/10/24                    | 5/09/24                  |
     And I should not see "Program 001"
+
+  @javascript
+  Scenario: Manager may block reuse of programs in certification periods
+    Given I log in as "manager1"
+    And the following "permission overrides" exist:
+      | capability                         | permission | role     | contextlevel | reference |
+      | tool/mucertify:admin               | Allow      | pmanager | System       |           |
+    And I am on the "tool_mucertify > All certifications management" page
+
+    And I press "Add certification"
+    And I set the following muform fields in the "dialog[open]" "css_element":
+      | Certification name | Certification 001 |
+      | Certification ID   | CT01              |
+    And I click on "Add certification" "button" in the "dialog[open]" "css_element"
+    And I click on "Update certification" "link"
+    And I set the following muform fields in the "dialog[open]" "css_element":
+      | Program           | Program 001                   |
+    And I click on "Update certification" "button" in the "dialog[open]" "css_element"
+    And I click on "General" "link" in the ".secondary-navigation" "css_element"
+    And I should see "No" in the "Block program reuse" definition list item
+    And I press "Edit"
+    And I set the following muform fields in the "dialog[open]" "css_element":
+      | Block program reuse | Yes |
+    And I click on "Update certification" "button" in the "dialog[open]" "css_element"
+    And I should see "Yes" in the "Block program reuse" definition list item
+    And I click on "Assignment settings" "link" in the ".secondary-navigation" "css_element"
+    And I click on "Update Manual assignment" "link"
+    And I set the following muform fields in the "dialog[open]" "css_element":
+      | Active | Yes |
+    And I click on "Update" "button" in the "dialog[open]" "css_element"
+    And I click on "Users" "link" in the ".secondary-navigation" "css_element"
+    And I press "Assign users"
+    And I set the following muform fields in the "dialog[open]" "css_element":
+      | Users           | Student 1        |
+      | timewindowstart | 2022-10-05 09:00 |
+    And I click on "Assign users" "button" in the "dialog[open]" "css_element"
+    And I follow "Student 1"
+
+    When I press "Add period"
+    And I set the following muform fields in the "dialog[open]" "css_element":
+      | timewindowstart | 2023-10-05 09:00 |
+    And I click on "Add period" "button" in the "dialog[open]" "css_element"
+    Then I should see "This program was already used in another period of the user" in the "dialog[open]" "css_element"
+
+    When I set the following muform fields in the "dialog[open]" "css_element":
+      | Program         | Program 002      |
+    And I click on "Add period" "button" in the "dialog[open]" "css_element"
+    Then the following should exist in the "reportbuilder-table" table:
+      | Program     | Window opening |
+      | Program 001 | 5/10/22        |
+      | Program 002 | 5/10/23        |

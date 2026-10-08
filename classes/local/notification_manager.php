@@ -41,6 +41,7 @@ final class notification_manager extends \tool_mulib\local\notification\manager 
         return [
             'assignment' => notification\assignment::class,
             'valid' => notification\valid::class,
+            'renewalblocked' => notification\renewalblocked::class,
             'unassignment' => notification\unassignment::class,
         ];
     }
