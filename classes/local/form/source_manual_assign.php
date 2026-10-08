@@ -55,6 +55,10 @@ final class source_manual_assign extends form {
         $cohortid->set_required_marker(true);
         $this->add($cohortid);
 
+        // Either users or cohort is required, the other one is hidden when not needed.
+        $this->get_display_manager()->hide_if('cohortid', 'users', 'notempty');
+        $this->get_display_manager()->hide_if('users', 'cohortid', 'notempty');
+
         $timewindowstart = new datetime('timewindowstart', get_string('windowstartdate', 'tool_mucertify'));
         $timewindowstart->set_required(true);
         $this->add($timewindowstart);
@@ -86,6 +90,10 @@ final class source_manual_assign extends form {
         if (!$data['users'] && !$data['cohortid']) {
             $allerrors['users'][] = get_string('required');
             $allerrors['cohortid'][] = get_string('required');
+        }
+        if ($data['users'] && $data['cohortid']) {
+            // Hiding of fields is cosmetic only, never assign a cohort that the user cannot see in the form.
+            $allerrors['cohortid'][] = get_string('error');
         }
 
         if ($settings->recertify && !empty($data['timeuntil'])) {
