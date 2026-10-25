@@ -56,7 +56,7 @@ final class cohort extends base {
             $cohorts = self::fetch_assignment_cohorts_menu($source->id);
             \core_collator::asort($cohorts);
             if ($cohorts) {
-                $cohorts = array_map('format_string', $cohorts);
+                $cohorts = \tool_mulib\local\cohort_util::format_cohort_names(array_keys($cohorts));
                 $result .= ' (' . implode(', ', $cohorts) . ')';
             }
         }

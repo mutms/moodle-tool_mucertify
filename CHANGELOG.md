@@ -19,6 +19,7 @@ The format of this change log follows the advice given at [Keep a CHANGELOG](htt
 - _publicaccess_ and _cohortids_ were removed from _tool_mucertify_get_certifications_ web service
 - migration to new forms library
 - certification settings delays are entered as intervals with a single time unit
+- cohort names link to cohort management, the advanced cohort management page is used when installed
 
 ### Fixed
 
