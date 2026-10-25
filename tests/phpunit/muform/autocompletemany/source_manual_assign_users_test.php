@@ -244,7 +244,8 @@ final class source_manual_assign_users_test extends \advanced_testcase {
         $this->assertStringContainsString('user2@example.com', $labels[$user2->id]);
         $this->assertStringContainsString(\fullname($user3, true), $labels[$user3->id]);
 
-        $this->assertSame([(int)$user3->id => 'Suspended user'], $source->validate($values));
+        // Suspended users are allowed, the same as in 4.5.
+        $this->assertSame([], $source->validate($values));
         $this->assertSame([], $source->validate([(string)$user1->id, (string)$user2->id]));
     }
 }
