@@ -78,6 +78,7 @@ $string['certificationstatus_valid'] = 'Valid';
 $string['certificationurl'] = 'Certification URL';
 $string['certifieddate'] = 'Certification completion date';
 $string['certifieduntiltemporary'] = 'Temporary certification until';
+$string['cohort_usage_source'] = 'Certifications: {$a}';
 $string['columnusedalready'] = 'Column is used already';
 $string['currentcontextonly'] = 'Exclude sub-categories';
 $string['customfields'] = 'Certification custom fields';
