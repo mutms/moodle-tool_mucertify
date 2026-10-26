@@ -222,26 +222,39 @@ Feature: Manual certification assignment tests
     And I click on "Users" "link" in the ".secondary-navigation" "css_element"
 
     When I click on "Upload assignments" action from "User actions" dropdown
-    And I upload "admin/tool/mucertify/tests/fixtures/assign.csv" file to "csvfile" muform filemanager in the "dialog[open]" "css_element"
-    And I click on "Continue" "button" in the "dialog[open]" "css_element"
-    And the following muform fields in the "dialog[open]" "css_element" match:
-      | User identification column | username |
-      | User mapping via           | Username |
-      | First line is header       | 1        |
-    And I click on "Upload assignments" "button" in the "dialog[open]" "css_element"
-    Then I should see "4 users were assigned to certification"
-    And I should see "1 errors detected when assigning certification"
+    And I upload "admin/tool/mucertify/tests/fixtures/assign.csv" file to "sourcefile" muform filemanager
+    And I press "Continue"
+    Then I should see "6 rows were read"
+    And the following muform fields match:
+      | headers  | 1               |
+      | column_0 | username        |
+      | column_1 |                 |
+      | column_2 | timewindowstart |
+    And I set the following muform fields:
+      | column_2 | Not used |
+      | column_3 | Not used |
+      | column_4 | Not used |
+    And I press "Continue"
+    And I should see "Ready to assign: 4. Skipped: 1. Problems: 0."
+    And I should see "No user matches \"doesnotexists\"."
+    And I press "Upload assignments"
+    Then I should see "Assigned 4 users, skipped 1."
 
     When I click on "Upload assignments" action from "User actions" dropdown
-    And I upload "admin/tool/mucertify/tests/fixtures/assign.csv" file to "csvfile" muform filemanager in the "dialog[open]" "css_element"
-    And I click on "Continue" "button" in the "dialog[open]" "css_element"
-    And I set the following muform fields in the "dialog[open]" "css_element":
-      | User identification column | email         |
-      | User mapping via           | Email address |
-      | First line is header       | 1             |
-    And I click on "Upload assignments" "button" in the "dialog[open]" "css_element"
-    Then I should see "3 users were already assigned to certification"
-    And I should see "2 errors detected when assigning certification"
+    And I upload "admin/tool/mucertify/tests/fixtures/assign.csv" file to "sourcefile" muform filemanager
+    And I press "Continue"
+    And I set the following muform fields:
+      | column_0 | Not used      |
+      | column_1 | Email address |
+    And I press "Continue"
+    And I should see "Ready to assign: 0. Skipped: 5. Problems: 0."
+    And "Upload assignments" "button" should not exist
+    And I set the following muform fields:
+      | Skip users that are already assigned or listed more than once | 0 |
+    And I press "Refresh preview"
+    And I should see "Ready to assign: 0. Skipped: 2. Problems: 3."
+    And I should see "The user is already assigned."
+    And I press "Cancel"
 
     Given I am on the "tool_mucertify > All certifications management" page
     And I follow "Certification 001"
@@ -254,15 +267,17 @@ Feature: Manual certification assignment tests
     And I click on "Users" "link" in the ".secondary-navigation" "css_element"
 
     When I click on "Upload assignments" action from "User actions" dropdown
-    And I upload "admin/tool/mucertify/tests/fixtures/assign.csv" file to "csvfile" muform filemanager in the "dialog[open]" "css_element"
-    And I click on "Continue" "button" in the "dialog[open]" "css_element"
-    And I set the following muform fields in the "dialog[open]" "css_element":
-     | Window opening time column    | timewindowstart |
-     | Certification due time column | timewindowdue   |
-     | Window closing time column    | timewindowend   |
-    And I click on "Upload assignments" "button" in the "dialog[open]" "css_element"
-    Then I should see "3 users were assigned to certification"
-    And I should see "2 errors detected when assigning certification"
+    And I upload "admin/tool/mucertify/tests/fixtures/assign.csv" file to "sourcefile" muform filemanager
+    And I press "Continue"
+    And the following muform fields match:
+      | column_2 | timewindowstart |
+      | column_3 | timewindowdue   |
+      | column_4 | timewindowend   |
+    And I press "Continue"
+    And I should see "Ready to assign: 3. Skipped: 2. Problems: 0."
+    And I should see "Invalid date \"22/22/2024\"."
+    And I press "Upload assignments"
+    Then I should see "Assigned 3 users, skipped 2."
     And I click on "Student 1" "link"
     And the following should exist in the "reportbuilder-table" table:
       | Program     | Window opening  | Certification due | Window closing | Expiration  |
@@ -276,15 +291,15 @@ Feature: Manual certification assignment tests
     And I click on "Users" "link" in the ".secondary-navigation" "css_element"
 
     When I click on "Upload assignments" action from "User actions" dropdown
-    And I upload "admin/tool/mucertify/tests/fixtures/assign_expire.csv" file to "csvfile" muform filemanager in the "dialog[open]" "css_element"
-    And I click on "Continue" "button" in the "dialog[open]" "css_element"
-    And I set the following muform fields in the "dialog[open]" "css_element":
-      | User identification column | username  |
-      | User mapping via           | Username  |
-      | Expiration time column     | timeuntil |
-      | First line is header       | 1         |
-    And I click on "Upload assignments" "button" in the "dialog[open]" "css_element"
-    And I should see "2 users were assigned to certification"
+    And I upload "admin/tool/mucertify/tests/fixtures/assign_expire.csv" file to "sourcefile" muform filemanager
+    And I press "Continue"
+    And the following muform fields match:
+      | headers  | 1         |
+      | column_0 | username  |
+      | column_2 | timeuntil |
+    And I press "Continue"
+    And I press "Upload assignments"
+    And I should see "Assigned 2 users, skipped 0."
     And I follow "Student 1"
     Then the following should exist in the "reportbuilder-table" table:
       | Certification due | Window closing | Program     | Expiration     | Re-certify automatically | Status  |
@@ -303,15 +318,15 @@ Feature: Manual certification assignment tests
     And I click on "Users" "link" in the ".secondary-navigation" "css_element"
 
     When I click on "Upload assignments" action from "User actions" dropdown
-    And I upload "admin/tool/mucertify/tests/fixtures/assign_temp.csv" file to "csvfile" muform filemanager in the "dialog[open]" "css_element"
-    And I click on "Continue" "button" in the "dialog[open]" "css_element"
-    And I set the following muform fields in the "dialog[open]" "css_element":
-      | User identification column             | username  |
-      | User mapping via                       | Username  |
-      | Temporary certification until column   | timetemp  |
-      | First line is header                   | 1         |
-    And I click on "Upload assignments" "button" in the "dialog[open]" "css_element"
-    And I should see "2 users were assigned to certification"
+    And I upload "admin/tool/mucertify/tests/fixtures/assign_temp.csv" file to "sourcefile" muform filemanager
+    And I press "Continue"
+    And the following muform fields match:
+      | headers  | 1                 |
+      | column_0 | username          |
+      | column_2 | timecertifiedtemp |
+    And I press "Continue"
+    And I press "Upload assignments"
+    And I should see "Assigned 2 users, skipped 0."
     And I follow "Student 1"
     Then I should see "Temporary valid" in the "Certification status" definition list item
     And I should see "Tuesday, 2 January 2035, 12:00" in the "Temporary certification until" definition list item

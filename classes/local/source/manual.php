@@ -106,9 +106,11 @@ final class manual extends base {
             $actions->add_button($button);
 
             $url = new \core\url('/admin/tool/mucertify/management/source_manual_upload.php', ['sourceid' => $source->id]);
-            $link = new \tool_mulib\output\muform\dialog\link($url, get_string('source_manual_uploadusers', 'tool_mucertify'), 'i/publish');
-            $link->set_form_size('xl');
-            $actions->get_dropdown()->add_dialog($link);
+            $actions->get_dropdown()->add_item(
+                get_string('source_manual_uploadusers', 'tool_mucertify'),
+                $url,
+                new \core\output\pix_icon('i/publish', '')
+            );
         }
     }
 
@@ -177,105 +179,6 @@ final class manual extends base {
 
         \tool_muprog\local\source\mucertify::sync_certifications($certification->id, $userid);
         \tool_mucertify\local\notification_manager::trigger_notifications($certification->id, $userid);
-
-        return $result;
-    }
-
-    /**
-     * Returns preprocessed user assignment upload file contents.
-     *
-     * NOTE: data.json file is deleted.
-     *
-     * @param stdClass $data form submission data
-     * @param array $filedata decoded data.json file
-     * @return array with keys 'assigned', 'skipped' and 'errors'
-     */
-    public static function process_uploaded_data(stdClass $data, array $filedata): array {
-        global $DB, $USER;
-
-        if (
-            $data->usermapping !== 'username'
-                && $data->usermapping !== 'email'
-                && $data->usermapping !== 'idnumber'
-        ) {
-            // We need to prevent SQL injections in get_record later!
-            throw new \coding_exception('Invalid usermapping value');
-        }
-
-        $result = [
-            'assigned' => 0,
-            'skipped' => 0,
-            'errors' => 0,
-        ];
-
-        $source = $DB->get_record('tool_mucertify_source', ['id' => $data->sourceid, 'type' => 'manual'], '*', MUST_EXIST);
-        $certification = $DB->get_record('tool_mucertify_certification', ['id' => $source->certificationid], '*', MUST_EXIST);
-
-        if ($data->hasheaders) {
-            unset($filedata[0]);
-        }
-
-        $datefields = [
-            'timestartcolumn' => 'timewindowstart',
-            'timeduecolumn' => 'timewindowdue',
-            'timeendcolumn' => 'timewindowend',
-            'timeuntilcolumn' => 'timeuntil',
-            'timecertifiedtempcolumn' => 'timecertifiedtemp',
-        ];
-        $datecolumns = [];
-        foreach ($datefields as $key => $value) {
-            if (isset($data->{$key}) && $data->{$key} != -1) {
-                $datecolumns[$value] = $data->{$key};
-            }
-        }
-
-        foreach ($filedata as $i => $row) {
-            $userident = $row[$data->usercolumn];
-            if (!$userident) {
-                $result['errors']++;
-                continue;
-            }
-            $users = $DB->get_records('user', [$data->usermapping => $userident, 'deleted' => 0, 'confirmed' => 1]);
-            if (count($users) !== 1) {
-                $result['errors']++;
-                continue;
-            }
-            $user = reset($users);
-            if (isguestuser($user->id)) {
-                $result['errors']++;
-                continue;
-            }
-            if ($DB->record_exists('tool_mucertify_assignment', ['certificationid' => $certification->id, 'userid' => $user->id])) {
-                $result['skipped']++;
-                continue;
-            }
-
-            $dateoverrides = [];
-            foreach ($datecolumns as $key => $value) {
-                if (!empty($row[$value])) {
-                    $dateoverrides[$key] = strtotime($row[$value]);
-                    if ($dateoverrides[$key] === false) {
-                        $result['errors']++;
-                        continue 2;
-                    }
-                }
-            }
-
-            if (!self::assignment_create($certification, $source, $user->id, [], $dateoverrides)) {
-                $result['errors']++;
-                continue;
-            }
-            \tool_muprog\local\source\mucertify::sync_certifications($certification->id, $user->id);
-            \tool_mucertify\local\notification_manager::trigger_notifications($certification->id, $user->id);
-            $result['assigned']++;
-        }
-
-        if (!empty($data->csvfile)) {
-            $fs = get_file_storage();
-            $context = \context_user::instance($USER->id);
-            $fs->delete_area_files($context->id, 'user', 'draft', $data->csvfile);
-            $fs->delete_area_files($context->id, 'tool_mucertify', 'upload', $data->csvfile);
-        }
 
         return $result;
     }

@@ -15,31 +15,38 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 // phpcs:disable moodle.Files.BoilerplateComment.CommentEndedTooSoon
-// phpcs:disable moodle.Files.LineLength.TooLong
 
 /**
- * Uploads user history for certifications.
+ * Upload or copy/paste historic certification periods via CSV format.
+ *
+ * The page walks through three stages: source, column meaning, options with a dry run.
+ * The parsed rows and the answers live in the muform wizard state between stages, the
+ * current stage is always decided from that state.
  *
  * @package    tool_mucertify
  * @copyright  2024 Open LMS (https://www.openlms.net/)
+ * @copyright  2026 Petr Skoda
  * @author     Farhan Karmali
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use tool_mucertify\local\form\history_upload_file;
+use tool_mucertify\local\form\history_upload_columns;
 use tool_mucertify\local\form\history_upload_options;
-use tool_mulib\muform\handler;
+use tool_mucertify\local\form\history_upload_source;
+use tool_mucertify\local\history_upload;
+use tool_mucertify\local\management;
+use tool_mulib\muform\wizard;
 
+// phpcs:disable moodle.Commenting.InlineComment.TypeHintingMatch
 /** @var moodle_database $DB */
 /** @var moodle_page $PAGE */
 /** @var core_renderer $OUTPUT */
 /** @var stdClass $CFG */
-/** @var stdClass $COURSE */
+// phpcs:enable moodle.Commenting.InlineComment.TypeHintingMatch
 
 require('../../../../config.php');
 
 $certificationid = required_param('certificationid', PARAM_INT);
-$csvfile = optional_param('csvfile', 0, PARAM_INT);
 
 require_login();
 
@@ -48,71 +55,106 @@ $source = $DB->get_record('tool_mucertify_source', ['certificationid' => $certif
 $context = context::instance_by_id($certification->contextid);
 require_capability('tool/mucertify:admin', $context);
 
-$currenturl = new \core\url('/admin/tool/mucertify/management/history_upload.php', ['certificationid' => $certification->id]);
-$PAGE->set_context($context);
-$PAGE->set_url($currenturl);
+$pageurl = new core\url('/admin/tool/mucertify/management/history_upload.php', ['certificationid' => $certification->id]);
+management::setup_certification_page($pageurl, $context, $certification, 'certification_users');
 $title = get_string('history_upload', 'tool_mucertify');
-$PAGE->set_title($title);
-$PAGE->set_heading($title);
+$PAGE->navbar->add($title);
 
-$returnurl = new \core\url('/admin/tool/mucertify/management/certification_users.php', ['id' => $certification->id]);
+$returnurl = new core\url('/admin/tool/mucertify/management/certification_users.php', ['id' => $certification->id]);
 
 $sourceclass = \tool_mucertify\local\assignment::get_source_classname('manual');
 if (!$sourceclass::is_assignment_possible($certification, $source)) {
     redirect($returnurl);
 }
 
-$handler = handler::from_request();
-
-// Rows parsed in the first step are stored in the user's upload area.
-$filedata = \tool_mucertify\local\util::get_uploaded_data($csvfile);
-$extra = ['filedata' => $filedata, 'source' => $source, 'context' => $context];
-
-if (!$filedata) {
-    $form = new history_upload_file($currenturl, []);
-    if ($form->is_cancelled()) {
-        $handler->cancelled($returnurl);
-    }
-    if ($data = $form->get_data()) {
-        $nexturl = new \core\url($currenturl, ['csvfile' => $data->csvfile]);
-        if ($handler->is_dialog()) {
-            // The dialog continues with the second step, the page gets it from the next URL.
-            $extra['filedata'] = \tool_mucertify\local\util::get_uploaded_data((int)$data->csvfile);
-            $handler->render(new history_upload_options($nexturl, [], $extra));
-        }
-        redirect($nexturl);
-    }
-    $handler->render($form);
+// New users may be assigned only via manual assignment source.
+if (!$source || !has_capability('tool/mucertify:assign', $context)) {
+    $source = null;
 }
 
-$form = new history_upload_options(new \core\url($currenturl, ['csvfile' => $csvfile]), [], $extra);
+// The state belongs to this certification, it cannot be replayed against another one.
+$wizardname = 'tool_mucertify_history_upload:' . $certification->id;
+$wizard = wizard::load($wizardname, optional_param(wizard::PARAM, 0, PARAM_INT));
+if (!$wizard) {
+    $wizard = wizard::start($wizardname);
+    redirect($wizard->get_url($pageurl));
+}
+
+// The stored state is validated again on every request, each stage fills one part of it.
+$state = $wizard->get_data();
+$csvdata = history_upload::validate($state);
+$sourcedata = is_array($state['source'] ?? null) ? $state['source'] : [];
+
+$labels = [
+    'source' => get_string('history_upload_source', 'tool_mucertify'),
+    'columns' => get_string('history_upload_columns', 'tool_mucertify'),
+    'options' => get_string('history_upload_options', 'tool_mucertify'),
+];
+$isvalid = fn(string $stage): bool => match ($stage) {
+    'source' => !history_upload::is_source_stage($csvdata),
+    'columns' => !history_upload::is_columns_stage($csvdata),
+    'options' => !history_upload::is_options_stage($csvdata),
+};
+$requested = optional_param(wizard::STAGE_PARAM, null, PARAM_ALPHA);
+$stages = wizard::resolve_stages($labels, $isvalid, $requested);
+$stage = wizard::current_stage($stages);
+
+if ($requested === null && $isvalid('options')) {
+    // Everything was answered, import the periods.
+    $counts = history_upload::import($certification, $source, $csvdata, (object)$csvdata->options);
+    $wizard->delete();
+    if ($counts[history_upload::RESULT_ERROR]) {
+        \core\notification::error(get_string('history_upload_failed', 'tool_mucertify', (object)$counts));
+    } else {
+        \core\notification::success(get_string('history_upload_done', 'tool_mucertify', (object)$counts));
+    }
+    redirect($returnurl);
+}
+
+$formurl = $wizard->get_url($pageurl, $stage);
+if ($stage === 'source') {
+    $form = new history_upload_source($formurl, $sourcedata);
+} else if ($stage === 'columns') {
+    $current = [];
+    if ($csvdata->columns) {
+        $current['headers'] = (int)$csvdata->columns['headers'];
+        foreach ($csvdata->columns['map'] as $index => $value) {
+            $current['column_' . $index] = $value;
+        }
+    }
+    $form = new history_upload_columns($formurl, $current, ['rows' => $csvdata->rows]);
+} else {
+    // Options of an earlier confirmation are only defaults of the form.
+    $extra = ['certification' => $certification, 'source' => $source, 'csvdata' => $csvdata];
+    $form = new history_upload_options($formurl, $csvdata->options, $extra);
+}
 
 if ($form->is_cancelled()) {
-    $handler->cancelled($returnurl);
+    $wizard->delete();
+    redirect($returnurl);
 }
-
+if ($stage !== 'source' && $form->is_reloaded() && $form->get_element('back')->get_value()) {
+    redirect($wizard->get_url($pageurl, $stage === 'options' ? 'columns' : 'source'));
+}
 if ($data = $form->get_data()) {
-    $data->certificationid = $certification->id;
-    $result = \tool_mucertify\local\period::process_history_upload($data, $filedata);
-
-    if ($result['assigned']) {
-        $message = get_string('history_upload_result_assigned', 'tool_mucertify', $result['assigned']);
-        \core\notification::add($message, \core\output\notification::NOTIFY_SUCCESS);
+    if ($stage === 'source') {
+        $csvdata = history_upload::save_source($form->get_source_content(), $data->encoding, $data->delimiter_name);
+        $sourcedata = [
+            'sourcefile' => (int)$data->sourcefile,
+            'csvtext' => $data->csvtext,
+            'encoding' => $data->encoding,
+            'delimiter_name' => $data->delimiter_name,
+        ];
+    } else if ($stage === 'columns') {
+        $csvdata = history_upload::save_columns($csvdata, $data);
+    } else {
+        $csvdata = history_upload::save_options($csvdata, $data);
     }
-    if ($result['periods']) {
-        $message = get_string('history_upload_result_periods', 'tool_mucertify', $result['periods']);
-        \core\notification::add($message, \core\output\notification::NOTIFY_SUCCESS);
-    }
-    if ($result['skipped']) {
-        $message = get_string('history_upload_result_skipped', 'tool_mucertify', $result['skipped']);
-        \core\notification::add($message, \core\output\notification::NOTIFY_INFO);
-    }
-    if ($result['errors']) {
-        $message = get_string('history_upload_result_errors', 'tool_mucertify', $result['errors']);
-        \core\notification::add($message, \core\output\notification::NOTIFY_WARNING);
-    }
-
-    $handler->submitted($returnurl);
+    $wizard->set_data((array)$csvdata + ['source' => $sourcedata]);
+    redirect($wizard->get_url($pageurl));
 }
 
-$handler->render($form);
+echo $OUTPUT->header();
+echo $OUTPUT->heading($title, 2, 'mb-3');
+echo $wizard->render($OUTPUT, $stages, $pageurl, $form);
+echo $OUTPUT->footer();

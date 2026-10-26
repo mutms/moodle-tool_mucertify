@@ -70,11 +70,20 @@ Feature: Import of historic certification periods
 
     When I click on "Users" "link" in the ".secondary-navigation" "css_element"
     And I click on "Upload history" action from "User actions" dropdown
-    And I upload "admin/tool/mucertify/tests/fixtures/history1.csv" file to "csvfile" muform filemanager in the "dialog[open]" "css_element"
-    And I click on "Continue" "button" in the "dialog[open]" "css_element"
-    And I click on "Upload history" "button" in the "dialog[open]" "css_element"
-    Then I should see "Certification periods imported: 2"
-    And I should see "Rows skipped: 1"
+    And I upload "admin/tool/mucertify/tests/fixtures/history1.csv" file to "sourcefile" muform filemanager
+    And I press "Continue"
+    Then the following muform fields match:
+      | headers  | 1             |
+      | column_0 | username      |
+      | column_1 | timefrom      |
+      | column_2 | timeuntil     |
+      | column_3 | timecertified |
+      | column_4 | evidence      |
+    And I press "Continue"
+    And I should see "Ready to import: 2. Skipped: 1. Problems: 0."
+    And I should see "The user is not assigned."
+    And I press "Upload history"
+    Then I should see "Imported 2 certification periods, assigned 0 users, skipped 1."
     And the following should exist in the "reportbuilder-table" table:
       | First name | Valid from     | Expiration      | Certification status | Source                      |
       | Student 1  | 1/01/20, 00:00 | 31/03/20, 00:00 | Expired              | Automatic cohort assignment |
@@ -82,14 +91,16 @@ Feature: Import of historic certification periods
     And I should not see "Student 3"
 
     When I click on "Upload history" action from "User actions" dropdown
-    And I upload "admin/tool/mucertify/tests/fixtures/history1.csv" file to "csvfile" muform filemanager in the "dialog[open]" "css_element"
-    And I click on "Continue" "button" in the "dialog[open]" "css_element"
-    And I set the following muform fields in the "dialog[open]" "css_element":
+    And I upload "admin/tool/mucertify/tests/fixtures/history1.csv" file to "sourcefile" muform filemanager
+    And I press "Continue"
+    And I press "Continue"
+    And I set the following muform fields:
       | Create new assignments | 1 |
-    And I click on "Upload history" "button" in the "dialog[open]" "css_element"
-    Then I should see "Users assigned to certification: 1"
-    And I should see "Certification periods imported: 1"
-    And I should see "Rows skipped: 2"
+    And I press "Refresh preview"
+    And I should see "Ready to import: 1. Skipped: 2. Problems: 0."
+    And I should see "The certification period exists already."
+    And I press "Upload history"
+    Then I should see "Imported 1 certification periods, assigned 1 users, skipped 2."
     And the following should exist in the "reportbuilder-table" table:
       | First name | Valid from     | Expiration      | Certification status | Source                      |
       | Student 1  | 1/01/20, 00:00 | 31/03/20, 00:00 | Expired              | Automatic cohort assignment |
@@ -97,15 +108,16 @@ Feature: Import of historic certification periods
       | Student 3  | 1/03/19, 00:00 | 31/05/19, 00:00 | Expired              | Manual assignment           |
 
     When I click on "Upload history" action from "User actions" dropdown
-    And I upload "admin/tool/mucertify/tests/fixtures/history2.txt" file to "csvfile" muform filemanager in the "dialog[open]" "css_element"
-    And I click on "Continue" "button" in the "dialog[open]" "css_element"
-    And I set the following muform fields in the "dialog[open]" "css_element":
+    And I upload "admin/tool/mucertify/tests/fixtures/history2.txt" file to "sourcefile" muform filemanager
+    And I press "Continue"
+    And I press "Continue"
+    And I set the following muform fields:
       | Create new assignments      | 1 |
       | Skip already assigned users | 1 |
-    And I click on "Upload history" "button" in the "dialog[open]" "css_element"
-    Then I should see "Users assigned to certification: 1"
-    And I should see "Certification periods imported: 1"
-    And I should see "Rows skipped: 1"
+    And I press "Refresh preview"
+    And I should see "Ready to import: 1. Skipped: 1. Problems: 0."
+    And I press "Upload history"
+    Then I should see "Imported 1 certification periods, assigned 1 users, skipped 1."
     And the following should exist in the "reportbuilder-table" table:
       | First name | Valid from     | Expiration      | Certification status | Source                      |
       | Student 1  | 1/01/20, 00:00 | 31/03/20, 00:00 | Expired              | Automatic cohort assignment |
@@ -114,37 +126,25 @@ Feature: Import of historic certification periods
       | Student 4  | 1/03/20, 00:00 | 31/05/20, 00:00 | Expired              | Manual assignment           |
 
     When I click on "Upload history" action from "User actions" dropdown
-    And I upload "admin/tool/mucertify/tests/fixtures/history1.csv" file to "csvfile" muform filemanager in the "dialog[open]" "css_element"
-    And I click on "Continue" "button" in the "dialog[open]" "css_element"
-    And I set the following muform fields in the "dialog[open]" "css_element":
-      | Period valid from column    | Choose...       |
-    And I click on "Upload history" "button" in the "dialog[open]" "css_element"
-    Then I should see "Required"
-    And I set the following muform fields in the "dialog[open]" "css_element":
-      | Period valid from column    | from            |
-      | Period expiration column    | Choose...       |
-    And I click on "Upload history" "button" in the "dialog[open]" "css_element"
-    Then I should see "Required"
-    And I set the following muform fields in the "dialog[open]" "css_element":
-      | Period expiration column    | expiration      |
-      | Certification date column   | Choose...       |
-    And I click on "Upload history" "button" in the "dialog[open]" "css_element"
-    Then I should see "Required"
-    And I set the following muform fields in the "dialog[open]" "css_element":
-      | Certification date column   | certified       |
-      | Period expiration column    | from            |
-    And I click on "Upload history" "button" in the "dialog[open]" "css_element"
-    Then I should see "Column is used already"
-    And I set the following muform fields in the "dialog[open]" "css_element":
-      | Period expiration column    | expiration      |
-      | Certification date column   | expiration      |
-    And I click on "Upload history" "button" in the "dialog[open]" "css_element"
-    Then I should see "Column is used already"
-    And I set the following muform fields in the "dialog[open]" "css_element":
-      | Period expiration column    | expiration      |
-      | Certification date column   | from            |
-    And I click on "Upload history" "button" in the "dialog[open]" "css_element"
-    Then I should see "Rows skipped: 3"
+    And I upload "admin/tool/mucertify/tests/fixtures/history1.csv" file to "sourcefile" muform filemanager
+    And I press "Continue"
+    And I set the following muform fields:
+      | column_1 | Not used |
+    And I press "Continue"
+    Then I should see "Columns must hold the period start and expiration dates."
+    And I set the following muform fields:
+      | column_1 | Valid from |
+      | column_2 | Valid from |
+    And I press "Continue"
+    Then I should see "Each column meaning can be used only once."
+    # The certification date defaults to the period start.
+    And I set the following muform fields:
+      | column_2 | Expiration |
+      | column_3 | Not used   |
+    And I press "Continue"
+    And I should see "Ready to import: 0. Skipped: 3. Problems: 0."
+    And "Upload history" "button" should not exist
+    And I press "Cancel"
     And the following should exist in the "reportbuilder-table" table:
       | First name | Valid from     | Expiration      | Certification status | Source                      |
       | Student 1  | 1/01/20, 00:00 | 31/03/20, 00:00 | Expired              | Automatic cohort assignment |
@@ -170,22 +170,25 @@ Feature: Import of historic certification periods
 
     When I click on "Users" "link" in the ".secondary-navigation" "css_element"
     And I click on "Upload history" action from "User actions" dropdown
-    And I upload "admin/tool/mucertify/tests/fixtures/history3.csv" file to "csvfile" muform filemanager in the "dialog[open]" "css_element"
-    And I click on "Continue" "button" in the "dialog[open]" "css_element"
-    And I set the following muform fields in the "dialog[open]" "css_element":
-      | User identification column  | student1         |
-      | User mapping via            | Username         |
-      | First line is header        | 0                |
-      | Create new assignments      | 1                |
-      | Skip already assigned users | 0                |
-      | Period valid from column    | 2020-01-02       |
-      | Period expiration column    | 2020-03-31       |
-      | Certification date column   | 2020-01-01       |
-      | Evidence column             | passed program X |
-      | Evidence default            | historic stuff   |
-    And I click on "Upload history" "button" in the "dialog[open]" "css_element"
-    Then I should see "Users assigned to certification: 1"
-    And I should see "Certification periods imported: 3"
+    And I upload "admin/tool/mucertify/tests/fixtures/history3.csv" file to "sourcefile" muform filemanager
+    And I press "Continue"
+    And the following muform fields match:
+      | headers | 0 |
+    And I set the following muform fields:
+      | column_0 | Evidence details   |
+      | column_1 | Username           |
+      | column_2 | Certification date |
+      | column_3 | Expiration         |
+      | column_4 | Valid from         |
+    And I press "Continue"
+    And I set the following muform fields:
+      | Create new assignments      | 1              |
+      | Skip already assigned users | 0              |
+      | Evidence default            | historic stuff |
+    And I press "Refresh preview"
+    And I should see "Ready to import: 3. Skipped: 0. Problems: 0."
+    And I press "Upload history"
+    Then I should see "Imported 3 certification periods, assigned 1 users, skipped 0."
     And the following should exist in the "reportbuilder-table" table:
       | First name | Valid from     | Expiration      | Certification status | Source                      |
       | Student 1  | 2/01/20, 00:00 | 31/03/20, 00:00 | Expired              | Automatic cohort assignment |

@@ -48,7 +48,7 @@ final class certification_update extends form {
         $contextid = (int)$current['contextid'];
         $certificationid = (int)$current['id'];
 
-        $fullname = new text('fullname', get_string('certificationname', 'tool_mucertify'), ['maxlength' => 254]);
+        $fullname = new text('fullname', get_string('certificationname', 'tool_mucertify'), ['maxlength' => 254, 'width' => 'full']);
         $fullname->set_required(true);
         $this->add($fullname);
 

@@ -15,37 +15,54 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 // phpcs:disable moodle.Files.BoilerplateComment.CommentEndedTooSoon
-// phpcs:disable moodle.Files.LineLength.TooLong
 
 namespace tool_mucertify\local\form;
 
+use tool_mucertify\local\history_upload;
 use tool_mulib\muform\element\buttons;
 use tool_mulib\muform\element\cancel;
+use tool_mulib\muform\element\info;
 use tool_mulib\muform\element\submit;
 use tool_mulib\muform\form;
 
 /**
- * Assign users via file upload.
+ * Certification history upload, stage one: where the CSV data comes from.
  *
  * @package    tool_mucertify
- * @copyright  2024 Open LMS (https://www.openlms.net/)
- * @author     Farhan Karmali
+ * @copyright  2026 Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-final class source_manual_upload_file extends form {
-    use csv_upload_trait;
+final class history_upload_source extends form {
+    use \tool_mulib\muform\util\import_source_trait;
 
     #[\Override]
     protected function definition(): void {
-        $this->add_csv_file();
+        $this->add(new info('info', '', get_string('history_upload_source_info', 'tool_mucertify')));
+        $this->add_import_source_elements();
 
         $this->add(new buttons('buttons'));
         $this->add(new submit('submit', get_string('continue')), 'buttons');
         $this->add(new cancel(), 'buttons');
     }
 
+    /**
+     * Uploaded file content or the pasted text, the file wins.
+     *
+     * @return string
+     */
+    public function get_source_content(): string {
+        return $this->get_import_source_content();
+    }
+
     #[\Override]
     protected function validation(array $data, array &$allerrors): void {
-        $this->validate_csv_file($data, $allerrors);
+        // Only a check, the page stores what the upload needs.
+        $rows = $this->validate_import_source($data, $allerrors);
+        if ($rows === null) {
+            return;
+        }
+        if ($errorcode = history_upload::check_rows($rows)) {
+            $allerrors['sourcefile'][] = get_string($errorcode, 'tool_mucertify');
+        }
     }
 }

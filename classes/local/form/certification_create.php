@@ -50,7 +50,7 @@ final class certification_create extends form {
         $contextid = (int)$this->get_current_data()['contextid'];
         $certificationid = null;
 
-        $fullname = new text('fullname', get_string('certificationname', 'tool_mucertify'), ['maxlength' => 254]);
+        $fullname = new text('fullname', get_string('certificationname', 'tool_mucertify'), ['maxlength' => 254, 'width' => 'full']);
         $fullname->set_required(true);
         $this->add($fullname);
 
