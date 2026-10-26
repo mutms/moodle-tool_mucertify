@@ -121,7 +121,7 @@ Feature: Certifications plugin English wiki documentation image generator
     And I follow "Assignment settings"
     And I click on "Update Automatic cohort assignment" "link"
     And I set the following muform fields in the "dialog[open]" "css_element":
-      | Active            | Yes           |
+      | Status            | Active           |
       | Assign to cohorts | All employees |
     And I click on "Update" "button" in the "dialog[open]" "css_element"
 

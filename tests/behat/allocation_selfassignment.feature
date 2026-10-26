@@ -78,7 +78,7 @@ Feature: Certification self-assignment tests
     And I follow "Assignment settings"
     And I click on "Update Self assignment" "link"
     And I set the following muform fields in the "dialog[open]" "css_element":
-      | Active             | Yes |
+      | Status             | Active |
       | Allow new sign ups | No  |
     And I click on "Update" "button" in the "dialog[open]" "css_element"
     Then I should see "Active; Sign ups are not allowed" in the "Self assignment" definition list item
@@ -124,7 +124,7 @@ Feature: Certification self-assignment tests
 
     When I click on "Update Self assignment" "link"
     And I set the following muform fields in the "dialog[open]" "css_element":
-      | Active      | Yes   |
+      | Status      | Active   |
       | Sign up key | heslo |
     And I click on "Update" "button" in the "dialog[open]" "css_element"
     Then I should see "Active; Sign up key is required; Sign ups are allowed" in the "Self assignment" definition list item
@@ -155,7 +155,7 @@ Feature: Certification self-assignment tests
 
     When I click on "Update Self assignment" "link"
     And I set the following muform fields in the "dialog[open]" "css_element":
-      | Active    | Yes |
+      | Status    | Active |
       | Max users | 2   |
     And I click on "Update" "button" in the "dialog[open]" "css_element"
     Then I should see "Active; Users 0/2; Sign ups are allowed" in the "Self assignment" definition list item
@@ -188,7 +188,7 @@ Feature: Certification self-assignment tests
     And I follow "Assignment settings"
     And I click on "Update Self assignment" "link"
     And I set the following muform fields in the "dialog[open]" "css_element":
-      | Active | Yes |
+      | Status | Active |
     And I click on "Update" "button" in the "dialog[open]" "css_element"
     And I should see "Active; Sign ups are allowed" in the "Self assignment" definition list item
     And I log out

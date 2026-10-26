@@ -73,7 +73,7 @@ Feature: Automatic cohorts assignments certification tests
     And I click on "Assignment settings" "link" in the ".secondary-navigation" "css_element"
     And I click on "Update Automatic cohort assignment" "link"
     And I set the following muform fields in the "dialog[open]" "css_element":
-      | Active            | Yes                |
+      | Status            | Active                |
       | Assign to cohorts | Cohort 1, Cohort 2 |
     And I click on "Update" "button" in the "dialog[open]" "css_element"
     Then I should see "Active (Cohort 1, Cohort 2)" in the "Automatic cohort assignment" definition list item
@@ -128,6 +128,6 @@ Feature: Automatic cohorts assignments certification tests
     And I click on "Assignment settings" "link" in the ".secondary-navigation" "css_element"
     And I click on "Update Automatic cohort assignment" "link"
     And I set the following muform fields in the "dialog[open]" "css_element":
-      | Active              | No                |
+      | Status              | Inactive                |
     And I click on "Update" "button" in the "dialog[open]" "css_element"
     Then I should see "Inactive" in the "Automatic cohort assignment" definition list item

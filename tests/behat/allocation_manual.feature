@@ -76,7 +76,7 @@ Feature: Manual certification assignment tests
     And I click on "Assignment settings" "link" in the ".secondary-navigation" "css_element"
     And I click on "Update Manual assignment" "link"
     And I set the following muform fields in the "dialog[open]" "css_element":
-      | Active | Yes |
+      | Status | Active |
     And I click on "Update" "button" in the "dialog[open]" "css_element"
     And I should see "Active" in the "Manual assignment" definition list item
     And I click on "Users" "link" in the ".secondary-navigation" "css_element"
@@ -159,7 +159,7 @@ Feature: Manual certification assignment tests
     And I click on "Assignment settings" "link" in the ".secondary-navigation" "css_element"
     And I click on "Update Manual assignment" "link"
     And I set the following muform fields in the "dialog[open]" "css_element":
-      | Active | Yes |
+      | Status | Active |
     And I click on "Update" "button" in the "dialog[open]" "css_element"
     And I should see "Active" in the "Manual assignment" definition list item
     And I click on "Users" "link" in the ".secondary-navigation" "css_element"
@@ -174,7 +174,7 @@ Feature: Manual certification assignment tests
     And I click on "Assignment settings" "link" in the ".secondary-navigation" "css_element"
     And I click on "Update Manual assignment" "link"
     And I set the following muform fields in the "dialog[open]" "css_element":
-      | Active | Yes |
+      | Status | Active |
     And I click on "Update" "button" in the "dialog[open]" "css_element"
     And I should see "Active" in the "Manual assignment" definition list item
     And I click on "Users" "link" in the ".secondary-navigation" "css_element"
@@ -217,7 +217,7 @@ Feature: Manual certification assignment tests
     And I click on "Assignment settings" "link" in the ".secondary-navigation" "css_element"
     And I click on "Update Manual assignment" "link"
     And I set the following muform fields in the "dialog[open]" "css_element":
-      | Active | Yes |
+      | Status | Active |
     And I click on "Update" "button" in the "dialog[open]" "css_element"
     And I click on "Users" "link" in the ".secondary-navigation" "css_element"
 
@@ -262,7 +262,7 @@ Feature: Manual certification assignment tests
     And I click on "Assignment settings" "link" in the ".secondary-navigation" "css_element"
     And I click on "Update Manual assignment" "link"
     And I set the following muform fields in the "dialog[open]" "css_element":
-      | Active | Yes |
+      | Status | Active |
     And I click on "Update" "button" in the "dialog[open]" "css_element"
     And I click on "Users" "link" in the ".secondary-navigation" "css_element"
 
@@ -365,7 +365,7 @@ Feature: Manual certification assignment tests
     And I click on "Assignment settings" "link" in the ".secondary-navigation" "css_element"
     And I click on "Update Manual assignment" "link"
     And I set the following muform fields in the "dialog[open]" "css_element":
-      | Active | Yes |
+      | Status | Active |
     And I click on "Update" "button" in the "dialog[open]" "css_element"
     And I should see "Active" in the "Manual assignment" definition list item
     And I click on "Users" "link" in the ".secondary-navigation" "css_element"

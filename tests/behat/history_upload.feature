@@ -60,11 +60,11 @@ Feature: Import of historic certification periods
     And I click on "Assignment settings" "link" in the ".secondary-navigation" "css_element"
     And I click on "Update Manual assignment" "link"
     And I set the following muform fields in the "dialog[open]" "css_element":
-      | Active | Yes |
+      | Status | Active |
     And I click on "Update" "button" in the "dialog[open]" "css_element"
     And I click on "Update Automatic cohort assignment" "link"
     And I set the following muform fields in the "dialog[open]" "css_element":
-      | Active            | Yes      |
+      | Status            | Active      |
       | Assign to cohorts | Cohort 1 |
     And I click on "Update" "button" in the "dialog[open]" "css_element"
 
@@ -160,11 +160,11 @@ Feature: Import of historic certification periods
     And I click on "Assignment settings" "link" in the ".secondary-navigation" "css_element"
     And I click on "Update Manual assignment" "link"
     And I set the following muform fields in the "dialog[open]" "css_element":
-      | Active | Yes |
+      | Status | Active |
     And I click on "Update" "button" in the "dialog[open]" "css_element"
     And I click on "Update Automatic cohort assignment" "link"
     And I set the following muform fields in the "dialog[open]" "css_element":
-      | Active            | Yes      |
+      | Status            | Active      |
       | Assign to cohorts | Cohort 1 |
     And I click on "Update" "button" in the "dialog[open]" "css_element"
 

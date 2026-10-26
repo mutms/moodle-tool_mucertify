@@ -21,7 +21,9 @@ namespace tool_mucertify\local\form;
 
 use tool_mulib\muform\element\buttons;
 use tool_mulib\muform\element\cancel;
+use tool_mulib\muform\element\info;
 use tool_mulib\muform\element\number;
+use tool_mulib\muform\element\radiocards;
 use tool_mulib\muform\element\sharedkey;
 use tool_mulib\muform\element\submit;
 use tool_mulib\muform\element\yesno;
@@ -41,9 +43,19 @@ final class source_selfassignment_edit extends form {
     protected function definition(): void {
         $source = $this->get_extra_data()['source'];
 
-        $enable = new yesno('enable', get_string('active'));
+        // Users assigned through the source keep it active, it cannot be deactivated.
+        $options = [1 => get_string('active')];
+        $descriptions = [1 => get_string('source_selfassignment_active_desc', 'tool_mucertify')];
+        if (!$source->hasassignments) {
+            $options = [0 => get_string('inactive')] + $options;
+            $descriptions[0] = get_string('source_selfassignment_inactive_desc', 'tool_mucertify');
+        }
+        $enable = new radiocards('enable', get_string('status'), $options, $descriptions);
         $enable->set_frozen($source->hasassignments);
         $this->add($enable);
+        if ($source->hasassignments) {
+            $this->add(new info('enableinfo', '', get_string('source_active_locked', 'tool_mucertify')));
+        }
 
         $dm = $this->get_display_manager();
 

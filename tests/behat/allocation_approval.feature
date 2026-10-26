@@ -86,7 +86,7 @@ Feature: Certification approval assignments tests
     And I follow "Assignment settings"
     And I click on "Update Requests with approval" "link"
     And I set the following muform fields in the "dialog[open]" "css_element":
-      | Active             | Yes |
+      | Status             | Active |
       | Allow new requests | No  |
     And I click on "Update" "button" in the "dialog[open]" "css_element"
     Then I should see "Active; Requests are not allowed" in the "Requests with approval" definition list item
@@ -163,7 +163,7 @@ Feature: Certification approval assignments tests
 
     When I click on "Update Requests with approval" "link"
     And I set the following muform fields in the "dialog[open]" "css_element":
-      | Active | Yes |
+      | Status | Active |
     And I click on "Update" "button" in the "dialog[open]" "css_element"
     Then I should see "Active" in the "Requests with approval" definition list item
     And I log out
