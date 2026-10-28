@@ -749,7 +749,7 @@ final class certification_test extends \advanced_testcase {
 
         $periods = json_decode($certification->periodsjson);
         $periods->resettype1 = 'xxxx';
-        $certification->periodsjson = \tool_mucertify\local\util::json_encode($periods);
+        $certification->periodsjson = \tool_mulib\local\mulib::json_encode($periods);
         $result = certification::get_periods_settings($certification);
         $expected->resettype1 = $perioddefaults->resettype1;
         $this->assertEquals((array)$expected, (array)$result);

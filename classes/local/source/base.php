@@ -330,13 +330,13 @@ abstract class base {
         $record->certificationid = $certification->id;
         $record->userid = $userid;
         $record->sourceid = $source->id;
-        $record->sourcedatajson = \tool_mucertify\local\util::json_encode($sourcedata);
+        $record->sourcedatajson = \tool_mulib\local\mulib::json_encode($sourcedata);
         $record->archived = 0;
         $record->timecertifiedtemp = null;
         if (isset($dateoverrides['timecertifiedtemp']) && $dateoverrides['timecertifiedtemp'] > 0) {
             $record->timecertifiedtemp = $dateoverrides['timecertifiedtemp'];
         }
-        $record->evidencejson = \tool_mucertify\local\util::json_encode([]);
+        $record->evidencejson = \tool_mulib\local\mulib::json_encode([]);
         $record->timecreated = empty($dateoverrides['timecreated']) ? $now : $dateoverrides['timecreated'];
 
         $trans = $DB->start_delegated_transaction();
@@ -531,7 +531,7 @@ abstract class base {
      */
     public static function encode_datajson(stdClass $formdata): string {
         // Override if necessary.
-        return \tool_mucertify\local\util::json_encode([]);
+        return \tool_mulib\local\mulib::json_encode([]);
     }
 
     /**

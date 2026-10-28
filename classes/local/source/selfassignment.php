@@ -207,7 +207,7 @@ final class selfassignment extends base {
         if (isset($formdata->selfassignment_allowsignup)) {
             $data['allowsignup'] = (int)(bool)$formdata->selfassignment_allowsignup;
         }
-        return \tool_mucertify\local\util::json_encode($data);
+        return \tool_mulib\local\mulib::json_encode($data);
     }
 
     /**

@@ -114,13 +114,13 @@ final class certification {
             $data->descriptionformat = FORMAT_HTML;
         }
 
-        $data->presentationjson = util::json_encode([]);
+        $data->presentationjson = \tool_mulib\local\mulib::json_encode([]);
         unset($data->presentation);
 
         unset($data->publicaccess); // Legacy catalogue visibility.
         $data->archived = isset($data->archived) ? (int)(bool)$data->archived : 0;
 
-        $data->periodsjson = util::json_encode(self::get_periods_defaults());
+        $data->periodsjson = \tool_mulib\local\mulib::json_encode(self::get_periods_defaults());
 
         if (isset($data->programid1)) {
             if (!$DB->record_exists('tool_muprog_program', ['id' => $data->programid1, 'draft' => 0])) {
@@ -378,7 +378,7 @@ final class certification {
             } else {
                 unset($presenation['image']);
             }
-            $DB->set_field('tool_mucertify_certification', 'presentationjson', util::json_encode($presenation), ['id' => $certification->id]);
+            $DB->set_field('tool_mucertify_certification', 'presentationjson', \tool_mulib\local\mulib::json_encode($presenation), ['id' => $certification->id]);
             $certification = $DB->get_record('tool_mucertify_certification', ['id' => $data->id], '*', MUST_EXIST);
         }
 
@@ -665,7 +665,7 @@ final class certification {
             }
         }
 
-        $record->periodsjson = util::json_encode($periods);
+        $record->periodsjson = \tool_mulib\local\mulib::json_encode($periods);
 
         $DB->update_record('tool_mucertify_certification', $record);
 

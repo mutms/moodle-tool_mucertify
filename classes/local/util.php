@@ -42,16 +42,6 @@ final class util {
     }
 
     /**
-     * Encode JSON date in a consistent way.
-     *
-     * @param mixed $data
-     * @return string
-     */
-    public static function json_encode($data): string {
-        return json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-    }
-
-    /**
      * Parse form data for delay settings.
      *
      * @param string $name
@@ -278,7 +268,7 @@ final class util {
 
         $fs->delete_area_files($context->id, 'tool_mucertify', 'upload', $draftid);
 
-        $content = json_encode($filedata, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        $content = \tool_mulib\local\mulib::json_encode($filedata);
         $record = [
             'contextid' => $context->id,
             'component' => 'tool_mucertify',

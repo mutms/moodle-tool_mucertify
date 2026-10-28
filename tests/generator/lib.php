@@ -167,7 +167,7 @@ class tool_mucertify_generator extends component_generator_base {
             $DB->set_field(
                 'tool_mucertify_certification',
                 'presentationjson',
-                \tool_mucertify\local\util::json_encode($presenation),
+                \tool_mulib\local\mulib::json_encode($presenation),
                 ['id' => $certification->id]
             );
             $certification = $DB->get_record('tool_mucertify_certification', ['id' => $certification->id], '*', MUST_EXIST);

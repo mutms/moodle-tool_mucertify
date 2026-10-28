@@ -63,7 +63,7 @@ final class util_test extends \advanced_testcase {
     }
 
     public function test_json_encode(): void {
-        $this->assertSame('{"abc":"\\\\šk\"\'"}', util::json_encode(['abc' => '\šk"\'']));
+        $this->assertSame('{"abc":"\\\\šk\"\'"}', \tool_mulib\local\mulib::json_encode(['abc' => '\šk"\'']));
     }
 
     public function test_get_submitted_delay(): void {

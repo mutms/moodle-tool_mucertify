@@ -453,7 +453,7 @@ final class period {
                 $evidence['details'] = $data->evidencedetails;
             }
         }
-        $record->evidencejson = \tool_mucertify\local\util::json_encode((object)$evidence);
+        $record->evidencejson = \tool_mulib\local\mulib::json_encode((object)$evidence);
 
         $trans = $DB->start_delegated_transaction();
 
@@ -592,7 +592,7 @@ final class period {
                 }
             }
         }
-        $record->evidencejson = \tool_mucertify\local\util::json_encode((object)$evidence);
+        $record->evidencejson = \tool_mulib\local\mulib::json_encode((object)$evidence);
 
         $trans = $DB->start_delegated_transaction();
 
