@@ -10,6 +10,7 @@ The format of this change log follows the advice given at [Keep a CHANGELOG](htt
 
 - cohort usage in certifications is listed in advanced cohort management
 - certification setting that blocks reuse of programs in periods, with notification of blocked recertification
+- certification_trait with certification search helpers for autocomplete sources
 
 ### Changed
 
