@@ -21,7 +21,7 @@
  *
  * @package    tool_mucertify
  * @copyright  2023 Open LMS (https://www.openlms.net/)
- * @author     Petrs Skoda
+ * @author     Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -212,7 +212,7 @@ your recertification in "{$a->certification_fullname}" could not be started, bec
 Please contact your manager.
 ';
 $string['notification_renewalblocked_description'] = 'Notification sent to users when their recertification is not started because program reuse is blocked and they already used the recertification program.';
-$string['notification_renewalblocked_subject'] = 'Certification recertification problem';
+$string['notification_renewalblocked_subject'] = 'Recertification problem';
 $string['notification_unassignment'] = 'User un-assigned';
 $string['notification_unassignment_body'] = 'Hello {$a->user_fullname},
 
@@ -248,7 +248,7 @@ $string['periodstatus_overdue'] = 'Overdue';
 $string['periodstatus_pending'] = 'Pending';
 $string['periodstatus_revoked'] = 'Revoked';
 $string['pluginname'] = 'Certifications';
-$string['pluginname_desc'] = 'Open LMS certification and re-certification tool';
+$string['pluginname_desc'] = 'Certification and re-certification tool';
 $string['privacy:metadata:field:archived'] = 'Archived flag';
 $string['privacy:metadata:field:assignmentid'] = 'Assignment id';
 $string['privacy:metadata:field:certificationid'] = 'Certification id';
@@ -319,9 +319,9 @@ $string['source_approval_requestrejected'] = 'Access request was rejected';
 $string['source_approval_requests'] = 'Requests';
 $string['source_cohort'] = 'Automatic cohort assignment';
 $string['source_cohort_active_desc'] = 'Members of the selected cohorts are assigned automatically.';
-$string['source_cohort_allownew'] = 'Allow cohort allocation';
-$string['source_cohort_allownew_desc'] = 'Allow adding new _cohort auto allocation_ sources to certifications';
-$string['source_cohort_cohortstoassign'] = 'Assign to cohorts';
+$string['source_cohort_allownew'] = 'Allow cohort assignment';
+$string['source_cohort_allownew_desc'] = 'Allow adding new _cohort auto assignment_ sources to certifications';
+$string['source_cohort_cohortstoassign'] = 'Assign cohorts';
 $string['source_cohort_inactive_desc'] = 'Cohort members are not assigned automatically, the cohort selection is discarded.';
 $string['source_manual'] = 'Manual assignment';
 $string['source_manual_active_desc'] = 'Certification managers assign users one by one or upload them in bulk.';
