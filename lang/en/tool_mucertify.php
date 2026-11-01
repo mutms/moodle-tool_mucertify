@@ -21,7 +21,7 @@
  *
  * @package    tool_mucertify
  * @copyright  2023 Open LMS (https://www.openlms.net/)
- * @author     Petrs Skoda
+ * @author     Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -207,7 +207,7 @@ $string['periodstatus_overdue'] = 'Overdue';
 $string['periodstatus_pending'] = 'Pending';
 $string['periodstatus_revoked'] = 'Revoked';
 $string['pluginname'] = 'Certifications';
-$string['pluginname_desc'] = 'Open LMS certification and re-certification tool';
+$string['pluginname_desc'] = 'Certification and re-certification tool';
 $string['privacy:metadata:field:archived'] = 'Archived flag';
 $string['privacy:metadata:field:assignmentid'] = 'Assignment id';
 $string['privacy:metadata:field:certificationid'] = 'Certification id';
@@ -278,9 +278,9 @@ $string['source_approval_requestreject'] = 'Reject request';
 $string['source_approval_requestrejected'] = 'Access request was rejected';
 $string['source_approval_requests'] = 'Requests';
 $string['source_cohort'] = 'Automatic cohort assignment';
-$string['source_cohort_allownew'] = 'Allow cohort allocation';
-$string['source_cohort_allownew_desc'] = 'Allow adding new _cohort auto allocation_ sources to certifications';
-$string['source_cohort_cohortstoassign'] = 'Assign to cohorts';
+$string['source_cohort_allownew'] = 'Allow cohort assignment';
+$string['source_cohort_allownew_desc'] = 'Allow adding new _cohort auto assignment_ sources to certifications';
+$string['source_cohort_cohortstoassign'] = 'Assign cohorts';
 $string['source_manual'] = 'Manual assignment';
 $string['source_manual_assignusers'] = 'Assign users';
 $string['source_manual_hasheaders'] = 'First line is header';
