@@ -79,7 +79,7 @@ final class history_upload_test extends \advanced_testcase {
         $delimiter = \tool_mulib\local\import_util::DELIMITER_AUTO;
         $csvdata = history_upload::save_source("username,from,expiration\nuser1,2020-01-01,2020-03-31", 'UTF-8', $delimiter);
         $this->assertSame($rows, $csvdata->rows);
-        $this->assertTrue(history_upload::is_columns_stage($csvdata));
+        $this->assertFalse(history_upload::is_columns_valid($csvdata));
         $this->assertSame(['username', 'timefrom', 'timeuntil'], history_upload::guess_columns($rows, true));
 
         // Both period dates are required.
@@ -89,14 +89,14 @@ final class history_upload_test extends \advanced_testcase {
         );
 
         $csvdata = history_upload::save_columns($csvdata, (object)['headers' => 1, 'column_0' => 'username', 'column_1' => 'timefrom', 'column_2' => 'timeuntil']);
-        $this->assertFalse(history_upload::is_columns_stage($csvdata));
-        $this->assertTrue(history_upload::is_options_stage($csvdata));
+        $this->assertTrue(history_upload::is_columns_valid($csvdata));
+        $this->assertFalse(history_upload::is_options_valid($csvdata));
 
         // The default evidence is required.
         $csvdata = history_upload::save_options($csvdata, (object)['assign' => 1, 'evidencedefault' => '']);
-        $this->assertTrue(history_upload::is_options_stage($csvdata));
+        $this->assertFalse(history_upload::is_options_valid($csvdata));
         $csvdata = history_upload::save_options($csvdata, (object)['assign' => 1, 'evidencedefault' => 'Some evidence']);
-        $this->assertFalse(history_upload::is_options_stage($csvdata));
+        $this->assertTrue(history_upload::is_options_valid($csvdata));
         $this->assertSame(1, $csvdata->options['assign']);
         $this->assertSame(0, $csvdata->options['skipassigned']);
         $this->assertEquals($csvdata, history_upload::validate(json_decode(json_encode($csvdata), true)));
