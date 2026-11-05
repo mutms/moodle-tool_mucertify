@@ -25,7 +25,9 @@ use tool_mucertify\local\management;
 use tool_mucertify\local\util;
 use tool_mucertify\local\certification;
 use tool_mucertify\local\period;
-use stdClass, \core\url, html_writer;
+use stdClass;
+use core\url;
+use html_writer;
 
 /**
  * Certification management renderer.
