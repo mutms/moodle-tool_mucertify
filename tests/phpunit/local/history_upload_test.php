@@ -22,17 +22,18 @@ namespace tool_mucertify\phpunit\local;
 
 use tool_mucertify\local\history_upload;
 use tool_mucertify\local\source\manual;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Certification history upload tests.
  *
- * @group      MuTMS
  * @package    tool_mucertify
  * @copyright  2026 Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- *
- * @covers \tool_mucertify\local\history_upload
  */
+#[CoversClass(\tool_mucertify\local\history_upload::class)]
+#[Group('MuTMS')]
 final class history_upload_test extends \advanced_testcase {
     public function setUp(): void {
         parent::setUp();

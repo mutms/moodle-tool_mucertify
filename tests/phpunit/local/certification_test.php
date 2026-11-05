@@ -23,19 +23,20 @@ use tool_muprog\local\course_reset;
 use tool_mucertify\local\certification;
 use core\exception\moodle_exception;
 use core\exception\invalid_parameter_exception;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Certification helper test.
  *
- * @group      MuTMS
  * @package    tool_mucertify
  * @copyright  2023 Open LMS (https://www.openlms.net/)
  * @copyright  2025 Petr Skoda
  * @author     Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- *
- * @covers \tool_mucertify\local\certification
  */
+#[CoversClass(\tool_mucertify\local\certification::class)]
+#[Group('MuTMS')]
 final class certification_test extends \advanced_testcase {
     public function setUp(): void {
         parent::setUp();

@@ -20,23 +20,24 @@
 
 namespace tool_mucertify\phpunit;
 
+use PHPUnit\Framework\Attributes\CoversFunction;
+use PHPUnit\Framework\Attributes\Group;
+
 /**
  * Core certifications API tests.
  *
- * @group      MuTMS
  * @package    tool_mucertify
  * @copyright  2025 Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+#[CoversFunction('tool_mucertify_get_tagged_certifications')]
+#[Group('MuTMS')]
 final class lib_test extends \advanced_testcase {
     public function setUp(): void {
         parent::setUp();
         $this->resetAfterTest();
     }
 
-    /**
-     * @covers \tool_mucertify_get_tagged_certifications()
-     */
     public function test_tool_mucertify_get_tagged_certifications(): void {
         global $CFG;
         require_once($CFG->dirroot . '/admin/tool/mucertify/lib.php');

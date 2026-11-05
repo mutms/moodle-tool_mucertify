@@ -23,17 +23,18 @@ namespace tool_mucertify\phpunit\local\source;
 use tool_mucertify\local\source\manual;
 use tool_mucertify\local\source\manual_upload;
 use tool_muprog\local\program;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Assignment upload tests.
  *
- * @group      MuTMS
  * @package    tool_mucertify
  * @copyright  2026 Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- *
- * @covers \tool_mucertify\local\source\manual_upload
  */
+#[CoversClass(\tool_mucertify\local\source\manual_upload::class)]
+#[Group('MuTMS')]
 final class manual_upload_test extends \advanced_testcase {
     public function setUp(): void {
         parent::setUp();

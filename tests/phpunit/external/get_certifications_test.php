@@ -21,17 +21,18 @@ namespace tool_mucertify\phpunit\external;
 
 use tool_mucertify\external\get_certifications;
 use tool_mulib\local\mulib;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Test get_certifications web service.
  *
- * @group      MuTMS
  * @package    tool_mucertify
  * @copyright  2026 Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- *
- * @covers \tool_mucertify\external\get_certifications
  */
+#[CoversClass(\tool_mucertify\external\get_certifications::class)]
+#[Group('MuTMS')]
 final class get_certifications_test extends \advanced_testcase {
     public function setUp(): void {
         parent::setUp();

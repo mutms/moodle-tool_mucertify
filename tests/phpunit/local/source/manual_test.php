@@ -22,19 +22,20 @@ namespace tool_mucertify\phpunit\local\source;
 use tool_mucertify\local\certification;
 use tool_mucertify\local\source\manual;
 use tool_muprog\local\program;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Certification manual assignment source test.
  *
- * @group      MuTMS
  * @package    tool_mucertify
  * @copyright  2023 Open LMS (https://www.openlms.net/)
  * @copyright  2025 Petr Skoda
  * @author     Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- *
- * @covers \tool_mucertify\local\source\manual
  */
+#[CoversClass(\tool_mucertify\local\source\manual::class)]
+#[Group('MuTMS')]
 final class manual_test extends \advanced_testcase {
     public function setUp(): void {
         parent::setUp();

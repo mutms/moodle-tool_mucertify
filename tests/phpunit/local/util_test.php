@@ -20,19 +20,20 @@
 namespace tool_mucertify\phpunit\local;
 
 use tool_mucertify\local\util;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Certification util test.
  *
- * @group      MuTMS
  * @package    tool_mucertify
  * @copyright  2023 Open LMS (https://www.openlms.net/)
  * @copyright  2025 Petr Skoda
  * @author     Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- *
- * @covers \tool_mucertify\local\util
  */
+#[CoversClass(\tool_mucertify\local\util::class)]
+#[Group('MuTMS')]
 final class util_test extends \advanced_testcase {
     public function setUp(): void {
         parent::setUp();

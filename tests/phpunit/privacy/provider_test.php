@@ -23,19 +23,20 @@ use core_privacy\local\request\approved_contextlist;
 use core_privacy\local\request\approved_userlist;
 use core_privacy\local\request\writer;
 use stdClass;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Privacy provider tests for tool_mucertify.
  *
- * @group      MuTMS
  * @package    tool_mucertify
  * @copyright  2023 Open LMS (https://www.openlms.net/)
  * @copyright  2025 Petr Skoda
  * @author     Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- *
- * @covers \tool_mucertify\privacy\provider
  */
+#[CoversClass(\tool_mucertify\privacy\provider::class)]
+#[Group('MuTMS')]
 final class provider_test extends \core_privacy\tests\provider_testcase {
     /** @var stdClass A user who is not enrolled in any certification. */
     protected $user0;

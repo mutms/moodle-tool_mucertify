@@ -20,17 +20,18 @@
 namespace tool_mucertify\phpunit\event;
 
 use tool_mucertify\local\certification;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Certification archived event test.
  *
- * @group      MuTMS
  * @package    tool_mucertify
  * @copyright  2025 Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- *
- * @covers \tool_mucertify\event\certification_archived
  */
+#[CoversClass(\tool_mucertify\event\certification_archived::class)]
+#[Group('MuTMS')]
 final class certification_archived_test extends \advanced_testcase {
     public function setUp(): void {
         parent::setUp();

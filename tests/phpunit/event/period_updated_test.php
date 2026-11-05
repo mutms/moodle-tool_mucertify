@@ -19,16 +19,18 @@
 
 namespace tool_mucertify\phpunit\event;
 
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
+
 /**
  * Certification period updated test.
  *
- * @group      MuTMS
  * @package    tool_mucertify
  * @copyright  2025 Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- *
- * @covers \tool_mucertify\event\period_updated
  */
+#[CoversClass(\tool_mucertify\event\period_updated::class)]
+#[Group('MuTMS')]
 final class period_updated_test extends \advanced_testcase {
     public function setUp(): void {
         parent::setUp();

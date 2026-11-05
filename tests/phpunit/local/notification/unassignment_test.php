@@ -19,18 +19,20 @@
 
 namespace tool_mucertify\phpunit\local\notification;
 
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
+
 /**
  * Certification notification test.
  *
- * @group      MuTMS
  * @package    tool_mucertify
  * @copyright  2023 Open LMS (https://www.openlms.net/)
  * @copyright  2025 Petr Skoda
  * @author     Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- *
- * @covers \tool_mucertify\local\notification\unassignment
  */
+#[CoversClass(\tool_mucertify\local\notification\unassignment::class)]
+#[Group('MuTMS')]
 final class unassignment_test extends \advanced_testcase {
     public function setUp(): void {
         parent::setUp();

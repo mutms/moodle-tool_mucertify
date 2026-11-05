@@ -23,19 +23,20 @@ use tool_mucertify\local\source\manual;
 use tool_mucertify\local\assignment;
 use tool_mucertify\local\certification;
 use tool_mucertify\local\period;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Certification assignment test.
  *
- * @group      MuTMS
  * @package    tool_mucertify
  * @copyright  2023 Open LMS (https://www.openlms.net/)
  * @copyright  2025 Petr Skoda
  * @author     Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- *
- * @covers \tool_mucertify\local\assignment
  */
+#[CoversClass(\tool_mucertify\local\assignment::class)]
+#[Group('MuTMS')]
 final class assignment_test extends \advanced_testcase {
     public function setUp(): void {
         parent::setUp();

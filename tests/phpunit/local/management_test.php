@@ -21,19 +21,20 @@ namespace tool_mucertify\phpunit\local;
 
 use tool_mucertify\local\management;
 use tool_mulib\local\mulib;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * certification management helper test.
  *
- * @group      MuTMS
  * @package    tool_mucertify
  * @copyright  2023 Open LMS (https://www.openlms.net/)
  * @copyright  2025 Petr Skoda
  * @author     Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- *
- * @covers \tool_mucertify\local\management
  */
+#[CoversClass(\tool_mucertify\local\management::class)]
+#[Group('MuTMS')]
 final class management_test extends \advanced_testcase {
     public function setUp(): void {
         parent::setUp();

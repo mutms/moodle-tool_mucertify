@@ -23,17 +23,18 @@ use tool_mucertify\local\assignment;
 use tool_mucertify\local\certification;
 use tool_mucertify\local\period;
 use tool_mucertify\local\source\manual;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Blocked recertification notification test.
  *
- * @group      MuTMS
  * @package    tool_mucertify
  * @copyright  2026 Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- *
- * @covers \tool_mucertify\local\notification\renewalblocked
  */
+#[CoversClass(\tool_mucertify\local\notification\renewalblocked::class)]
+#[Group('MuTMS')]
 final class renewalblocked_test extends \advanced_testcase {
     public function setUp(): void {
         parent::setUp();

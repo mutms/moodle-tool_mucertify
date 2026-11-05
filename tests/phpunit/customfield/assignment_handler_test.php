@@ -20,17 +20,18 @@
 namespace tool_mucertify\phpunit\customfield;
 
 use tool_mucertify\customfield\assignment_handler;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Certification assignment custom fields test.
  *
- * @group      MuTMS
  * @package    tool_mucertify
  * @copyright  2025 Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- *
- * @covers \tool_mucertify\customfield\assignment_handler
  */
+#[CoversClass(\tool_mucertify\customfield\assignment_handler::class)]
+#[Group('MuTMS')]
 final class assignment_handler_test extends \advanced_testcase {
     public function setUp(): void {
         parent::setUp();

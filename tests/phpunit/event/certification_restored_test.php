@@ -20,17 +20,18 @@
 namespace tool_mucertify\phpunit\event;
 
 use tool_mucertify\local\certification;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Certification restored event test.
  *
- * @group      MuTMS
  * @package    tool_mucertify
  * @copyright  2025 Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- *
- * @covers \tool_mucertify\event\certification_restored
  */
+#[CoversClass(\tool_mucertify\event\certification_restored::class)]
+#[Group('MuTMS')]
 final class certification_restored_test extends \advanced_testcase {
     public function setUp(): void {
         parent::setUp();

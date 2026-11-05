@@ -19,16 +19,18 @@
 
 namespace tool_mucertify\phpunit\event;
 
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
+
 /**
  * Certification assignment viewed event test.
  *
- * @group      MuTMS
  * @package    tool_mucertify
  * @copyright  2025 Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- *
- * @covers \tool_mucertify\event\assignment_viewed
  */
+#[CoversClass(\tool_mucertify\event\assignment_viewed::class)]
+#[Group('MuTMS')]
 final class assignment_viewed_test extends \advanced_testcase {
     public function setUp(): void {
         parent::setUp();

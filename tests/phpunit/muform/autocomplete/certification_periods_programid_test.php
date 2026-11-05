@@ -20,17 +20,18 @@ namespace tool_mucertify\phpunit\muform\autocomplete;
 
 use tool_mucertify\muform\autocomplete\certification_periods_programid;
 use tool_mulib\local\mulib;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Certification periods program autocomplete source test.
  *
- * @group      MuTMS
  * @package    tool_mucertify
  * @copyright  2026 Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- *
- * @covers \tool_mucertify\muform\autocomplete\certification_periods_programid
  */
+#[CoversClass(\tool_mucertify\muform\autocomplete\certification_periods_programid::class)]
+#[Group('MuTMS')]
 final class certification_periods_programid_test extends \advanced_testcase {
     #[\Override]
     public function setUp(): void {
