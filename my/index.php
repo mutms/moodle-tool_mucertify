@@ -98,6 +98,7 @@ $report = \core_reportbuilder\system_report_factory::create(
     \tool_mucertify\reportbuilder\local\systemreports\assignments_user::class,
     $usercontext
 );
+echo $OUTPUT->render(new \tool_mulib\output\report_filter_bar($report));
 echo $report->output();
 
 echo $OUTPUT->footer();

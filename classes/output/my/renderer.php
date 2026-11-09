@@ -133,6 +133,7 @@ class renderer extends \plugin_renderer_base {
             $context,
             parameters:['assignmentid' => $assignment->id]
         );
+        $result .= $this->output->render(new \tool_mulib\output\report_filter_bar($report));
         $result .= $report->output();
 
         return $result;

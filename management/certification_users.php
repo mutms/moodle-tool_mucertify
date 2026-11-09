@@ -92,6 +92,7 @@ $report = \core_reportbuilder\system_report_factory::create(
     $context,
     parameters:['certificationid' => $certification->id]
 );
+echo $OUTPUT->render(new \tool_mulib\output\report_filter_bar($report));
 echo $report->output();
 
 echo $OUTPUT->footer();
