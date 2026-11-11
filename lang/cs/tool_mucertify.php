@@ -39,7 +39,7 @@ $string['assignmentsources'] = 'Zdroje přiřazení';
 $string['blockprogramreuse'] = 'Blokovat opakované použití programu';
 $string['blockprogramreuse_help'] = 'Když je zapnuto, lze každý program v této certifikaci použít pro každého uživatele jen jednou, a to včetně zrušených období. Období nelze ručně přidat s programem, který už byl použit, a automatická recertifikace se nespustí, dokud nevyberete jiný recertifikační program.
 
-Programy je třeba před každou recertifikací ručně duplikovat, například pomocí CLI skriptu pro duplikaci programů, a nový program vybrat v nastavení certifikovaného období.';
+Program před každou recertifikací duplikujte, například pomocí CLI skriptu pro duplikaci programů, a kopii vyberte jako recertifikační program v nastavení certifikace.';
 $string['certificates'] = 'Certifikáty';
 $string['certification'] = 'Certifikace';
 $string['certification_actions'] = 'Akce certifikace';
@@ -208,10 +208,10 @@ vaši recertifikaci v certifikaci „{$a->certification_fullname}“ nebylo mož
 
 * aktuální certifikace vyprší: {$a->period_untildate}
 
-Obraťte se prosím na svého nadřízeného.
+Obraťte se prosím na správce certifikace.
 ';
 $string['notification_renewalblocked_description'] = 'Oznámení odeslané uživatelům, když se jejich recertifikace nespustí, protože je opakované použití programu zablokováno a recertifikační program už použili.';
-$string['notification_renewalblocked_subject'] = 'Problém s recertifikací';
+$string['notification_renewalblocked_subject'] = 'Recertifikaci nebylo možné zahájit';
 $string['notification_unassignment'] = 'Přiřazení uživatele odebráno';
 $string['notification_unassignment_body'] = 'Dobrý den, {$a->user_fullname},
 

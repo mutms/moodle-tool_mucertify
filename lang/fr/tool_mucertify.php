@@ -43,7 +43,7 @@ $string['assignmentsources'] = 'Sources d’assignation';
 $string['blockprogramreuse'] = 'Bloquer la réutilisation des programmes';
 $string['blockprogramreuse_help'] = 'Si cette option est activée, chaque programme ne peut être utilisé qu’une seule fois par utilisateur dans cette certification, les périodes révoquées étant prises en compte. Il n’est pas possible d’ajouter manuellement une période avec un programme déjà utilisé, et la recertification automatique ne démarre pas tant qu’un autre programme de recertification n’a pas été sélectionné.
 
-Les programmes doivent être dupliqués manuellement avant chaque recertification, par exemple à l’aide du script CLI de duplication de programmes, et le nouveau programme doit être sélectionné dans les paramètres des périodes de la certification.';
+Dupliquez le programme avant chaque recertification, par exemple à l’aide du script CLI de duplication de programmes, puis sélectionnez la copie comme programme de recertification dans les paramètres de la certification.';
 $string['certificates'] = 'Certificats';
 $string['certification'] = 'Certification';
 $string['certification_actions'] = 'Actions de la certification';
@@ -212,10 +212,10 @@ votre recertification pour « {$a->certification_fullname} » n’a pas pu dé
 
 * échéance de la certification actuelle : {$a->period_untildate}
 
-Veuillez contacter votre supérieur.
+Veuillez contacter un gestionnaire de certifications.
 ';
 $string['notification_renewalblocked_description'] = 'Notification envoyée aux utilisateurs lorsque leur recertification ne démarre pas parce que la réutilisation des programmes est bloquée et qu’ils ont déjà utilisé le programme de recertification.';
-$string['notification_renewalblocked_subject'] = 'Problème de recertification';
+$string['notification_renewalblocked_subject'] = 'La recertification n’a pas pu démarrer';
 $string['notification_unassignment'] = 'Utilisateur désassigné';
 $string['notification_unassignment_body'] = 'Bonjour {$a->user_fullname},
 

@@ -308,7 +308,7 @@ Feature: Certification periods settings management tests
     And I set the following muform fields in the "dialog[open]" "css_element":
       | timewindowstart | 2023-10-05 09:00 |
     And I click on "Add period" "button" in the "dialog[open]" "css_element"
-    Then I should see "This program was already used in another period of the user" in the "dialog[open]" "css_element"
+    Then I should see "This program was already used in another period of this user" in the "dialog[open]" "css_element"
 
     When I set the following muform fields in the "dialog[open]" "css_element":
       | Program         | Program 002      |

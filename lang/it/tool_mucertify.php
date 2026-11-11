@@ -43,7 +43,7 @@ $string['assignmentsources'] = 'Fonti di assegnazione';
 $string['blockprogramreuse'] = 'Blocca il riutilizzo dei programmi';
 $string['blockprogramreuse_help'] = 'Se l\'impostazione è abilitata, in questa certificazione ogni programma può essere utilizzato una sola volta per ciascun utente, compresi i periodi revocati. Non è possibile aggiungere manualmente periodi con un programma già utilizzato e la ricertificazione automatica non viene avviata finché non viene selezionato un programma di ricertificazione diverso.
 
-I programmi devono essere duplicati manualmente prima di ogni ricertificazione, ad esempio con lo script CLI per la duplicazione dei programmi, e il nuovo programma deve essere selezionato nelle impostazioni dei periodi della certificazione.';
+Duplicare il programma prima di ogni ricertificazione, ad esempio con lo script CLI per la duplicazione dei programmi, e selezionare la copia come programma di ricertificazione nelle impostazioni della certificazione.';
 $string['certificates'] = 'Certificati';
 $string['certification'] = 'Certificazione';
 $string['certification_actions'] = 'Azioni della certificazione';
@@ -212,10 +212,10 @@ non è stato possibile avviare la tua ricertificazione in "{$a->certification_fu
 
 * la certificazione attuale scade il: {$a->period_untildate}
 
-Contatta il tuo manager.
+Contatta un manager delle certificazioni.
 ';
 $string['notification_renewalblocked_description'] = 'Notifica inviata agli utenti quando la loro ricertificazione non viene avviata perché il riutilizzo dei programmi è bloccato e hanno già utilizzato il programma di ricertificazione.';
-$string['notification_renewalblocked_subject'] = 'Problema di ricertificazione';
+$string['notification_renewalblocked_subject'] = 'Impossibile avviare la ricertificazione';
 $string['notification_unassignment'] = 'Assegnazione dell\'utente annullata';
 $string['notification_unassignment_body'] = 'Gentile {$a->user_fullname},
 

@@ -38,9 +38,9 @@ $string['assignment_update'] = 'Update assignment';
 $string['assignments'] = 'Assignments';
 $string['assignmentsources'] = 'Assignment sources';
 $string['blockprogramreuse'] = 'Block program reuse';
-$string['blockprogramreuse_help'] = 'If enabled each program can be used only once for each user in this certification, revoked periods are included. Periods cannot be added manually with a program that was already used, and automatic recertification is not started until a different recertification program is selected.
+$string['blockprogramreuse_help'] = 'If enabled, each program can be used only once for each user in this certification, revoked periods included. A period cannot be added manually with a program the user has already used, and automatic re-certification does not start until a different re-certification program is selected.
 
-The programs have to be duplicated manually before each recertification, for example using the program duplication CLI script, and the new program has to be selected in certification period settings.';
+Duplicate the program before each re-certification, for example with the program duplication CLI script, and select the copy as the re-certification program in certification settings.';
 $string['certificates'] = 'Certificates';
 $string['certification'] = 'Certification';
 $string['certification_actions'] = 'Certification actions';
@@ -73,7 +73,7 @@ $string['certificationstatus_archived'] = 'Archived';
 $string['certificationstatus_certified'] = 'Certified';
 $string['certificationstatus_expired'] = 'Expired';
 $string['certificationstatus_notcertified'] = 'Not certified';
-$string['certificationstatus_temporary'] = 'Temporary valid';
+$string['certificationstatus_temporary'] = 'Temporarily valid';
 $string['certificationstatus_valid'] = 'Valid';
 $string['certificationurl'] = 'Certification URL';
 $string['certifieddate'] = 'Certification completion date';
@@ -92,7 +92,7 @@ $string['delay'] = 'Delay';
 $string['delay_oneunit'] = 'Use one time unit only.';
 $string['delayafter'] = '{$a->delay} after {$a->after}';
 $string['delaybefore'] = '{$a->delay} before {$a->before}';
-$string['error_programreuse'] = 'This program was already used in another period of the user, program reuse is blocked in certification settings.';
+$string['error_programreuse'] = 'This program was already used in another period of this user and program reuse is blocked in certification settings.';
 $string['errornoassignment'] = 'Certification is not assigned';
 $string['errornoassignments'] = 'No certification assignments found.';
 $string['errornocertifications'] = 'No certifications found.';
@@ -171,7 +171,7 @@ $string['messageprovider:approval_reject_notification'] = 'Certification request
 $string['messageprovider:approval_request_notification'] = 'Certification approval request notification';
 $string['messageprovider:assignment_notification'] = 'Certification assignment notification';
 $string['messageprovider:cc_supervisor_notification'] = 'Copy of subordinate certification notifications';
-$string['messageprovider:renewalblocked_notification'] = 'Certification recertification blocked notification';
+$string['messageprovider:renewalblocked_notification'] = 'Re-certification blocked notification';
 $string['messageprovider:unassignment_notification'] = 'Certification un-assignment notification';
 $string['messageprovider:valid_notification'] = 'Certification validity notification';
 $string['mucertify:admin'] = 'Advanced certification administration';
@@ -202,17 +202,17 @@ a notification was sent to the following user:
 
 ';
 $string['notification_cc_supervisor_subject'] = '{$a->supervisor_title} notification - {$a->certification_fullname}';
-$string['notification_renewalblocked'] = 'Recertification blocked';
+$string['notification_renewalblocked'] = 'Re-certification blocked';
 $string['notification_renewalblocked_body'] = 'Hello {$a->user_fullname},
 
-your recertification in "{$a->certification_fullname}" could not be started, because the current recertification program was already used in one of your earlier certification periods.
+your re-certification in "{$a->certification_fullname}" could not be started, because the current re-certification program was already used in one of your earlier certification periods.
 
 * current certification expires on: {$a->period_untildate}
 
-Please contact your manager.
+Please contact a certification manager.
 ';
-$string['notification_renewalblocked_description'] = 'Notification sent to users when their recertification is not started because program reuse is blocked and they already used the recertification program.';
-$string['notification_renewalblocked_subject'] = 'Recertification problem';
+$string['notification_renewalblocked_description'] = 'Notification sent to users when their re-certification cannot start, because program reuse is blocked and they have already used the re-certification program.';
+$string['notification_renewalblocked_subject'] = 'Re-certification could not be started';
 $string['notification_unassignment'] = 'User un-assigned';
 $string['notification_unassignment_body'] = 'Hello {$a->user_fullname},
 

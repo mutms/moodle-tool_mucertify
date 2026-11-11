@@ -43,7 +43,7 @@ $string['assignmentsources'] = 'Zuweisungsquellen';
 $string['blockprogramreuse'] = 'Wiederverwendung von Programmen sperren';
 $string['blockprogramreuse_help'] = 'Wenn aktiviert, kann jedes Programm in dieser Zertifizierung für jede/n Nutzer/in nur einmal verwendet werden, widerrufene Zeiträume eingeschlossen. Zeiträume mit einem bereits verwendeten Programm können nicht manuell hinzugefügt werden, und die automatische Rezertifizierung wird erst gestartet, wenn ein anderes Rezertifizierungsprogramm ausgewählt wird.
 
-Die Programme müssen vor jeder Rezertifizierung manuell dupliziert werden, zum Beispiel mit dem CLI-Skript zum Duplizieren von Programmen, und das neue Programm muss in den Einstellungen des Zertifizierungszeitraums ausgewählt werden.';
+Duplizieren Sie das Programm vor jeder Rezertifizierung, zum Beispiel mit dem CLI-Skript zum Duplizieren von Programmen, und wählen Sie die Kopie in den Einstellungen der Zertifizierung als Rezertifizierungsprogramm aus.';
 $string['certificates'] = 'Zertifikate';
 $string['certification'] = 'Zertifizierung';
 $string['certification_actions'] = 'Aktionen für die Zertifizierung';
@@ -212,10 +212,10 @@ Ihre Rezertifizierung in „{$a->certification_fullname}“ konnte nicht gestart
 
 * aktuelle Zertifizierung läuft ab am: {$a->period_untildate}
 
-Bitte wenden Sie sich an Ihre/n Vorgesetzte/n.
+Bitte wenden Sie sich an eine/n Zertifizierungsmanager/in.
 ';
 $string['notification_renewalblocked_description'] = 'Benachrichtigung, die an Nutzer/innen gesendet wird, wenn ihre Rezertifizierung nicht gestartet wird, weil die Wiederverwendung von Programmen gesperrt ist und sie das Rezertifizierungsprogramm bereits verwendet haben.';
-$string['notification_renewalblocked_subject'] = 'Problem mit der Rezertifizierung';
+$string['notification_renewalblocked_subject'] = 'Rezertifizierung konnte nicht gestartet werden';
 $string['notification_unassignment'] = 'Zuweisung von Nutzer/in aufgehoben';
 $string['notification_unassignment_body'] = 'Hallo {$a->user_fullname},
 

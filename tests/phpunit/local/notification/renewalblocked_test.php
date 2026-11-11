@@ -111,7 +111,7 @@ final class renewalblocked_test extends \advanced_testcase {
         $this->assertCount(1, $messages);
         $message = reset($messages);
         $this->assertSame($user1->id, $message->useridto);
-        $this->assertSame('Recertification problem', $message->subject);
+        $this->assertSame('Re-certification could not be started', $message->subject);
         $this->assertStringContainsString('could not be started', $message->fullmessage);
         $this->assertSame('tool_mucertify', $message->component);
         $this->assertSame('renewalblocked_notification', $message->eventtype);
