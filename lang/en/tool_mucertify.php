@@ -226,7 +226,7 @@ your certification "{$a->certification_fullname}" is now valid:
 
 * valid from: {$a->period_fromdate}
 * expires on: {$a->period_untildate}
-* recertification opens on: {$a->period_recertificationdate}
+* re-certification opens on: {$a->period_recertificationdate}
 ';
 $string['notification_valid_description'] = 'Notification sent to users when their certification becomes valid.';
 $string['notification_valid_subject'] = 'Valid certification notification';
