@@ -56,6 +56,7 @@ Feature: Certifications navigation behat steps test
     Then I should see "Certification 000"
     And I should see "Certification 001"
     And I should see "Certification 002"
+    And I click on "Remove filter: Archived" "button"
     And I should see "Certification 003"
 
     When I am on the "System" "tool_mucertify > Certification management" page
@@ -78,6 +79,7 @@ Feature: Certifications navigation behat steps test
     Then I should see "Certification 000"
     And I should see "Certification 001"
     And I should see "Certification 002"
+    And I click on "Remove filter: Archived" "button"
     And I should see "Certification 003"
 
     When I click on "Exclude sub-categories: Any" "button"
@@ -106,6 +108,7 @@ Feature: Certifications navigation behat steps test
     Then I should see "Certification 000"
     And I should see "Certification 001"
     And I should see "Certification 002"
+    And I click on "Remove filter: Archived" "button"
     And I should see "Certification 003"
 
     When I am on the "System" "tool_mucertify > Certification management" page
@@ -136,6 +139,7 @@ Feature: Certifications navigation behat steps test
     Then I should see "Certification 000"
     And I should see "Certification 001"
     And I should see "Certification 002"
+    And I click on "Remove filter: Archived" "button"
     And I should see "Certification 003"
 
     When I am on the "System" "tool_mucertify > Certification management" page

@@ -101,6 +101,7 @@ Feature: Manual certification assignment tests
     And I should not see "Student 3"
     And I should not see "Student 4"
 
+    And I click on "Remove filter: Archived" "button"
     And I click on "Actions" "link" in the "Student 2" "table_row"
     When I click on "Archive assignment" "link" in the "Student 2" "table_row"
     And I click on "Archive assignment" "button" in the "dialog[open]" "css_element"
