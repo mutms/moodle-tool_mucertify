@@ -445,6 +445,7 @@ class renderer extends \plugin_renderer_base {
         );
         $result .= $this->output->render(new \tool_mulib\output\report_filter_bar($report));
         $result .= $report->output();
+        $result .= $this->output->render(new \tool_mulib\output\report_pager($report));
 
         return $result;
     }

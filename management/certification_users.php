@@ -92,7 +92,14 @@ $report = \core_reportbuilder\system_report_factory::create(
     $context,
     parameters:['certificationid' => $certification->id]
 );
-echo $OUTPUT->render(new \tool_mulib\output\report_filter_bar($report));
+echo $OUTPUT->render(new \tool_mulib\output\report_filter_bar($report, pinned: [
+    'user:fullname' => null,
+    'assignment:status' => null,
+    'assignment:archived' => null,
+], defaults: [
+    'assignment:archived' => ['operator' => \core_reportbuilder\local\filters\boolean_select::NOT_CHECKED],
+]));
 echo $report->output();
+echo $OUTPUT->render(new \tool_mulib\output\report_pager($report));
 
 echo $OUTPUT->footer();

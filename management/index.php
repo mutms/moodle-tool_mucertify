@@ -81,7 +81,14 @@ $report = \core_reportbuilder\system_report_factory::create(
     \tool_mucertify\reportbuilder\local\systemreports\certifications::class,
     $context
 );
-echo $OUTPUT->render(new \tool_mulib\output\report_filter_bar($report));
+echo $OUTPUT->render(new \tool_mulib\output\report_filter_bar($report, pinned: [
+    'certification:fullname' => null,
+    'certification:currentcontextonly' => null,
+    'certification:archived' => null,
+], defaults: [
+    'certification:archived' => ['operator' => \core_reportbuilder\local\filters\boolean_select::NOT_CHECKED],
+]));
 echo $report->output();
+echo $OUTPUT->render(new \tool_mulib\output\report_pager($report));
 
 echo $OUTPUT->footer();
