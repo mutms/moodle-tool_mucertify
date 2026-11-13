@@ -140,6 +140,7 @@ Feature: Certification approval assignments tests
     And I am on the "Cat 1" "tool_mucertify > Certification management" page
     And I follow "Certification 001"
     And I follow "Users"
+    And I click on "Remove filter: Archived" "button"
     And I click on "Actions" "link" in the "Student 2" "table_row"
     And I click on "Archive assignment" "link" in the "Student 2" "table_row"
     And I click on "Archive assignment" "button" in the "dialog[open]" "css_element"

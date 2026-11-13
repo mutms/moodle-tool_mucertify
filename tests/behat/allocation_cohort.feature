@@ -95,6 +95,7 @@ Feature: Automatic cohorts assignments certification tests
     And I click on "Update" "button" in the "dialog[open]" "css_element"
     Then I should see "Active (Cohort 1)" in the "Automatic cohort assignment" definition list item
     And I click on "Users" "link" in the ".secondary-navigation" "css_element"
+    And I click on "Remove filter: Archived" "button"
     And "Student 1" row "Source" column of "reportbuilder-table" table should contain "Automatic cohort assignment"
     And "Student 1" row "Certification status" column of "reportbuilder-table" table should contain "Not certified"
     And "Student 2" row "Source" column of "reportbuilder-table" table should contain "Automatic cohort assignment"
