@@ -16,32 +16,41 @@
 
 // phpcs:disable moodle.Files.BoilerplateComment.CommentEndedTooSoon
 
-namespace tool_mucertify\local\form;
+namespace tool_mucertify\local\wizard\source_manual_upload;
 
-use tool_mucertify\local\history_upload;
+use tool_mucertify\local\source\manual_upload;
 use tool_mulib\muform\element\buttons;
 use tool_mulib\muform\element\cancel;
 use tool_mulib\muform\element\info;
-use tool_mulib\muform\element\submit;
+use tool_mulib\muform\element\inforawhtml;
+use tool_mulib\muform\element\wizardcontinue;
 use tool_mulib\muform\form;
 
 /**
- * Certification history upload, stage one: where the CSV data comes from.
+ * Assignment upload, stage one: where the CSV data comes from.
+ *
+ * The stage is locked once completed, extra data 'rows' then shows the read data instead.
  *
  * @package    tool_mucertify
  * @copyright  2026 Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-final class history_upload_source extends form {
+final class source extends form {
     use \tool_mulib\muform\util\import_source_trait;
 
     #[\Override]
     protected function definition(): void {
-        $this->add(new info('info', '', get_string('history_upload_source_info', 'tool_mucertify')));
-        $this->add_import_source_elements();
+        $rows = $this->get_extra_data()['rows'] ?? null;
+        if ($rows !== null) {
+            $this->add(new info('info', '', get_string('import_source_locked', 'tool_mulib', count($rows))));
+            $this->add(new inforawhtml('datapreview', '', columns::render_data($rows)));
+        } else {
+            $this->add(new info('info', '', get_string('source_manual_upload_source_info', 'tool_mucertify')));
+            $this->add_import_source_elements();
+        }
 
         $this->add(new buttons('buttons'));
-        $this->add(new submit('submit', get_string('continue')), 'buttons');
+        $this->add(new wizardcontinue(), 'buttons');
         $this->add(new cancel(), 'buttons');
     }
 
@@ -56,12 +65,16 @@ final class history_upload_source extends form {
 
     #[\Override]
     protected function validation(array $data, array &$allerrors): void {
+        if (isset($this->get_extra_data()['rows'])) {
+            // Locked, nothing is submitted.
+            return;
+        }
         // Only a check, the page stores what the upload needs.
         $rows = $this->validate_import_source($data, $allerrors);
         if ($rows === null) {
             return;
         }
-        if ($errorcode = history_upload::check_rows($rows)) {
+        if ($errorcode = manual_upload::check_rows($rows)) {
             $allerrors['sourcefile'][] = get_string($errorcode, 'tool_mucertify');
         }
     }

@@ -19,9 +19,7 @@
 /**
  * Upload or copy/paste historic certification periods via CSV format.
  *
- * The page walks through three stages: source, column meaning, options with a dry run.
- * The parsed rows and the answers live in the muform wizard state between stages, the
- * current stage is always decided from that state.
+ * The wizard is \tool_mucertify\local\wizard\history_upload\wizard.
  *
  * @package    tool_mucertify
  * @copyright  2024 Open LMS (https://www.openlms.net/)
@@ -30,131 +28,10 @@
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use tool_mucertify\local\form\history_upload_columns;
-use tool_mucertify\local\form\history_upload_options;
-use tool_mucertify\local\form\history_upload_source;
-use tool_mucertify\local\history_upload;
-use tool_mucertify\local\management;
-use tool_mulib\muform\wizard;
-
-// phpcs:disable moodle.Commenting.InlineComment.TypeHintingMatch
-/** @var moodle_database $DB */
-/** @var moodle_page $PAGE */
-/** @var core_renderer $OUTPUT */
-/** @var stdClass $CFG */
-// phpcs:enable moodle.Commenting.InlineComment.TypeHintingMatch
-
 require('../../../../config.php');
 
 $certificationid = required_param('certificationid', PARAM_INT);
 
 require_login();
 
-$certification = $DB->get_record('tool_mucertify_certification', ['id' => $certificationid, 'archived' => 0], '*', MUST_EXIST);
-$source = $DB->get_record('tool_mucertify_source', ['certificationid' => $certification->id, 'type' => 'manual']);
-$context = context::instance_by_id($certification->contextid);
-require_capability('tool/mucertify:admin', $context);
-
-$pageurl = new core\url('/admin/tool/mucertify/management/history_upload.php', ['certificationid' => $certification->id]);
-management::setup_certification_page($pageurl, $context, $certification, 'certification_users');
-$title = get_string('history_upload', 'tool_mucertify');
-$PAGE->navbar->add($title);
-
-$returnurl = new core\url('/admin/tool/mucertify/management/certification_users.php', ['id' => $certification->id]);
-
-$sourceclass = \tool_mucertify\local\assignment::get_source_classname('manual');
-if (!$sourceclass::is_assignment_possible($certification, $source)) {
-    redirect($returnurl);
-}
-
-// New users may be assigned only via manual assignment source.
-if (!$source || !has_capability('tool/mucertify:assign', $context)) {
-    $source = null;
-}
-
-// The state belongs to this certification, it cannot be replayed against another one.
-$wizardname = 'tool_mucertify_history_upload:' . $certification->id;
-$stages = [
-    'source' => get_string('history_upload_source', 'tool_mucertify'),
-    'columns' => get_string('history_upload_columns', 'tool_mucertify'),
-    'options' => get_string('history_upload_options', 'tool_mucertify'),
-];
-$wizard = wizard::load($wizardname, $stages);
-if (!$wizard) {
-    $wizard = wizard::start($wizardname, $stages);
-    redirect($wizard->get_url($pageurl));
-}
-
-// The stored state is validated again on every request, each stage fills one part of it.
-$state = $wizard->get_data();
-$csvdata = history_upload::validate($state);
-$sourcedata = is_array($state['source'] ?? null) ? $state['source'] : [];
-
-$isvalid = function (string $stage) use ($csvdata): bool {
-    return match ($stage) {
-        'source' => history_upload::is_source_valid($csvdata),
-        'columns' => history_upload::is_columns_valid($csvdata),
-        'options' => history_upload::is_options_valid($csvdata),
-    };
-};
-$stage = $wizard->resolve_stages($isvalid);
-
-if ($wizard->is_finished()) {
-    // Everything was answered, import the periods.
-    $counts = history_upload::import($certification, $source, $csvdata, (object)$csvdata->options);
-    $wizard->delete();
-    if ($counts[history_upload::RESULT_ERROR]) {
-        \core\notification::error(get_string('history_upload_failed', 'tool_mucertify', (object)$counts));
-    } else {
-        \core\notification::success(get_string('history_upload_done', 'tool_mucertify', (object)$counts));
-    }
-    redirect($returnurl);
-}
-
-$formurl = $wizard->get_url($pageurl, $stage);
-if ($stage === 'source') {
-    $form = new history_upload_source($formurl, $sourcedata);
-} else if ($stage === 'columns') {
-    $current = [];
-    if ($csvdata->columns) {
-        $current['headers'] = (int)$csvdata->columns['headers'];
-        foreach ($csvdata->columns['map'] as $index => $value) {
-            $current['column_' . $index] = $value;
-        }
-    }
-    $form = new history_upload_columns($formurl, $current, ['rows' => $csvdata->rows]);
-} else {
-    // Options of an earlier confirmation are only defaults of the form.
-    $extra = ['certification' => $certification, 'source' => $source, 'csvdata' => $csvdata];
-    $form = new history_upload_options($formurl, $csvdata->options, $extra);
-}
-
-if ($form->is_cancelled()) {
-    $wizard->delete();
-    redirect($returnurl);
-}
-if ($form->is_reloaded() && $wizard->get_previous_stage() !== null && $form->get_element('back')->get_value()) {
-    redirect($wizard->get_url($pageurl, $wizard->get_previous_stage()));
-}
-if ($data = $form->get_data()) {
-    if ($stage === 'source') {
-        $csvdata = history_upload::save_source($form->get_source_content(), $data->encoding, $data->delimiter_name);
-        $sourcedata = [
-            'sourcefile' => (int)$data->sourcefile,
-            'csvtext' => $data->csvtext,
-            'encoding' => $data->encoding,
-            'delimiter_name' => $data->delimiter_name,
-        ];
-    } else if ($stage === 'columns') {
-        $csvdata = history_upload::save_columns($csvdata, $data);
-    } else {
-        $csvdata = history_upload::save_options($csvdata, $data);
-    }
-    $wizard->complete_stage($stage, (array)$csvdata + ['source' => $sourcedata]);
-    redirect($wizard->get_url($pageurl));
-}
-
-echo $OUTPUT->header();
-echo $OUTPUT->heading($title, 2, 'mb-3');
-echo $wizard->render($OUTPUT, $pageurl, $form);
-echo $OUTPUT->footer();
+(new \tool_mucertify\local\wizard\history_upload\wizard($certificationid))->execute();

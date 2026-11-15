@@ -194,3 +194,10 @@ Feature: Import of historic certification periods
       | Student 1  | 2/01/20, 00:00 | 31/03/20, 00:00 | Expired              | Automatic cohort assignment |
       | Student 2  | 1/01/20, 00:00 | 31/05/20, 00:00 | Expired              | Automatic cohort assignment |
       | Student 3  | 1/03/19, 00:00 | 31/05/36, 00:00 | Valid                | Manual assignment           |
+
+  Scenario: History upload is not available without manual assignment source
+    Given I log in as "manager1"
+    When I am on the "Certification 001" "tool_mucertify > history upload" page
+    Then I should see "The wizard cannot be used now."
+    And I should see "Certification 001"
+    And "Upload history" "link" should not exist

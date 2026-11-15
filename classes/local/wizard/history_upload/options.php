@@ -16,7 +16,7 @@
 
 // phpcs:disable moodle.Files.BoilerplateComment.CommentEndedTooSoon
 
-namespace tool_mucertify\local\form;
+namespace tool_mucertify\local\wizard\history_upload;
 
 use tool_mucertify\local\history_upload;
 use tool_mulib\muform\element\buttons;
@@ -27,6 +27,7 @@ use tool_mulib\muform\element\inforawhtml;
 use tool_mulib\muform\element\reload;
 use tool_mulib\muform\element\submit;
 use tool_mulib\muform\element\textarea;
+use tool_mulib\muform\element\wizardback;
 use tool_mulib\muform\form;
 
 /**
@@ -38,7 +39,7 @@ use tool_mulib\muform\form;
  * @author     Farhan Karmali
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-final class history_upload_options extends form {
+final class options extends form {
     #[\Override]
     protected function definition(): void {
         $extra = $this->get_extra_data();
@@ -81,7 +82,7 @@ final class history_upload_options extends form {
             $this->add(new submit('submit', get_string('history_upload', 'tool_mucertify')), 'buttons');
         }
         $this->add(new reload('refresh', get_string('history_upload_refresh', 'tool_mucertify')), 'buttons');
-        $this->add(new reload('back', get_string('muform_back', 'tool_mulib')), 'buttons');
+        $this->add(new wizardback(validate: false), 'buttons');
         $this->add(new cancel(), 'buttons');
     }
 

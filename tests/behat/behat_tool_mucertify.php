@@ -74,12 +74,17 @@ class behat_tool_mucertify extends behat_base {
                 $context = context_coursecat::instance($category->id);
                 return new \core\url('/admin/tool/mucertify/management/index.php', ['contextid' => $context->id]);
             case 'certification':
+            case 'history upload':
                 $certification = $DB->get_record('tool_mucertify_certification', ['fullname' => $identifier]);
                 if (!$certification) {
                     $certification = $DB->get_record('tool_mucertify_certification', ['idnumber' => $identifier]);
                 }
                 if (!$certification) {
                     throw new Exception('Invalid certification "' . $identifier . '."');
+                }
+                if (strtolower($type) === 'history upload') {
+                    $params = ['certificationid' => $certification->id];
+                    return new \core\url('/admin/tool/mucertify/management/history_upload.php', $params);
                 }
                 return new \core\url('/admin/tool/mucertify/management/certification.php', ['id' => $certification->id]);
             case 'user certifications':
