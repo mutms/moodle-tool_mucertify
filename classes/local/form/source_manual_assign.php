@@ -22,7 +22,7 @@ namespace tool_mucertify\local\form;
 use tool_mucertify\customfield\assignment_handler;
 use tool_mucertify\local\certification;
 use tool_mucertify\muform\autocomplete\source_manual_assign_cohortid;
-use tool_mucertify\muform\autocompletemany\source_manual_assign_users;
+use tool_mucertify\muform\autocomplete\source_manual_assign_users;
 use tool_mulib\muform\element\autocomplete;
 use tool_mulib\muform\element\autocompletemany;
 use tool_mulib\muform\element\buttons;

@@ -16,9 +16,9 @@
 
 // phpcs:disable moodle.Files.BoilerplateComment.CommentEndedTooSoon
 
-namespace tool_mucertify\phpunit\muform\autocompletemany;
+namespace tool_mucertify\phpunit\muform\autocomplete;
 
-use tool_mucertify\muform\autocompletemany\source_manual_assign_users;
+use tool_mucertify\muform\autocomplete\source_manual_assign_users;
 use tool_mulib\local\mulib;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
@@ -30,7 +30,7 @@ use PHPUnit\Framework\Attributes\Group;
  * @copyright  2026 Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-#[CoversClass(\tool_mucertify\muform\autocompletemany\source_manual_assign_users::class)]
+#[CoversClass(\tool_mucertify\muform\autocomplete\source_manual_assign_users::class)]
 #[Group('MuTMS')]
 final class source_manual_assign_users_test extends \advanced_testcase {
     #[\Override]

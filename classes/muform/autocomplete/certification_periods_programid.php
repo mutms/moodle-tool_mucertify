@@ -57,7 +57,7 @@ final class certification_periods_programid extends \tool_mulib\muform\autocompl
     }
 
     #[\Override]
-    public function search(string $query, int $maxitems): ?array {
+    public function search(string $query, int $maxitems, array $exclude): ?array {
         global $DB, $USER;
 
         $sql = (
@@ -101,7 +101,7 @@ final class certification_periods_programid extends \tool_mulib\muform\autocompl
     }
 
     #[\Override]
-    public function label(string $value): ?string {
+    protected function label_value(string $value): ?string {
         global $DB;
         if (!preg_match('/^[1-9][0-9]*$/D', $value)) {
             return null;

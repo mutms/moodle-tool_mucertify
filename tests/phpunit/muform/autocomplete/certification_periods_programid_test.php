@@ -111,21 +111,21 @@ final class certification_periods_programid_test extends \advanced_testcase {
         $this->setAdminUser();
         $source = new certification_periods_programid((int)$certification1->id);
         $this->assertSame(50, $source->get_maxitems());
-        $results = $source->search('', 50);
+        $results = $source->search('', 50, []);
         $this->assertSame([
             (int)$program1->id => $program1->fullname,
             (int)$program2->id => $program2->fullname,
         ], $results);
 
-        $results = $source->search('hoku', 50);
+        $results = $source->search('hoku', 50, []);
         $this->assertSame([(int)$program1->id => $program1->fullname], $results);
 
-        $this->assertNull($source->search('', 1));
-        $this->assertSame([(int)$program1->id => $program1->fullname], $source->search('hoku', 1));
+        $this->assertNull($source->search('', 1, []));
+        $this->assertSame([(int)$program1->id => $program1->fullname], $source->search('hoku', 1, []));
 
         $this->setUser($user1);
         $source = new certification_periods_programid((int)$certification2->id);
-        $results = $source->search('', 50);
+        $results = $source->search('', 50, []);
         $this->assertSame([(int)$program2->id => $program2->fullname], $results);
 
         $this->setUser($user1);
@@ -206,15 +206,15 @@ final class certification_periods_programid_test extends \advanced_testcase {
 
         $this->setAdminUser();
         $source = new certification_periods_programid((int)$certification0->id);
-        $this->assertSame([(int)$program0->id, (int)$program1->id, (int)$program2->id], array_keys($source->search('', 50)));
+        $this->assertSame([(int)$program0->id, (int)$program1->id, (int)$program2->id], array_keys($source->search('', 50, [])));
 
         $this->setAdminUser();
         $source = new certification_periods_programid((int)$certification1->id);
-        $this->assertSame([(int)$program0->id, (int)$program1->id], array_keys($source->search('', 50)));
+        $this->assertSame([(int)$program0->id, (int)$program1->id], array_keys($source->search('', 50, [])));
 
         $this->setUser($user1);
         $source = new certification_periods_programid((int)$certification0->id);
-        $this->assertSame([(int)$program0->id, (int)$program1->id], array_keys($source->search('', 50)));
+        $this->assertSame([(int)$program0->id, (int)$program1->id], array_keys($source->search('', 50, [])));
 
         $this->setUser($user1);
         try {
@@ -231,10 +231,14 @@ final class certification_periods_programid_test extends \advanced_testcase {
         // Programs of other tenants are not allowed.
         $this->setAdminUser();
         $source = new certification_periods_programid((int)$certification1->id);
-        $this->assertSame($program0->fullname, $source->label((string)$program0->id));
-        $this->assertSame($program1->fullname, $source->label((string)$program1->id));
-        $this->assertNull($source->label((string)$program2->id));
-        $this->assertNull($source->validate((string)$program2->id));
+        $value = (string)$program0->id;
+        $this->assertSame($program0->fullname, $source->labels([$value])[$value] ?? null);
+        $value = (string)$program1->id;
+        $this->assertSame($program1->fullname, $source->labels([$value])[$value] ?? null);
+        $value = (string)$program2->id;
+        $this->assertNull($source->labels([$value])[$value] ?? null);
+        $value = (string)$program2->id;
+        $this->assertNull($source->validate([$value])[$value] ?? null);
     }
 
     public function test_label(): void {
@@ -281,24 +285,32 @@ final class certification_periods_programid_test extends \advanced_testcase {
 
         $this->setAdminUser();
         $source = new certification_periods_programid((int)$certification1->id);
-        $this->assertSame($program1->fullname, $source->label((string)$program1->id));
-        $this->assertSame($program2->fullname, $source->label((string)$program2->id));
-        $this->assertNull($source->label('-1'));
-        $this->assertNull($source->label('0'));
-        $this->assertNull($source->label('abc'));
-        $this->assertNull($source->label(''));
-        $this->assertNull($source->label((string)($program2->id + 100)));
-        $this->assertNull($source->validate((string)$program1->id));
+        $value = (string)$program1->id;
+        $this->assertSame($program1->fullname, $source->labels([$value])[$value] ?? null);
+        $value = (string)$program2->id;
+        $this->assertSame($program2->fullname, $source->labels([$value])[$value] ?? null);
+        $this->assertNull($source->labels(['-1'])['-1'] ?? null);
+        $this->assertNull($source->labels(['0'])['0'] ?? null);
+        $this->assertNull($source->labels(['abc'])['abc'] ?? null);
+        $this->assertNull($source->labels([''])[''] ?? null);
+        $value = (string)($program2->id + 100);
+        $this->assertNull($source->labels([$value])[$value] ?? null);
+        $value = (string)$program1->id;
+        $this->assertNull($source->validate([$value])[$value] ?? null);
 
         $this->setUser($user1);
         $source = new certification_periods_programid((int)$certification2->id);
-        $this->assertNull($source->label((string)$program1->id));
-        $this->assertSame($program2->fullname, $source->label((string)$program2->id));
+        $value = (string)$program1->id;
+        $this->assertNull($source->labels([$value])[$value] ?? null);
+        $value = (string)$program2->id;
+        $this->assertSame($program2->fullname, $source->labels([$value])[$value] ?? null);
 
         // Current value is always allowed.
         $source = new certification_periods_programid((int)$certification3->id);
-        $this->assertSame($program1->fullname, $source->label((string)$program1->id));
-        $this->assertSame($program2->fullname, $source->label((string)$program2->id));
+        $value = (string)$program1->id;
+        $this->assertSame($program1->fullname, $source->labels([$value])[$value] ?? null);
+        $value = (string)$program2->id;
+        $this->assertSame($program2->fullname, $source->labels([$value])[$value] ?? null);
     }
 
     public function test_draft_program(): void {
@@ -314,12 +326,15 @@ final class certification_periods_programid_test extends \advanced_testcase {
         $this->setAdminUser();
 
         $source = new certification_periods_programid((int)$certification->id);
-        $this->assertSame([(int)$program1->id => 'Program 1'], $source->search('', 50));
-        $this->assertSame('Program 1', $source->label((string)$program1->id));
-        $this->assertNull($source->label((string)$program2->id));
+        $this->assertSame([(int)$program1->id => 'Program 1'], $source->search('', 50, []));
+        $value = (string)$program1->id;
+        $this->assertSame('Program 1', $source->labels([$value])[$value] ?? null);
+        $value = (string)$program2->id;
+        $this->assertNull($source->labels([$value])[$value] ?? null);
 
         \tool_muprog\local\program::release($program2->id);
-        $this->assertSame([(int)$program1->id => 'Program 1', (int)$program2->id => 'Program 2'], $source->search('', 50));
-        $this->assertSame('Program 2', $source->label((string)$program2->id));
+        $this->assertSame([(int)$program1->id => 'Program 1', (int)$program2->id => 'Program 2'], $source->search('', 50, []));
+        $value = (string)$program2->id;
+        $this->assertSame('Program 2', $source->labels([$value])[$value] ?? null);
     }
 }
