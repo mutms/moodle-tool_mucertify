@@ -22,14 +22,14 @@ namespace tool_mucertify\local\form;
 use tool_mucertify\customfield\assignment_handler;
 use tool_mucertify\local\certification;
 use tool_mucertify\muform\autocomplete\source_manual_assign_cohortid;
-use tool_mucertify\muform\autocomplete\source_manual_assign_users;
+use tool_mucertify\muform\userpicker\source_manual_assign_users;
 use tool_mulib\muform\element\autocomplete;
-use tool_mulib\muform\element\autocompletemany;
 use tool_mulib\muform\element\buttons;
 use tool_mulib\muform\element\cancel;
 use tool_mulib\muform\element\customfields;
 use tool_mulib\muform\element\datetime;
 use tool_mulib\muform\element\submit;
+use tool_mulib\muform\element\userpickermany;
 use tool_mulib\muform\form;
 
 /**
@@ -47,7 +47,7 @@ final class source_manual_assign extends form {
         $certification = $this->get_extra_data()['certification'];
         $settings = certification::get_periods_settings($certification);
 
-        $users = new autocompletemany('users', get_string('users'), new source_manual_assign_users((int)$certification->id));
+        $users = new userpickermany('users', get_string('users'), new source_manual_assign_users((int)$certification->id));
         $users->set_required_marker(true);
         $this->add($users);
 

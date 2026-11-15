@@ -16,10 +16,9 @@
 
 // phpcs:disable moodle.Files.BoilerplateComment.CommentEndedTooSoon
 
-namespace tool_mucertify\muform\autocomplete;
+namespace tool_mucertify\muform\userpicker;
 
 use tool_mulib\local\sql;
-use tool_mulib\muform\util\autocomplete\user_trait;
 
 /**
  * Users that may be assigned to a certification manually.
@@ -28,9 +27,7 @@ use tool_mulib\muform\util\autocomplete\user_trait;
  * @copyright   2026 Petr Skoda
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-final class source_manual_assign_users extends \tool_mulib\muform\autocomplete\base {
-    use user_trait;
-
+final class source_manual_assign_users extends \tool_mulib\muform\userpicker\base {
     /** @var \context certification context */
     private \context $context;
 
@@ -55,26 +52,17 @@ final class source_manual_assign_users extends \tool_mulib\muform\autocomplete\b
     }
 
     #[\Override]
-    public function search(string $query, int $maxitems, array $exclude): ?array {
-        return $this->search_users($this->context, $query, $maxitems, $exclude, $this->get_where());
-    }
-
-    #[\Override]
-    public function labels(array $values): array {
-        return $this->user_labels($this->context, $values, $this->get_where());
-    }
-
-    #[\Override]
-    public function validate(array $values): array {
-        return $this->validate_users($values);
+    protected function get_context(): \core\context {
+        return $this->context;
     }
 
     /**
      * Users already assigned are not candidates.
      *
-     * @return sql
+     * @return sql|null
      */
-    private function get_where(): sql {
+    #[\Override]
+    protected function get_candidates_sql(): ?sql {
         return new sql(
             "NOT EXISTS (SELECT 'x' FROM {tool_mucertify_assignment} ca WHERE ca.userid = u.id AND ca.certificationid = :acertid)",
             ['acertid' => $this->certificationid]

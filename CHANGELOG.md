@@ -15,6 +15,7 @@ The format of this change log follows the advice given at [Keep a CHANGELOG](htt
 
 ### Changed
 
+- users are assigned manually in a users picker panel with identity columns and paging instead of an autocomplete
 - certification catalogue was replaced by Universal catalogue plugin, public certifications are migrated
   to active catalogue sections, certifications visible to cohorts are migrated to draft sections
 - catalogue access is controlled by _tool/mucatalog:browse_ capability,
