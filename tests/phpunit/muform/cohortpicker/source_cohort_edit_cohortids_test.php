@@ -16,27 +16,50 @@
 
 // phpcs:disable moodle.Files.BoilerplateComment.CommentEndedTooSoon
 
-namespace tool_mucertify\phpunit\muform\autocomplete;
+namespace tool_mucertify\phpunit\muform\cohortpicker;
 
-use tool_mucertify\muform\autocomplete\source_cohort_edit_cohortids;
+use tool_mucertify\muform\cohortpicker\source_cohort_edit_cohortids;
 use tool_mulib\local\mulib;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 
 /**
- * Cohort assignment source cohorts autocomplete source test.
+ * Cohort assignment source cohorts picker source test.
  *
  * @package    tool_mucertify
  * @copyright  2026 Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-#[CoversClass(\tool_mucertify\muform\autocomplete\source_cohort_edit_cohortids::class)]
+#[CoversClass(\tool_mucertify\muform\cohortpicker\source_cohort_edit_cohortids::class)]
 #[Group('MuTMS')]
 final class source_cohort_edit_cohortids_test extends \advanced_testcase {
     #[\Override]
     public function setUp(): void {
         parent::setUp();
         $this->resetAfterTest();
+    }
+
+    /**
+     * Cohorts offered by the source.
+     *
+     * @param \tool_mulib\muform\cohortpicker\base $source
+     * @param string $query
+     * @param string[] $exclude
+     * @return string[] cohort names indexed with cohort ids, in the order of names
+     */
+    private function search(\tool_mulib\muform\cohortpicker\base $source, string $query, array $exclude = []): array {
+        return array_column($source->search($query, $exclude)['cohorts'], 'name', 'id');
+    }
+
+    /**
+     * Values the source does not accept.
+     *
+     * @param \tool_mulib\muform\cohortpicker\base $source
+     * @param string[] $values
+     * @return string[]
+     */
+    private function refused(\tool_mulib\muform\cohortpicker\base $source, array $values): array {
+        return array_values(array_diff($values, array_map('strval', array_keys($source->labels($values)))));
     }
 
     public function test_search(): void {
@@ -82,19 +105,18 @@ final class source_cohort_edit_cohortids_test extends \advanced_testcase {
             (int)$cohort2->id => $cohort2->name,
             (int)$cohort3->id => $cohort3->name,
         ];
-        $this->assertSame($expected, $source->search('', 50, []));
+        $this->assertSame($expected, $this->search($source, ''));
 
         $expected = [
             (int)$cohort1->id => $cohort1->name,
         ];
-        $this->assertSame($expected, $source->search('ta 1', 50, []));
+        $this->assertSame($expected, $this->search($source, 'ta 1'));
 
         $expected = [
             (int)$cohort1->id => $cohort1->name,
             (int)$cohort3->id => $cohort3->name,
         ];
-        $this->assertSame($expected, $source->search('', 50, [(string)$cohort2->id]));
-        $this->assertNull($source->search('', 2, []));
+        $this->assertSame($expected, $this->search($source, '', [(string)$cohort2->id]));
 
         $this->setUser($user2);
 
@@ -103,7 +125,7 @@ final class source_cohort_edit_cohortids_test extends \advanced_testcase {
             (int)$cohort2->id => $cohort2->name,
             (int)$cohort3->id => $cohort3->name,
         ];
-        $this->assertSame($expected, $source->search('', 50, []));
+        $this->assertSame($expected, $this->search($source, ''));
 
         $this->setUser($user3);
 
@@ -111,7 +133,7 @@ final class source_cohort_edit_cohortids_test extends \advanced_testcase {
         $expected = [
             (int)$cohort3->id => $cohort3->name,
         ];
-        $this->assertSame($expected, $source->search('', 50, []));
+        $this->assertSame($expected, $this->search($source, ''));
 
         try {
             new source_cohort_edit_cohortids((int)$certification1->id);
@@ -174,7 +196,7 @@ final class source_cohort_edit_cohortids_test extends \advanced_testcase {
             (int)$tenantcohort1->id => $tenantcohort1->name,
             (int)$tenantcohort2->id => $tenantcohort2->name,
         ];
-        $this->assertSame($expected, $source->search('', 50, []));
+        $this->assertSame($expected, $this->search($source, ''));
 
         $source = new source_cohort_edit_cohortids((int)$certification1->id);
         $expected = [
@@ -183,16 +205,16 @@ final class source_cohort_edit_cohortids_test extends \advanced_testcase {
             (int)$tenantcohort1->id => $tenantcohort1->name,
             (int)$tenantcohort2->id => $tenantcohort2->name,
         ];
-        $this->assertSame($expected, $source->search('', 50, []));
+        $this->assertSame($expected, $this->search($source, ''));
 
         // Cohorts of other tenants are not allowed.
         $this->assertSame([], $source->labels([(string)$cohort2->id]));
-        $this->assertSame([(string)$cohort2->id => 'Error'], $source->validate([(string)$cohort2->id]));
+        $this->assertSame([(string)$cohort2->id], $this->refused($source, [(string)$cohort2->id]));
         $this->assertSame([(int)$cohort1->id => $cohort1->name], $source->labels([(string)$cohort1->id]));
-        $this->assertSame([], $source->validate([(string)$cohort1->id]));
+        $this->assertSame([], $this->refused($source, [(string)$cohort1->id]));
     }
 
-    public function test_labels_validate(): void {
+    public function test_labels(): void {
         global $DB;
 
         /** @var \tool_mucertify_generator $generator */
@@ -237,16 +259,16 @@ final class source_cohort_edit_cohortids_test extends \advanced_testcase {
 
         $source = new source_cohort_edit_cohortids((int)$certification1->id);
         $this->assertSame($alllabels, $source->labels($all));
-        $this->assertSame([], $source->validate($all));
+        $this->assertSame([], $this->refused($source, $all));
         $source = new source_cohort_edit_cohortids((int)$certification2->id);
         $this->assertSame($alllabels, $source->labels($all));
-        $this->assertSame([], $source->validate($all));
+        $this->assertSame([], $this->refused($source, $all));
 
         // Unknown and invalid values.
         $this->assertSame([], $source->labels(['0', '-1', 'abc', '', (string)($cohort3->id + 100)]));
         $this->assertSame(
-            [(string)($cohort3->id + 100) => 'Error'],
-            $source->validate([(string)($cohort3->id + 100)])
+            [(string)($cohort3->id + 100)],
+            $this->refused($source, [(string)($cohort3->id + 100)])
         );
 
         $this->setUser($user2);
@@ -262,15 +284,15 @@ final class source_cohort_edit_cohortids_test extends \advanced_testcase {
             [(int)$cohort2->id => $cohort2->name, (int)$cohort3->id => $cohort3->name],
             $source->labels($all)
         );
-        $this->assertSame([(string)$cohort1->id => 'Error'], $source->validate($all));
+        $this->assertSame([(string)$cohort1->id], $this->refused($source, $all));
 
         $this->setUser($user3);
 
         $source = new source_cohort_edit_cohortids((int)$certification2->id);
         $this->assertSame([(int)$cohort3->id => $cohort3->name], $source->labels($all));
         $this->assertSame(
-            [(string)$cohort1->id => 'Error', (string)$cohort2->id => 'Error'],
-            $source->validate($all)
+            [(string)$cohort1->id, (string)$cohort2->id],
+            $this->refused($source, $all)
         );
 
         // Cohorts already used by the certification are always allowed.
@@ -284,6 +306,6 @@ final class source_cohort_edit_cohortids_test extends \advanced_testcase {
             [(int)$cohort1->id => $cohort1->name, (int)$cohort3->id => $cohort3->name],
             $source->labels($all)
         );
-        $this->assertSame([(string)$cohort2->id => 'Error'], $source->validate($all));
+        $this->assertSame([(string)$cohort2->id], $this->refused($source, $all));
     }
 }

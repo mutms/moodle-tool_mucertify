@@ -16,22 +16,20 @@
 
 // phpcs:disable moodle.Files.BoilerplateComment.CommentEndedTooSoon
 
-namespace tool_mucertify\muform\autocomplete;
+namespace tool_mucertify\muform\cohortpicker;
 
-use tool_mulib\muform\util\autocomplete\cohort_trait;
+use core\context;
 
 /**
- * Cohort whose members are assigned to a certification manually.
+ * Cohorts of the cohort assignment source.
  *
  * @package     tool_mucertify
  * @copyright   2026 Petr Skoda
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-final class source_manual_assign_cohortid extends \tool_mulib\muform\autocomplete\base {
-    use cohort_trait;
-
-    /** @var \context certification context */
-    private \context $context;
+final class source_cohort_edit_cohortids extends \tool_mulib\muform\cohortpicker\base {
+    /** @var context certification context */
+    private context $context;
 
     /**
      * Constructor.
@@ -44,8 +42,8 @@ final class source_manual_assign_cohortid extends \tool_mulib\muform\autocomplet
     ) {
         global $DB;
         $certification = $DB->get_record('tool_mucertify_certification', ['id' => $certificationid], '*', MUST_EXIST);
-        $this->context = \context::instance_by_id($certification->contextid);
-        require_capability('tool/mucertify:assign', $this->context);
+        $this->context = context::instance_by_id($certification->contextid);
+        require_capability('tool/mucertify:edit', $this->context);
     }
 
     #[\Override]
@@ -54,12 +52,22 @@ final class source_manual_assign_cohortid extends \tool_mulib\muform\autocomplet
     }
 
     #[\Override]
-    public function search(string $query, int $maxitems, array $exclude): ?array {
-        return $this->search_cohorts($this->context, $query, $maxitems);
+    protected function get_context(): context {
+        return $this->context;
     }
 
+    /**
+     * Cohorts already assigned stay valid.
+     *
+     * @return int[]
+     */
     #[\Override]
-    protected function label_value(string $value): ?string {
-        return $this->cohort_labels($this->context, [$value])[$value] ?? null;
+    protected function get_current_cohortids(): array {
+        global $DB;
+        $source = $DB->get_record('tool_mucertify_source', ['certificationid' => $this->certificationid, 'type' => 'cohort']);
+        if (!$source) {
+            return [];
+        }
+        return array_map('intval', $DB->get_fieldset('tool_mucertify_src_cohort', 'cohortid', ['sourceid' => $source->id]));
     }
 }

@@ -19,7 +19,7 @@
 
 namespace tool_mucertify\local\form;
 
-use tool_mulib\muform\element\autocompletemany;
+use tool_mulib\muform\element\cohortpickermany;
 use tool_mulib\muform\element\buttons;
 use tool_mulib\muform\element\cancel;
 use tool_mulib\muform\element\info;
@@ -27,7 +27,7 @@ use tool_mulib\muform\element\radiocards;
 use tool_mulib\muform\element\submit;
 use tool_mulib\muform\form;
 use tool_mucertify\local\source\cohort;
-use tool_mucertify\muform\autocomplete\source_cohort_edit_cohortids;
+use tool_mucertify\muform\cohortpicker\source_cohort_edit_cohortids;
 
 /**
  * Edit cohort assignment settings.
@@ -58,7 +58,7 @@ final class source_cohort_edit extends form {
         }
 
         $certificationid = (int)$this->get_extra_data()['certification']->id;
-        $cohortids = new autocompletemany(
+        $cohortids = new cohortpickermany(
             'cohortids',
             get_string('source_cohort_cohortstoassign', 'tool_mucertify'),
             new source_cohort_edit_cohortids($certificationid)

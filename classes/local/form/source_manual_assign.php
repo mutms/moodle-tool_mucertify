@@ -21,9 +21,9 @@ namespace tool_mucertify\local\form;
 
 use tool_mucertify\customfield\assignment_handler;
 use tool_mucertify\local\certification;
-use tool_mucertify\muform\autocomplete\source_manual_assign_cohortid;
+use tool_mucertify\muform\cohortpicker\source_manual_assign_cohortid;
 use tool_mucertify\muform\userpicker\source_manual_assign_users;
-use tool_mulib\muform\element\autocomplete;
+use tool_mulib\muform\element\cohortpicker;
 use tool_mulib\muform\element\buttons;
 use tool_mulib\muform\element\cancel;
 use tool_mulib\muform\element\customfields;
@@ -51,7 +51,7 @@ final class source_manual_assign extends form {
         $users->set_required_marker(true);
         $this->add($users);
 
-        $cohortid = new autocomplete('cohortid', get_string('cohort', 'cohort'), new source_manual_assign_cohortid((int)$certification->id));
+        $cohortid = new cohortpicker('cohortid', get_string('cohort', 'cohort'), new source_manual_assign_cohortid((int)$certification->id));
         $cohortid->set_required_marker(true);
         $this->add($cohortid);
 
