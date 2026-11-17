@@ -341,8 +341,17 @@ abstract class base {
 
         $trans = $DB->start_delegated_transaction();
 
-        $record->id = $DB->insert_record('tool_mucertify_assignment', $record);
-        $assignment = $DB->get_record('tool_mucertify_assignment', ['id' => $record->id], '*', MUST_EXIST);
+        $inserted = \tool_mulib\local\mudb::insert_record_if_missing('tool_mucertify_assignment', $record, ['certificationid', 'userid']);
+        $assignment = $DB->get_record(
+            'tool_mucertify_assignment',
+            ['certificationid' => $certification->id, 'userid' => $userid],
+            '*',
+            MUST_EXIST
+        );
+        if (!$inserted) {
+            $trans->allow_commit();
+            return $assignment;
+        }
 
         \tool_mucertify\event\assignment_created::create_from_assignment($certification, $assignment)->trigger();
 
