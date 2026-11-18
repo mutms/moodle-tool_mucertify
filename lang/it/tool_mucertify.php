@@ -19,10 +19,6 @@
 /**
  * Strings for component 'tool_mucertify', language 'it'.
  *
- * NOTE: This Italian translation was produced automatically by an AI language
- * model and has not yet been reviewed by a human translator. Corrections are
- * welcome.
- *
  * @package    tool_mucertify
  * @copyright  2026 Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -41,9 +37,9 @@ $string['assignment_update'] = 'Modifica assegnazione';
 $string['assignments'] = 'Assegnazioni';
 $string['assignmentsources'] = 'Fonti di assegnazione';
 $string['blockprogramreuse'] = 'Blocca il riutilizzo dei programmi';
-$string['blockprogramreuse_help'] = 'Se l\'impostazione è abilitata, in questa certificazione ogni programma può essere utilizzato una sola volta per ciascun utente, compresi i periodi revocati. Non è possibile aggiungere manualmente periodi con un programma già utilizzato e la ricertificazione automatica non viene avviata finché non viene selezionato un programma di ricertificazione diverso.
+$string['blockprogramreuse_help'] = 'Se l\'impostazione è abilitata, in questa certificazione ogni programma può essere utilizzato una sola volta per ciascun utente, compresi i periodi revocati. Non è possibile aggiungere manualmente periodi con un programma già utilizzato e il rinnovo automatico non viene avviato finché non viene selezionato un programma di rinnovo diverso.
 
-Duplicare il programma prima di ogni ricertificazione, ad esempio con lo script CLI per la duplicazione dei programmi, e selezionare la copia come programma di ricertificazione nelle impostazioni della certificazione.';
+Duplicare il programma prima di ogni rinnovo, ad esempio con lo script CLI per la duplicazione dei programmi, e selezionare la copia come programma di rinnovo nelle impostazioni della certificazione.';
 $string['certificates'] = 'Certificati';
 $string['certification'] = 'Certificazione';
 $string['certification_actions'] = 'Azioni della certificazione';
@@ -95,7 +91,7 @@ $string['delay'] = 'Ritardo';
 $string['delay_oneunit'] = 'Utilizzare una sola unità di tempo.';
 $string['delayafter'] = '{$a->delay} dopo {$a->after}';
 $string['delaybefore'] = '{$a->delay} prima di {$a->before}';
-$string['error_programreuse'] = 'Questo programma è già stato utilizzato in un altro periodo dell\'utente, il riutilizzo dei programmi è bloccato nelle impostazioni della certificazione.';
+$string['error_programreuse'] = 'Questo programma è già stato utilizzato in un altro periodo dell\'utente e il riutilizzo dei programmi è bloccato nelle impostazioni della certificazione.';
 $string['errornoassignment'] = 'La certificazione non è assegnata';
 $string['errornoassignments'] = 'Non sono state trovate assegnazioni alle certificazioni.';
 $string['errornocertifications'] = 'Non sono state trovate certificazioni.';
@@ -156,7 +152,7 @@ $string['history_upload_more_rows'] = 'Altre righe non visualizzate: {$a}.';
 $string['history_upload_options'] = 'Opzioni di caricamento';
 $string['history_upload_refresh'] = 'Aggiorna anteprima';
 $string['history_upload_result_error'] = 'Problema';
-$string['history_upload_result_imported'] = 'Sarà importata';
+$string['history_upload_result_imported'] = 'Da importare';
 $string['history_upload_result_skipped'] = 'Saltata';
 $string['history_upload_skip_ambiguous'] = 'Salta le righe che corrispondono a più di un utente';
 $string['history_upload_skip_existing'] = 'Salta i periodi già esistenti';
@@ -174,7 +170,7 @@ $string['messageprovider:approval_reject_notification'] = 'Notifica di rifiuto d
 $string['messageprovider:approval_request_notification'] = 'Notifica di richiesta di approvazione della certificazione';
 $string['messageprovider:assignment_notification'] = 'Notifica di assegnazione alla certificazione';
 $string['messageprovider:cc_supervisor_notification'] = 'Copia delle notifiche sulle certificazioni dei subordinati';
-$string['messageprovider:renewalblocked_notification'] = 'Notifica di ricertificazione bloccata';
+$string['messageprovider:renewalblocked_notification'] = 'Notifica di rinnovo bloccato';
 $string['messageprovider:unassignment_notification'] = 'Notifica di rimozione dell\'assegnazione alla certificazione';
 $string['messageprovider:valid_notification'] = 'Notifica di validità della certificazione';
 $string['mucertify:admin'] = 'Amministrazione avanzata delle certificazioni';
@@ -205,17 +201,17 @@ $string['notification_cc_supervisor_body'] = 'Gentile {$a->supervisor_fullname},
 
 ';
 $string['notification_cc_supervisor_subject'] = 'Notifica ({$a->supervisor_title}) - {$a->certification_fullname}';
-$string['notification_renewalblocked'] = 'Ricertificazione bloccata';
+$string['notification_renewalblocked'] = 'Rinnovo bloccato';
 $string['notification_renewalblocked_body'] = 'Gentile {$a->user_fullname},
 
-non è stato possibile avviare la tua ricertificazione in "{$a->certification_fullname}", perché l\'attuale programma di ricertificazione è già stato utilizzato in uno dei tuoi precedenti periodi di certificazione.
+non è stato possibile avviare il rinnovo della tua certificazione "{$a->certification_fullname}", perché l\'attuale programma di rinnovo è già stato utilizzato in uno dei tuoi precedenti periodi di certificazione.
 
 * la certificazione attuale scade il: {$a->period_untildate}
 
 Contatta un manager delle certificazioni.
 ';
-$string['notification_renewalblocked_description'] = 'Notifica inviata agli utenti quando la loro ricertificazione non viene avviata perché il riutilizzo dei programmi è bloccato e hanno già utilizzato il programma di ricertificazione.';
-$string['notification_renewalblocked_subject'] = 'Impossibile avviare la ricertificazione';
+$string['notification_renewalblocked_description'] = 'Notifica inviata agli utenti quando il rinnovo della loro certificazione non viene avviato perché il riutilizzo dei programmi è bloccato e hanno già utilizzato il programma di rinnovo.';
+$string['notification_renewalblocked_subject'] = 'Impossibile avviare il rinnovo';
 $string['notification_unassignment'] = 'Assegnazione dell\'utente rimossa';
 $string['notification_unassignment_body'] = 'Gentile {$a->user_fullname},
 
@@ -229,7 +225,7 @@ la tua certificazione "{$a->certification_fullname}" è ora valida:
 
 * valida dal: {$a->period_fromdate}
 * scade il: {$a->period_untildate}
-* la ricertificazione si apre il: {$a->period_recertificationdate}
+* il rinnovo si apre il: {$a->period_recertificationdate}
 ';
 $string['notification_valid_description'] = 'Notifica inviata agli utenti quando la loro certificazione diventa valida.';
 $string['notification_valid_subject'] = 'Notifica di certificazione valida';
@@ -251,7 +247,7 @@ $string['periodstatus_overdue'] = 'In ritardo';
 $string['periodstatus_pending'] = 'In attesa';
 $string['periodstatus_revoked'] = 'Revocato';
 $string['pluginname'] = 'Certificazioni';
-$string['pluginname_desc'] = 'Strumento per certificazioni e ricertificazioni';
+$string['pluginname_desc'] = 'Strumento per certificazioni e rinnovi';
 $string['privacy:metadata:field:archived'] = 'Flag di archiviazione';
 $string['privacy:metadata:field:assignmentid'] = 'ID dell\'assegnazione';
 $string['privacy:metadata:field:certificationid'] = 'ID della certificazione';
@@ -275,15 +271,15 @@ $string['privacy:metadata:table:tool_mucertify_assignment'] = 'Tabella delle ass
 $string['privacy:metadata:table:tool_mucertify_period'] = 'Tabella dei periodi di certificazione';
 $string['privacy:metadata:table:tool_mucertify_request'] = 'Tabella delle richieste di certificazione';
 $string['program1'] = 'Programma di certificazione';
-$string['program2'] = 'Programma di ricertificazione';
+$string['program2'] = 'Programma di rinnovo';
 $string['purchaseaccess'] = 'Acquista accesso';
-$string['recertification'] = 'Ricertificazione';
-$string['recertifications'] = 'Ricertificazioni';
-$string['recertify'] = 'Ricertifica automaticamente';
-$string['recertifybefore'] = 'Ricertifica prima della scadenza';
+$string['recertification'] = 'Rinnovo';
+$string['recertifications'] = 'Rinnovi';
+$string['recertify'] = 'Rinnova automaticamente';
+$string['recertifybefore'] = 'Rinnova prima della scadenza';
 $string['recertifyifexpired'] = 'Se scaduta';
 $string['resettype1'] = 'Reimpostazione del programma di certificazione';
-$string['resettype2'] = 'Reimpostazione del programma di ricertificazione';
+$string['resettype2'] = 'Reimpostazione del programma di rinnovo';
 $string['revokeddate'] = 'Data di revoca';
 $string['selectcategory'] = 'Seleziona categoria';
 $string['settings'] = 'Impostazioni delle certificazioni';
@@ -354,7 +350,7 @@ $string['source_manual_upload_failed'] = 'Non è stato assegnato nessuno, righe 
 $string['source_manual_upload_more_rows'] = 'Altre righe non visualizzate: {$a}.';
 $string['source_manual_upload_options'] = 'Opzioni di caricamento';
 $string['source_manual_upload_refresh'] = 'Aggiorna anteprima';
-$string['source_manual_upload_result_assigned'] = 'Sarà assegnato';
+$string['source_manual_upload_result_assigned'] = 'Da assegnare';
 $string['source_manual_upload_result_error'] = 'Problema';
 $string['source_manual_upload_result_skipped'] = 'Saltata';
 $string['source_manual_upload_skip_ambiguous'] = 'Salta le righe che corrispondono a più di un utente';
@@ -381,7 +377,7 @@ $string['source_selfassignment_maxusers_status'] = 'Utenti {$a->count}/{$a->max}
 $string['source_selfassignment_maxusersreached'] = 'È già stato raggiunto il numero massimo di utenti con assegnazione spontanea';
 $string['source_selfassignment_signupallowed'] = 'Le adesioni sono consentite';
 $string['source_selfassignment_signupnotallowed'] = 'Le adesioni non sono consentite';
-$string['stoprecertify'] = 'Ricertificazione interrotta';
+$string['stoprecertify'] = 'Rinnovo interrotto';
 $string['tabassignment'] = 'Impostazioni di assegnazione';
 $string['tabgeneral'] = 'Generale';
 $string['tabsettings'] = 'Impostazioni dei periodi';
@@ -393,8 +389,8 @@ $string['tasktriggercertificate'] = 'Avvia il prima possibile il cron di rilasci
 $string['untildate'] = 'Scadenza';
 $string['updateassignments'] = 'Modifica impostazioni di assegnazione';
 $string['updatecertificatetemplate'] = 'Modifica modello di certificato';
-$string['updaterecertification'] = 'Modifica ricertificazione';
-$string['updatesource'] = 'Modifica: {$a}';
+$string['updaterecertification'] = 'Modifica rinnovo';
+$string['updatesource'] = 'Modifica {$a}';
 $string['validfrom'] = 'Valida dal';
 $string['windowdueafter'] = 'Data limite dopo';
 $string['windowduedate'] = 'Data limite della certificazione';
