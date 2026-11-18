@@ -19,10 +19,6 @@
 /**
  * Strings for component 'tool_mucertify', language 'it'.
  *
- * NOTE: This Italian translation was produced automatically by an AI language
- * model and has not yet been reviewed by a human translator. Corrections are
- * welcome.
- *
  * @package    tool_mucertify
  * @copyright  2026 Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -188,7 +184,7 @@ la tua certificazione "{$a->certification_fullname}" è ora valida:
 
 * valida dal: {$a->period_fromdate}
 * scade il: {$a->period_untildate}
-* la ricertificazione si apre il: {$a->period_recertificationdate}
+* il rinnovo si apre il: {$a->period_recertificationdate}
 ';
 $string['notification_valid_description'] = 'Notifica inviata agli utenti quando la loro certificazione diventa valida.';
 $string['notification_valid_subject'] = 'Notifica di certificazione valida';
@@ -210,7 +206,7 @@ $string['periodstatus_overdue'] = 'In ritardo';
 $string['periodstatus_pending'] = 'In attesa';
 $string['periodstatus_revoked'] = 'Revocato';
 $string['pluginname'] = 'Certificazioni';
-$string['pluginname_desc'] = 'Strumento per certificazioni e ricertificazioni';
+$string['pluginname_desc'] = 'Strumento per certificazioni e rinnovi';
 $string['privacy:metadata:field:archived'] = 'Flag di archiviazione';
 $string['privacy:metadata:field:assignmentid'] = 'ID dell\'assegnazione';
 $string['privacy:metadata:field:certificationid'] = 'ID della certificazione';
@@ -234,19 +230,19 @@ $string['privacy:metadata:table:tool_mucertify_assignment'] = 'Tabella delle ass
 $string['privacy:metadata:table:tool_mucertify_period'] = 'Tabella dei periodi di certificazione';
 $string['privacy:metadata:table:tool_mucertify_request'] = 'Tabella delle richieste di certificazione';
 $string['program1'] = 'Programma di certificazione';
-$string['program2'] = 'Programma di ricertificazione';
+$string['program2'] = 'Programma di rinnovo';
 $string['publicaccess'] = 'Pubblica';
 $string['publicaccess_help'] = 'Le certificazioni pubbliche sono visibili a tutti gli utenti.
 
 Lo stato di visibilità non influisce sulle certificazioni già assegnate.';
 $string['purchaseaccess'] = 'Acquista accesso';
-$string['recertification'] = 'Ricertificazione';
-$string['recertifications'] = 'Ricertificazioni';
-$string['recertify'] = 'Ricertifica automaticamente';
-$string['recertifybefore'] = 'Ricertifica prima della scadenza';
+$string['recertification'] = 'Rinnovo';
+$string['recertifications'] = 'Rinnovi';
+$string['recertify'] = 'Rinnova automaticamente';
+$string['recertifybefore'] = 'Rinnova prima della scadenza';
 $string['recertifyifexpired'] = 'Se scaduta';
 $string['resettype1'] = 'Reimpostazione del programma di certificazione';
-$string['resettype2'] = 'Reimpostazione del programma di ricertificazione';
+$string['resettype2'] = 'Reimpostazione del programma di rinnovo';
 $string['revokeddate'] = 'Data di revoca';
 $string['selectcategory'] = 'Seleziona categoria';
 $string['settings'] = 'Impostazioni delle certificazioni';
@@ -312,7 +308,7 @@ $string['source_selfassignment_maxusers_status'] = 'Utenti {$a->count}/{$a->max}
 $string['source_selfassignment_maxusersreached'] = 'È già stato raggiunto il numero massimo di utenti con assegnazione spontanea';
 $string['source_selfassignment_signupallowed'] = 'Le adesioni sono consentite';
 $string['source_selfassignment_signupnotallowed'] = 'Le adesioni non sono consentite';
-$string['stoprecertify'] = 'Ricertificazione interrotta';
+$string['stoprecertify'] = 'Rinnovo interrotto';
 $string['tabassignment'] = 'Impostazioni di assegnazione';
 $string['tabgeneral'] = 'Generale';
 $string['tabsettings'] = 'Impostazioni dei periodi';
@@ -324,8 +320,8 @@ $string['tasktriggercertificate'] = 'Avvia il prima possibile il cron di rilasci
 $string['untildate'] = 'Scadenza';
 $string['updateassignments'] = 'Modifica impostazioni di assegnazione';
 $string['updatecertificatetemplate'] = 'Modifica modello di certificato';
-$string['updaterecertification'] = 'Modifica ricertificazione';
-$string['updatesource'] = 'Modifica: {$a}';
+$string['updaterecertification'] = 'Modifica rinnovo';
+$string['updatesource'] = 'Modifica {$a}';
 $string['upload_csvfile'] = 'File CSV';
 $string['validfrom'] = 'Valida dal';
 $string['windowdueafter'] = 'Data limite dopo';
