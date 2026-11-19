@@ -40,9 +40,6 @@ $plugin->release = 'v5.3.1.00';
 $plugin->dependencies = [
     'tool_mulib' => 2026111753,
     'enrol_muprog' => 2026111753,
-    'block_muprog_my' => 2026111753,
-    'block_muprogmyoverview' => 2026111753,
     'tool_muprog' => 2026111753,
-    'block_mucertify_my' => 2026111753,
     'tool_mucatalog' => 2026111753,
 ];

@@ -10,10 +10,7 @@
     "mutms/moodle-tool_mulib": "*",
     "mutms/moodle-tool_mucatalog": "*",
     "mutms/moodle-enrol_muprog": "*",
-    "mutms/moodle-block_muprog_my": "*",
-    "mutms/moodle-block_muprogmyoverview": "*",
-    "mutms/moodle-tool_muprog": "*",
-    "mutms/moodle-block_mucertify_my": "*"
+    "mutms/moodle-tool_muprog": "*"
   },
   "support": {
     "issues": "https://github.com/mutms/moodle-tool_mucertify/issues",
