@@ -48,6 +48,22 @@ final class certification {
     public const SINCE_WINDOWEND = 'windowend';
 
     /**
+     * Tenant whose certification assignments may only include members of that tenant and users without a tenant.
+     *
+     * @param stdClass $certification
+     * @return int|null null when tenant rules do not apply
+     */
+    public static function get_restricted_tenantid(stdClass $certification): ?int {
+        global $DB;
+
+        if (!\tool_mulib\local\mulib::is_mutenancy_active()) {
+            return null;
+        }
+        $tenantid = $DB->get_field('context', 'tenantid', ['id' => $certification->contextid]);
+        return $tenantid ? (int)$tenantid : null;
+    }
+
+    /**
      * Options for editing of certification descriptions.
      *
      * @return array

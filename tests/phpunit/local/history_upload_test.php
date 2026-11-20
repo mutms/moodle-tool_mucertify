@@ -102,6 +102,44 @@ final class history_upload_test extends \advanced_testcase {
         $this->assertEquals($csvdata, history_upload::validate(json_decode(json_encode($csvdata), true)));
     }
 
+    public function test_check_ignores_users_of_other_tenants(): void {
+        global $DB;
+        if (!\tool_mulib\local\mulib::is_mutenancy_available()) {
+            $this->markTestSkipped('tool_mutenancy is not installed');
+        }
+        /** @var \tool_mutenancy_generator $tenancygen */
+        $tenancygen = $this->getDataGenerator()->get_plugin_generator('tool_mutenancy');
+        $tenant1 = $tenancygen->create_tenant();
+        $tenant2 = $tenancygen->create_tenant();
+        $contextid = \context_coursecat::instance($tenant1->categoryid)->id;
+        $member = $this->getDataGenerator()->create_user(['username' => 'member', 'tenantid' => $tenant1->id]);
+        $global = $this->getDataGenerator()->create_user(['username' => 'global']);
+        $this->getDataGenerator()->create_user(['username' => 'outsider', 'tenantid' => $tenant2->id]);
+        /** @var \tool_mucertify_generator $generator */
+        $generator = $this->getDataGenerator()->get_plugin_generator('tool_mucertify');
+        /** @var \tool_muprog_generator $programgenerator */
+        $programgenerator = $this->getDataGenerator()->get_plugin_generator('tool_muprog');
+        $program = $programgenerator->create_program(['sources' => ['mucertify' => []]]);
+        $certification = $generator->create_certification([
+            'sources' => ['manual' => []],
+            'programid1' => $program->id,
+            'contextid' => $contextid,
+        ]);
+        $source = $DB->get_record('tool_mucertify_source', ['type' => 'manual', 'certificationid' => $certification->id], '*', MUST_EXIST);
+
+        $rows = [
+            ['member', '2020-01-01', '2020-03-31'],
+            ['global', '2020-01-01', '2020-03-31'],
+            ['outsider', '2020-01-01', '2020-03-31'],
+        ];
+        $csvdata = $this->csvdata($rows, ['username', 'timefrom', 'timeuntil'], false);
+        $outcomes = history_upload::check($certification, $source, $csvdata, $this->get_options(false, ['assign' => 1]));
+        $this->assertEquals($member->id, $outcomes[0]->userid);
+        $this->assertEquals($global->id, $outcomes[1]->userid);
+        $this->assertSame(history_upload::RESULT_ERROR, $outcomes[2]->result);
+        $this->assertNull($outcomes[2]->userid, 'users of other tenants are not found at all');
+    }
+
     public function test_import(): void {
         global $DB;
         /** @var \tool_mucertify_generator $generator */
