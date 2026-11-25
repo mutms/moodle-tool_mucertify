@@ -16,7 +16,7 @@
 
 // phpcs:disable moodle.Files.BoilerplateComment.CommentEndedTooSoon
 
-namespace tool_mucertify\muform\userpicker;
+namespace tool_mucertify\picker\user;
 
 use tool_mulib\local\sql;
 
@@ -27,7 +27,7 @@ use tool_mulib\local\sql;
  * @copyright   2026 Petr Skoda
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-final class source_manual_assign_users extends \tool_mulib\muform\userpicker\base {
+final class source_manual_assign_users extends \tool_mulib\picker\user\base {
     /** @var \context certification context */
     private \context $context;
 

@@ -16,9 +16,9 @@
 
 // phpcs:disable moodle.Files.BoilerplateComment.CommentEndedTooSoon
 
-namespace tool_mucertify\phpunit\muform\userpicker;
+namespace tool_mucertify\phpunit\picker\user;
 
-use tool_mucertify\muform\userpicker\source_manual_assign_users;
+use tool_mucertify\picker\user\source_manual_assign_users;
 use tool_mulib\local\mulib;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
@@ -30,7 +30,7 @@ use PHPUnit\Framework\Attributes\Group;
  * @copyright  2026 Petr Skoda
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-#[CoversClass(\tool_mucertify\muform\userpicker\source_manual_assign_users::class)]
+#[CoversClass(\tool_mucertify\picker\user\source_manual_assign_users::class)]
 #[Group('MuTMS')]
 final class source_manual_assign_users_test extends \advanced_testcase {
     #[\Override]
@@ -42,12 +42,12 @@ final class source_manual_assign_users_test extends \advanced_testcase {
     /**
      * Users on the first page of the panel.
      *
-     * @param \tool_mulib\muform\userpicker\base $source
+     * @param \tool_mulib\picker\user\base $source
      * @param string $query
      * @param string[] $exclude
      * @return array user id => label html
      */
-    private function search(\tool_mulib\muform\userpicker\base $source, string $query, array $exclude = []): array {
+    private function search(\tool_mulib\picker\user\base $source, string $query, array $exclude = []): array {
         $result = $source->search($query, $exclude, 0);
         return array_combine(array_column($result['rows'], 'id'), array_column($result['rows'], 'label'));
     }

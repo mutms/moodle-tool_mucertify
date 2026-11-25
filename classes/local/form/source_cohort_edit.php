@@ -27,7 +27,7 @@ use tool_mulib\muform\element\radiocards;
 use tool_mulib\muform\element\submit;
 use tool_mulib\muform\form;
 use tool_mucertify\local\source\cohort;
-use tool_mucertify\muform\cohortpicker\source_cohort_edit_cohortids;
+use tool_mucertify\picker\cohort\source_cohort_edit_cohortids;
 
 /**
  * Edit cohort assignment settings.

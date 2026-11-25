@@ -21,8 +21,8 @@ namespace tool_mucertify\local\form;
 
 use tool_mucertify\customfield\assignment_handler;
 use tool_mucertify\local\certification;
-use tool_mucertify\muform\cohortpicker\source_manual_assign_cohortid;
-use tool_mucertify\muform\userpicker\source_manual_assign_users;
+use tool_mucertify\picker\cohort\source_manual_assign_cohortid;
+use tool_mucertify\picker\user\source_manual_assign_users;
 use tool_mulib\muform\element\cohortpicker;
 use tool_mulib\muform\element\buttons;
 use tool_mulib\muform\element\cancel;
