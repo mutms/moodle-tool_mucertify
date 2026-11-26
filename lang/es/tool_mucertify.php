@@ -123,6 +123,7 @@ $string['evidence_default_text'] = 'Subida de periodos de certificación histór
 $string['evidence_details'] = 'Detalles de la evidencia';
 $string['evidence_details_help'] = 'Los detalles de la evidencia sirven para explicar por qué se concedió o se revocó la certificación.';
 $string['expirationafter'] = 'Expira después de';
+$string['formatter_assignmentlink'] = 'Nombre con enlace a la asignación';
 $string['fromdate'] = 'Válida desde';
 $string['graceperiod'] = 'Periodo de gracia';
 $string['history_upload'] = 'Subir historial';

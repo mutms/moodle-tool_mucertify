@@ -123,6 +123,7 @@ $string['evidence_default_text'] = 'Dépôt de périodes de certification histor
 $string['evidence_details'] = 'Détails de la preuve';
 $string['evidence_details_help'] = 'Les détails de la preuve expliquent pourquoi la certification a été accordée ou révoquée.';
 $string['expirationafter'] = 'Échéance après';
+$string['formatter_assignmentlink'] = 'Nom avec lien vers l\'assignation';
 $string['fromdate'] = 'Valide à partir du';
 $string['graceperiod'] = 'Délai de grâce';
 $string['history_upload'] = 'Déposer l’historique';

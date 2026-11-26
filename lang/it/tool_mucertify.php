@@ -119,6 +119,7 @@ $string['evidence_default_text'] = 'Caricamento di periodi di certificazione sto
 $string['evidence_details'] = 'Dettagli dell\'attestazione';
 $string['evidence_details_help'] = 'I dettagli dell\'attestazione spiegano perché la certificazione è stata concessa o revocata.';
 $string['expirationafter'] = 'Scade dopo';
+$string['formatter_assignmentlink'] = 'Nome con link all\'assegnazione';
 $string['fromdate'] = 'Valida dal';
 $string['graceperiod'] = 'Periodo di tolleranza';
 $string['history_upload'] = 'Carica storico';

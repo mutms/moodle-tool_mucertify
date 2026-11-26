@@ -143,7 +143,8 @@ final class certification_assignments extends system_report {
                 fn(cell $cell): export_value => export_value::link($url($cell), fullname(
                     $cell->get_fields(),
                     has_capability('moodle/site:viewfullnames', $this->get_context())
-                ))
+                )),
+                new lang_string('formatter_assignmentlink', 'tool_mucertify')
             )
             ->set_default_formatter('assignmentlink');
         return $columns;

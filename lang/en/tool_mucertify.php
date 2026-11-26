@@ -120,6 +120,7 @@ $string['evidence_default_text'] = 'Upload of historic certification periods';
 $string['evidence_details'] = 'Evidence details';
 $string['evidence_details_help'] = 'Evidence details serve as explanation why certification was granted or revoked.';
 $string['expirationafter'] = 'Expires after';
+$string['formatter_assignmentlink'] = 'Name linked to assignment';
 $string['fromdate'] = 'Valid from';
 $string['graceperiod'] = 'Grace period';
 $string['history_upload'] = 'Upload history';

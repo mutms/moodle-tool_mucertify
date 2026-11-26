@@ -123,6 +123,7 @@ $string['evidence_default_text'] = 'Carregamento de períodos de certificação 
 $string['evidence_details'] = 'Detalhes do comprovativo';
 $string['evidence_details_help'] = 'Os detalhes do comprovativo explicam o motivo pelo qual a certificação foi concedida ou revogada.';
 $string['expirationafter'] = 'Expira após';
+$string['formatter_assignmentlink'] = 'Nome com ligação à atribuição';
 $string['fromdate'] = 'Válida desde';
 $string['graceperiod'] = 'Período de tolerância';
 $string['history_upload'] = 'Carregar histórico';

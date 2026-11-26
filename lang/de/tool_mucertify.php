@@ -123,6 +123,7 @@ $string['evidence_default_text'] = 'Hochladen historischer Zertifizierungszeitr�
 $string['evidence_details'] = 'Details zum Nachweis';
 $string['evidence_details_help'] = 'Die Details zum Nachweis erklären, warum die Zertifizierung erteilt oder widerrufen wurde.';
 $string['expirationafter'] = 'Läuft ab nach';
+$string['formatter_assignmentlink'] = 'Name mit Link zur Zuweisung';
 $string['fromdate'] = 'Gültig ab';
 $string['graceperiod'] = 'Nachfrist';
 $string['history_upload'] = 'Verlauf hochladen';

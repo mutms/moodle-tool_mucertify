@@ -119,6 +119,7 @@ $string['evidence_default_text'] = 'Nahrání historických certifikovaných obd
 $string['evidence_details'] = 'Podrobnosti o dokladu';
 $string['evidence_details_help'] = 'Podrobnosti o dokladu slouží jako vysvětlení, proč byla certifikace udělena nebo zrušena.';
 $string['expirationafter'] = 'Vyprší po';
+$string['formatter_assignmentlink'] = 'Jméno s odkazem na přiřazení';
 $string['fromdate'] = 'Platí od';
 $string['graceperiod'] = 'Ochranná lhůta';
 $string['history_upload'] = 'Nahrát historii';
