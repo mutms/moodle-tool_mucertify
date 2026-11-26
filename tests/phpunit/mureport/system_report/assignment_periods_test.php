@@ -107,6 +107,9 @@ final class assignment_periods_test extends \advanced_testcase {
         $periodid = $DB->get_field('tool_mucertify_period', 'id', ['userid' => $assignment1->userid, 'programid' => $certification->programid1]);
         $this->assertStringContainsString('/admin/tool/mucertify/management/period.php?id=' . $periodid, $rows[0]['cells']['period:timewindowstart']);
         $this->assertStringContainsString('Program 2', $rows[1]['cells']['period:program']);
+        $this->assertSame([false, false], array_column($rows, 'muted'));
+        $DB->set_field('tool_mucertify_period', 'timerevoked', time(), ['id' => $periodid]);
+        $this->assertSame([true, false], array_column($this->get_rows(assignment_periods::class, $assignment1->id), 'muted'));
 
         $report = assignment_periods::make_instance($assignment1->id);
         $this->assertArrayNotHasKey('period:recertify', $report->get_columns());

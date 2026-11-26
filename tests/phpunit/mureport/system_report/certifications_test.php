@@ -82,6 +82,8 @@ final class certifications_test extends \advanced_testcase {
         $this->assertSame(['C1'], $this->get_idnumbers($syscontext->id, $category));
 
         $rows = certifications::make_instance($syscontext->id)->get_query()->get_page(new request([]))->export_rows();
+        $this->assertContains(true, array_column($rows, 'muted'));
+        $this->assertContains(false, array_column($rows, 'muted'));
         $url = '/admin/tool/mucertify/management/certification.php?id=' . $certification0->id;
         $this->assertStringContainsString($url, $rows[0]['cells']['certification:fullname']);
 

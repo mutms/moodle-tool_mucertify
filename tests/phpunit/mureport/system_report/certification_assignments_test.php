@@ -102,6 +102,7 @@ final class certification_assignments_test extends \advanced_testcase {
         $this->assertStringContainsString('/admin/tool/mucertify/management/assignment.php?id=' . $assignment1->id, $rows[0]['cells']['auser:fullname']);
         $this->assertSame(['update', 'archive'], $this->get_actions($rows[0]));
         $this->assertSame(['restore', 'delete'], $this->get_actions($rows[1]));
+        $this->assertSame([false, true], array_column($rows, 'muted'));
 
         $viewer = $this->getDataGenerator()->create_user();
         $roleid = $this->getDataGenerator()->create_role();

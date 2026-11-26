@@ -64,6 +64,7 @@ final class assignment_periods extends system_report {
     #[\Override]
     protected function define(): void {
         $this->set_main_entity(new period('period'));
+        $this->set_row_muted('period.timerevoked IS NOT NULL', ['period']);
         $this->set_default_columns([
             'period:timewindowstart',
             'period:timewindowdue',

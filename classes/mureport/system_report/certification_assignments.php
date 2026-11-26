@@ -69,6 +69,7 @@ final class certification_assignments extends system_report {
     #[\Override]
     protected function define(): void {
         $this->set_main_entity(new assignment('assignment'));
+        $this->set_row_muted('assignment.archived = 1', ['assignment']);
         $this->add_entity(new user('auser'), new join('assignment', 'auser.id = assignment.userid', inner: true));
 
         $this->set_default_columns([

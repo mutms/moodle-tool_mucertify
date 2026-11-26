@@ -99,6 +99,7 @@ final class certification_requests_test extends \advanced_testcase {
         $this->assertSame(['Anna Alpha', 'Cyril Gamma'], array_keys($this->get_actions($certification1->id, new request(['request:status' => ['value' => 'pending']]))));
         $this->assertSame(['Bob Beta'], array_keys($this->get_actions($certification1->id, new request(['request:status' => ['value' => 'rejected']]))));
         $this->assertSame(['Anna Alpha'], array_keys($this->get_actions($certification2->id)));
+        $this->assertSame([false, true, false], array_column($this->get_rows($certification1->id), 'muted'));
 
         $DB->set_field('tool_mucertify_certification', 'archived', 1, ['id' => $certification1->id]);
         $this->assertSame(['reject'], $this->get_actions($certification1->id)['Anna Alpha']);

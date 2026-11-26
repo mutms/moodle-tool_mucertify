@@ -63,6 +63,7 @@ final class certifications extends system_report {
     #[\Override]
     protected function define(): void {
         $this->set_main_entity(new certification('certification'));
+        $this->set_row_muted('certification.archived = 1', ['certification']);
         $this->add_capability_restriction('certification', 'tool/mucertify:view');
 
         $this->set_default_columns([
