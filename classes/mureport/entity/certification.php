@@ -20,11 +20,14 @@ namespace tool_mucertify\mureport\entity;
 
 use tool_mureport\mureport\cell;
 use tool_mureport\mureport\column;
+use tool_mureport\mureport\customfields;
 use tool_mureport\mureport\entity;
 use tool_mureport\mureport\export_value;
 use tool_mureport\mureport\filter;
+use tool_mureport\mureport\row;
 use tool_mulib\local\sql;
 use core\lang_string;
+use core_customfield\field_controller;
 use core\url;
 use stdClass;
 
@@ -36,6 +39,12 @@ use stdClass;
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class certification extends entity {
+    /** @var customfields|null */
+    private ?customfields $customfields = null;
+
+    /** @var bool rows are restricted to certifications the user may view */
+    private bool $customfieldsmanaged = false;
+
     #[\Override]
     public function get_default_source(): sql {
         return new sql('{tool_mucertify_certification}');
@@ -60,11 +69,18 @@ class certification extends entity {
 
     #[\Override]
     public function get_column_names(): array {
-        return ['fullname', 'idnumber', 'id', 'category', 'assignmentcount', 'archived', 'recertify', 'timecreated'];
+        return [
+            'fullname', 'idnumber', 'id', 'category', 'assignmentcount', 'archived', 'recertify', 'timecreated',
+            ...$this->get_customfields()->get_column_names(),
+        ];
     }
 
     #[\Override]
     protected function define_columns(string $selector): array {
+        $customfields = $this->get_customfields()->define_columns($selector);
+        if ($customfields !== null) {
+            return $customfields;
+        }
         $alias = $this->alias;
         $column = match ($selector) {
             'fullname' => $this->define_fullname_column(),
@@ -104,11 +120,18 @@ class certification extends entity {
 
     #[\Override]
     public function get_filter_names(): array {
-        return ['fullname', 'idnumber', 'id', 'category', 'archived', 'timecreated'];
+        return [
+            'fullname', 'idnumber', 'id', 'category', 'archived', 'timecreated',
+            ...$this->get_customfields()->get_filter_names(),
+        ];
     }
 
     #[\Override]
     protected function define_filters(string $selector): array {
+        $customfields = $this->get_customfields()->define_filters($selector);
+        if ($customfields !== null) {
+            return $customfields;
+        }
         $alias = $this->alias;
         $filter = match ($selector) {
             'fullname' => new filter\text(
@@ -138,6 +161,53 @@ class certification extends entity {
             default => null,
         };
         return $filter ? [$filter] : [];
+    }
+
+    /**
+     * Certification custom fields visible to managers are not checked in each row,
+     * for reports with rows restricted to certifications the user may view.
+     *
+     * @return self
+     */
+    public function set_customfields_managed(): self {
+        $this->customfieldsmanaged = true;
+        return $this;
+    }
+
+    /**
+     * Returns certification custom fields.
+     *
+     * @return customfields
+     */
+    public function get_customfields(): customfields {
+        if ($this->customfields === null) {
+            $this->customfields = (new customfields($this, 'tool_mucertify', 'certification'))
+                ->set_unrestricted(fn(field_controller $field): bool => $field->get_configdata_property('visibilityeveryone')
+                    || ($this->customfieldsmanaged && $field->get_configdata_property('visibilitymanagers'))
+                    || has_any_capability(['tool/mucertify:edit'], \core\context\system::instance()))
+                ->set_cell_visibility(function (field_controller $field, row $row): bool {
+                    $context = $row->get_context($this->alias);
+                    if (!$context) {
+                        return false;
+                    }
+                    if ($field->get_configdata_property('visibilitymanagers') && has_capability('tool/mucertify:view', $context)) {
+                        return true;
+                    }
+                    if (has_capability('tool/mucertify:edit', $context)) {
+                        return true;
+                    }
+                    if ($field->get_configdata_property('visibilityassigned')) {
+                        return $this->customfields->get_handler()->can_view($field, (int)$row->get_entity_key($this->alias));
+                    }
+                    return false;
+                });
+        }
+        return $this->customfields;
+    }
+
+    #[\Override]
+    public function get_helper_join(string $helperalias): sql {
+        return $this->get_customfields()->get_helper_join($helperalias) ?? parent::get_helper_join($helperalias);
     }
 
     /**

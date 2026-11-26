@@ -62,7 +62,7 @@ final class certifications extends system_report {
 
     #[\Override]
     protected function define(): void {
-        $this->set_main_entity(new certification('certification'));
+        $this->set_main_entity((new certification('certification'))->set_customfields_managed());
         $this->set_row_muted('certification.archived = 1', ['certification']);
         $this->add_capability_restriction('certification', 'tool/mucertify:view');
 
@@ -80,6 +80,7 @@ final class certifications extends system_report {
             'certification:category',
             'certification:archived',
             'certification:timecreated',
+            'certification:allcustomfields',
         ]);
         $this->set_preset_filters(['certification:archived' => ['value' => 0]]);
         $this->set_multisearch_label(new lang_string('certificationsearch', 'tool_mucertify'));

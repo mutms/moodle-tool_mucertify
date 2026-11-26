@@ -103,4 +103,46 @@ final class certifications_test extends \advanced_testcase {
         $this->expectException(\core\exception\invalid_parameter_exception::class);
         certifications::make_instance(\context_course::instance($course->id)->id)->require_access();
     }
+
+    public function test_customfields(): void {
+        /** @var \tool_mucertify_generator $generator */
+        $generator = $this->getDataGenerator()->get_plugin_generator('tool_mucertify');
+        /** @var \core_customfield_generator $cfgenerator */
+        $cfgenerator = $this->getDataGenerator()->get_plugin_generator('core_customfield');
+        /** @var \tool_mureport_generator $mureportgenerator */
+        $mureportgenerator = $this->getDataGenerator()->get_plugin_generator('tool_mureport');
+        $category = $cfgenerator->create_category(['component' => 'tool_mucertify', 'area' => 'certification']);
+        $managers = $cfgenerator->create_field(['categoryid' => $category->get('id'), 'shortname' => 'fmanagers',
+            'configdata' => ['visibilitymanagers' => 1]]);
+        $private = $cfgenerator->create_field(['categoryid' => $category->get('id'), 'shortname' => 'fprivate']);
+        $mureportgenerator->create_report_column(['report' => certifications::class, 'selector' => 'certification:idnumber']);
+        $mureportgenerator->create_report_column(['report' => certifications::class, 'selector' => 'certification:customfield:fmanagers']);
+        $mureportgenerator->create_report_column(['report' => certifications::class, 'selector' => 'certification:customfield:fprivate']);
+        $certification1 = $generator->create_certification(['idnumber' => 'C1', 'fullname' => 'Alpha']);
+        $certification2 = $generator->create_certification(['idnumber' => 'C2', 'fullname' => 'Beta']);
+        foreach ([[$certification1, 'one'], [$certification2, 'two']] as [$certification, $suffix]) {
+            $cfgenerator->add_instance_data($managers, (int)$certification->id, "managers $suffix");
+            $cfgenerator->add_instance_data($private, (int)$certification->id, "private $suffix");
+        }
+        $viewer = $this->getDataGenerator()->create_user();
+        $roleid = $this->getDataGenerator()->create_role();
+        assign_capability('tool/mucertify:view', CAP_ALLOW, $roleid, \context_system::instance());
+        role_assign($roleid, $viewer->id, \context_system::instance()->id);
+
+        $filter = fn(string $name, string $value): array => array_map(
+            fn(array $row): string => strip_tags($row['cells']['certification:idnumber']),
+            certifications::make_instance(\context_system::instance()->id)->get_query()
+                ->get_page(new request(["certification:customfield:$name" => ['value' => $value]]))->export_rows()
+        );
+        $this->setAdminUser();
+        $this->assertSame(['C1'], $filter('fmanagers', 'one'));
+        $this->assertSame(['C1'], $filter('fprivate', 'one'));
+
+        $this->setUser($viewer);
+        $this->assertSame(['C1'], $filter('fmanagers', 'one'));
+        $this->assertSame(['C1', 'C2'], $filter('fprivate', 'one'));
+        $cells = certifications::make_instance(\context_system::instance()->id)->get_query()->get_page(new request([]))->export_rows()[0]['cells'];
+        $this->assertSame('managers one', $cells['certification:customfield:fmanagers']);
+        $this->assertStringContainsString(get_string('cellhidden', 'tool_mureport'), $cells['certification:customfield:fprivate']);
+    }
 }

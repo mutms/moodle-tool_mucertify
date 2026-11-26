@@ -68,7 +68,7 @@ final class certification_assignments extends system_report {
 
     #[\Override]
     protected function define(): void {
-        $this->set_main_entity(new assignment('assignment'));
+        $this->set_main_entity((new assignment('assignment'))->set_customfields_managed());
         $this->set_row_muted('assignment.archived = 1', ['assignment']);
         $this->add_entity(new user('auser'), new join('assignment', 'auser.id = assignment.userid', inner: true));
 
@@ -95,6 +95,7 @@ final class certification_assignments extends system_report {
             'assignment:source',
             'assignment:timecertifiedfrom',
             'assignment:timecertifieduntil',
+            'assignment:allcustomfields',
             'auser:allprofilefields',
         ]);
         $this->set_preset_filters(['assignment:archived' => ['value' => 0]]);
