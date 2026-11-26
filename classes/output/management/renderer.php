@@ -437,15 +437,8 @@ class renderer extends \plugin_renderer_base {
     public function render_user_periods(stdClass $certification, stdClass $assignment): string {
         $result = $this->output->heading(get_string('periods', 'tool_mucertify'), 3, ['h4']);
 
-        $context = \context::instance_by_id($certification->contextid);
-        $report = \core_reportbuilder\system_report_factory::create(
-            \tool_mucertify\reportbuilder\local\systemreports\assignment_periods::class,
-            $context,
-            parameters:['assignmentid' => $assignment->id]
-        );
-        $result .= $this->output->render(new \tool_mulib\output\report_filter_bar($report));
-        $result .= $report->output();
-        $result .= $this->output->render(new \tool_mulib\output\report_pager($report));
+        $report = \tool_mucertify\mureport\system_report\assignment_periods::make_instance((int)$assignment->id);
+        $result .= $this->output->render(new \tool_mureport\output\report_full($report));
 
         return $result;
     }

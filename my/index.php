@@ -36,34 +36,27 @@ require('../../../../config.php');
 
 $userid = optional_param('userid', 0, PARAM_INT);
 
-require_login();
-if (isguestuser()) {
-    redirect(new core\url('/'));
-}
-
-$currenturl = new core\url('/admin/tool/mucertify/my/index.php');
-
-if ($userid) {
-    $currenturl->param('userid', $userid);
-} else {
-    $userid = $USER->id;
-}
-$PAGE->set_url($currenturl);
-
-$usercontext = context_user::instance($userid);
-$PAGE->set_context($usercontext);
-
 if (!\tool_mulib\local\mulib::is_mucertify_active()) {
     redirect(new core\url('/'));
 }
 
-$user = $DB->get_record('user', ['id' => $userid, 'deleted' => 0], '*', MUST_EXIST);
-if (isguestuser($user)) {
-    redirect(new core\url('/'));
+$currenturl = new core\url('/admin/tool/mucertify/my/index.php');
+if ($userid) {
+    $currenturl->param('userid', $userid);
+} else {
+    require_login();
+    if (isguestuser()) {
+        redirect(new core\url('/'));
+    }
+    $userid = (int)$USER->id;
 }
 
+$report = \tool_mucertify\mureport\system_report\user_certifications::make_instance($userid);
+$report->require_access();
+$report->init_page($currenturl);
+$user = $report->get_constraint_record('user', 'userid');
+
 if ($userid != $USER->id) {
-    require_capability('tool/mucertify:viewusercertifications', $usercontext);
     $title = get_string('certifications', 'tool_mucertify');
 } else {
     $title = get_string('mycertifications', 'tool_mucertify');
@@ -94,14 +87,6 @@ if ($actions->has_items()) {
 echo $OUTPUT->header();
 echo $OUTPUT->heading($title);
 
-$report = \core_reportbuilder\system_report_factory::create(
-    \tool_mucertify\reportbuilder\local\systemreports\assignments_user::class,
-    $usercontext
-);
-echo $OUTPUT->render(new \tool_mulib\output\report_filter_bar($report, pinned: [
-    'assignment:status' => null,
-]));
-echo $report->output();
-echo $OUTPUT->render(new \tool_mulib\output\report_pager($report));
+echo $OUTPUT->render(new \tool_mureport\output\report_full($report));
 
 echo $OUTPUT->footer();

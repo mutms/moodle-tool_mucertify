@@ -1,0 +1,227 @@
+<?php
+// This file is part of MuTMS suite of plugins for Moodle™ LMS.
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+// phpcs:disable moodle.Files.BoilerplateComment.CommentEndedTooSoon
+
+namespace tool_mucertify\mureport\entity;
+
+use tool_mureport\mureport\cell;
+use tool_mureport\mureport\column;
+use tool_mureport\mureport\entity;
+use tool_mureport\mureport\export_value;
+use tool_mureport\mureport\filter;
+use tool_mulib\local\sql;
+use core\lang_string;
+use core\url;
+use stdClass;
+
+/**
+ * Certification entity, certifications in tool_mucertify_certification.
+ *
+ * @package     tool_mucertify
+ * @copyright   2026 Petr Skoda
+ * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class certification extends entity {
+    #[\Override]
+    public function get_default_source(): sql {
+        return new sql('{tool_mucertify_certification}');
+    }
+
+    #[\Override]
+    protected function get_default_title(): string {
+        return get_string('certification', 'tool_mucertify');
+    }
+
+    #[\Override]
+    public function get_context_sql(): ?sql {
+        return new sql("{$this->alias}.contextid");
+    }
+
+    #[\Override]
+    public function get_context_for_key(int|string $key): ?\core\context {
+        global $DB;
+        $contextid = $DB->get_field('tool_mucertify_certification', 'contextid', ['id' => $key]);
+        return $contextid ? (\core\context::instance_by_id($contextid, IGNORE_MISSING) ?: null) : null;
+    }
+
+    #[\Override]
+    public function get_column_names(): array {
+        return ['fullname', 'idnumber', 'id', 'category', 'assignmentcount', 'archived', 'recertify', 'timecreated'];
+    }
+
+    #[\Override]
+    protected function define_columns(string $selector): array {
+        $alias = $this->alias;
+        $column = match ($selector) {
+            'fullname' => $this->define_fullname_column(),
+            'idnumber' => $this->create_column(
+                'idnumber',
+                new lang_string('certificationidnumber', 'tool_mucertify'),
+                column::TYPE_TEXT
+            )
+                ->add_field('idnumber', "$alias.idnumber")
+                ->set_sortable(true),
+            'id' => $this->create_column(
+                'id',
+                new lang_string('certificationinternalid', 'tool_mucertify'),
+                column::TYPE_INTEGER
+            )
+                ->add_field('id', "$alias.id")
+                ->set_sortable(true),
+            'category' => $this->define_category_column(),
+            'assignmentcount' => $this->define_assignmentcount_column(),
+            'archived' => $this->create_column('archived', new lang_string('archived', 'tool_mucertify'), column::TYPE_BOOLEAN)
+                ->add_field('archived', "$alias.archived")
+                ->set_sortable(true),
+            'recertify' => $this->create_column('recertify', new lang_string('recertify', 'tool_mucertify'), column::TYPE_BOOLEAN)
+                ->add_field('recertify', "CASE WHEN $alias.recertify IS NULL THEN 0 ELSE 1 END")
+                ->set_sortable(true),
+            'timecreated' => $this->create_column(
+                'timecreated',
+                new lang_string('timecreated', 'core_reportbuilder'),
+                column::TYPE_TIMESTAMP
+            )
+                ->add_field('timecreated', "$alias.timecreated")
+                ->set_sortable(true),
+            default => null,
+        };
+        return $column ? [$column] : [];
+    }
+
+    #[\Override]
+    public function get_filter_names(): array {
+        return ['fullname', 'idnumber', 'id', 'category', 'archived', 'timecreated'];
+    }
+
+    #[\Override]
+    protected function define_filters(string $selector): array {
+        $alias = $this->alias;
+        $filter = match ($selector) {
+            'fullname' => new filter\text(
+                $alias,
+                'fullname',
+                new lang_string('certificationname', 'tool_mucertify'),
+                "$alias.fullname"
+            ),
+            'idnumber' => new filter\text(
+                $alias,
+                'idnumber',
+                new lang_string('certificationidnumber', 'tool_mucertify'),
+                "$alias.idnumber"
+            ),
+            'id' => (new filter\number($alias, 'id', new lang_string('certificationinternalid', 'tool_mucertify'), "$alias.id"))
+                ->set_multisearch(),
+            'category' => (new filter\picker($alias, 'category', new lang_string('category'), "$alias.contextid"))
+                ->set_integer_values()
+                ->set_labels(fn(array $values): array => \tool_muprog\mureport\entity\program::get_category_labels($values)),
+            'archived' => new filter\boolean($alias, 'archived', new lang_string('archived', 'tool_mucertify'), "$alias.archived"),
+            'timecreated' => new filter\date(
+                $alias,
+                'timecreated',
+                new lang_string('timecreated', 'core_reportbuilder'),
+                "$alias.timecreated"
+            ),
+            default => null,
+        };
+        return $filter ? [$filter] : [];
+    }
+
+    /**
+     * Define certification name column, linked to certification management.
+     *
+     * @return column
+     */
+    private function define_fullname_column(): column {
+        $alias = $this->alias;
+        $name = fn(stdClass $fields, bool $escape): string => format_string(
+            $fields->fullname,
+            true,
+            ['context' => \core\context::instance_by_id($fields->contextid), 'escape' => $escape]
+        );
+        $url = fn(stdClass $fields): url => new url('/admin/tool/mucertify/management/certification.php', ['id' => $fields->id]);
+        return $this->create_column('fullname', new lang_string('certificationname', 'tool_mucertify'), column::TYPE_TEXT)
+            ->add_field('fullname', "$alias.fullname")
+            ->add_field('id', "$alias.id")
+            ->add_field('contextid', "$alias.contextid")
+            ->set_sortable(true)
+            ->add_formatter(
+                'name',
+                fn(cell $cell): string => $name($cell->get_fields(), true),
+                fn(cell $cell): export_value => export_value::text($name($cell->get_fields(), false))
+            )
+            ->add_formatter(
+                'link',
+                fn(cell $cell): string => \html_writer::link($url($cell->get_fields()), $name($cell->get_fields(), true)),
+                fn(cell $cell): export_value => export_value::link($url($cell->get_fields()), $name($cell->get_fields(), false))
+            )
+            ->set_default_formatter('link');
+    }
+
+    /**
+     * Define certification category column, linked to certification management of the category.
+     *
+     * @return column
+     */
+    private function define_category_column(): column {
+        $alias = $this->alias;
+        $name = fn(stdClass $fields): string
+            => \core\context::instance_by_id($fields->contextid)->get_context_name(false, false, false);
+        $url = fn(stdClass $fields): url
+            => new url('/admin/tool/mucertify/management/index.php', ['contextid' => $fields->contextid]);
+        return $this->create_column('category', new lang_string('category'), column::TYPE_TEXT)
+            ->add_field('contextid', "$alias.contextid")
+            ->add_formatter(
+                'name',
+                fn(cell $cell): string => s($name($cell->get_fields())),
+                fn(cell $cell): export_value => export_value::text($name($cell->get_fields()))
+            )
+            ->add_formatter(
+                'link',
+                function (cell $cell) use ($name, $url): string {
+                    $fields = $cell->get_fields();
+                    $context = \core\context::instance_by_id($fields->contextid);
+                    if (!has_capability('tool/mucertify:view', $context)) {
+                        return s($name($fields));
+                    }
+                    return \html_writer::link($url($fields), s($name($fields)));
+                },
+                fn(cell $cell): export_value => export_value::text($name($cell->get_fields()))
+            )
+            ->set_default_formatter('link');
+    }
+
+    /**
+     * Define number of assignments column, linked to certification users.
+     *
+     * @return column
+     */
+    private function define_assignmentcount_column(): column {
+        $alias = $this->alias;
+        return $this->create_column('assignmentcount', new lang_string('assignments', 'tool_mucertify'), column::TYPE_INTEGER)
+            ->add_field('assignmentcount', "(SELECT COUNT('x')
+                                               FROM {tool_mucertify_assignment} aa
+                                              WHERE aa.certificationid = $alias.id)")
+            ->add_field('id', "$alias.id")
+            ->set_sortable(true)
+            ->add_formatter('link', function (cell $cell): string {
+                $fields = $cell->get_fields();
+                $url = new url('/admin/tool/mucertify/management/certification_users.php', ['id' => $fields->id]);
+                return \html_writer::link($url, (int)$fields->assignmentcount);
+            }, fn(cell $cell): export_value => export_value::number((int)$cell->get_value()))
+            ->set_default_formatter('link');
+    }
+}

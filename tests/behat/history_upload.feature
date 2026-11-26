@@ -84,8 +84,8 @@ Feature: Import of historic certification periods
     And I should see "The user is not assigned."
     And I press "Upload history"
     Then I should see "Imported 2 certification periods, assigned 0 users, skipped 1."
-    And the following should exist in the "reportbuilder-table" table:
-      | First name | Valid from     | Expiration      | Certification status | Source                      |
+    And the following should exist in the mureport:
+      | Full name  | Valid from     | Expiration      | Certification status | Source                      |
       | Student 1  | 1/01/20, 00:00 | 31/03/20, 00:00 | Expired              | Automatic cohort assignment |
       | Student 2  | 1/03/20, 00:00 | 31/05/20, 00:00 | Expired              | Automatic cohort assignment |
     And I should not see "Student 3"
@@ -101,8 +101,8 @@ Feature: Import of historic certification periods
     And I should see "The certification period exists already."
     And I press "Upload history"
     Then I should see "Imported 1 certification periods, assigned 1 users, skipped 2."
-    And the following should exist in the "reportbuilder-table" table:
-      | First name | Valid from     | Expiration      | Certification status | Source                      |
+    And the following should exist in the mureport:
+      | Full name  | Valid from     | Expiration      | Certification status | Source                      |
       | Student 1  | 1/01/20, 00:00 | 31/03/20, 00:00 | Expired              | Automatic cohort assignment |
       | Student 2  | 1/03/20, 00:00 | 31/05/20, 00:00 | Expired              | Automatic cohort assignment |
       | Student 3  | 1/03/19, 00:00 | 31/05/19, 00:00 | Expired              | Manual assignment           |
@@ -118,8 +118,8 @@ Feature: Import of historic certification periods
     And I should see "Ready to import: 1. Skipped: 1. Problems: 0."
     And I press "Upload history"
     Then I should see "Imported 1 certification periods, assigned 1 users, skipped 1."
-    And the following should exist in the "reportbuilder-table" table:
-      | First name | Valid from     | Expiration      | Certification status | Source                      |
+    And the following should exist in the mureport:
+      | Full name  | Valid from     | Expiration      | Certification status | Source                      |
       | Student 1  | 1/01/20, 00:00 | 31/03/20, 00:00 | Expired              | Automatic cohort assignment |
       | Student 2  | 1/03/20, 00:00 | 31/05/20, 00:00 | Expired              | Automatic cohort assignment |
       | Student 3  | 1/03/19, 00:00 | 31/05/19, 00:00 | Expired              | Manual assignment           |
@@ -145,8 +145,8 @@ Feature: Import of historic certification periods
     And I should see "Ready to import: 0. Skipped: 3. Problems: 0."
     And "Upload history" "button" should not exist
     And I press "Cancel"
-    And the following should exist in the "reportbuilder-table" table:
-      | First name | Valid from     | Expiration      | Certification status | Source                      |
+    And the following should exist in the mureport:
+      | Full name  | Valid from     | Expiration      | Certification status | Source                      |
       | Student 1  | 1/01/20, 00:00 | 31/03/20, 00:00 | Expired              | Automatic cohort assignment |
       | Student 2  | 1/03/20, 00:00 | 31/05/20, 00:00 | Expired              | Automatic cohort assignment |
       | Student 3  | 1/03/19, 00:00 | 31/05/19, 00:00 | Expired              | Manual assignment           |
@@ -189,8 +189,8 @@ Feature: Import of historic certification periods
     And I should see "Ready to import: 3. Skipped: 0. Problems: 0."
     And I press "Upload history"
     Then I should see "Imported 3 certification periods, assigned 1 users, skipped 0."
-    And the following should exist in the "reportbuilder-table" table:
-      | First name | Valid from     | Expiration      | Certification status | Source                      |
+    And the following should exist in the mureport:
+      | Full name  | Valid from     | Expiration      | Certification status | Source                      |
       | Student 1  | 2/01/20, 00:00 | 31/03/20, 00:00 | Expired              | Automatic cohort assignment |
       | Student 2  | 1/01/20, 00:00 | 31/05/20, 00:00 | Expired              | Automatic cohort assignment |
       | Student 3  | 1/03/19, 00:00 | 31/05/36, 00:00 | Valid                | Manual assignment           |

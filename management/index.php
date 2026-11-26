@@ -16,6 +16,7 @@
 
 // phpcs:disable moodle.Files.BoilerplateComment.CommentEndedTooSoon
 // phpcs:disable moodle.Files.LineLength.TooLong
+// phpcs:disable moodle.Files.RequireLogin.Missing
 
 /**
  * Certification management interface.
@@ -40,26 +41,14 @@ require('../../../../config.php');
 
 $contextid = optional_param('contextid', 0, PARAM_INT);
 
-if ($contextid) {
-    $context = context::instance_by_id($contextid, MUST_EXIST);
-} else {
-    $context = context_system::instance();
-}
-
-require_login();
-require_capability('tool/mucertify:view', $context);
-
-if ($context->contextlevel == CONTEXT_SYSTEM) {
-    $category = null;
-} else if ($context->contextlevel == CONTEXT_COURSECAT) {
-    $category = $DB->get_record('course_categories', ['id' => $context->instanceid], '*', MUST_EXIST);
-} else {
-    throw new moodle_exception('invalidcontext');
-}
+$report = \tool_mucertify\mureport\system_report\certifications::make_instance($contextid ?: context_system::instance()->id);
+$report->require_access();
+$context = $report->get_context();
 
 $currenturl = new \core\url('/admin/tool/mucertify/management/index.php', ['contextid' => $context->id]);
 
 management::setup_index_page($currenturl, $context);
+$report->init_page($currenturl);
 $PAGE->set_docs_path('https://github.com/mutms/moodle-tool_mucertify/wiki/Certification-management');
 
 $actions = new header_actions(get_string('management_index_actions', 'tool_muprog'));
@@ -77,18 +66,6 @@ if ($actions->has_items()) {
 
 echo $OUTPUT->header();
 
-$report = \core_reportbuilder\system_report_factory::create(
-    \tool_mucertify\reportbuilder\local\systemreports\certifications::class,
-    $context
-);
-echo $OUTPUT->render(new \tool_mulib\output\report_filter_bar($report, pinned: [
-    'certification:fullname' => null,
-    'certification:currentcontextonly' => null,
-    'certification:archived' => null,
-], defaults: [
-    'certification:archived' => ['operator' => \core_reportbuilder\local\filters\boolean_select::NOT_CHECKED],
-]));
-echo $report->output();
-echo $OUTPUT->render(new \tool_mulib\output\report_pager($report));
+echo $OUTPUT->render(new \tool_mureport\output\report_full($report));
 
 echo $OUTPUT->footer();

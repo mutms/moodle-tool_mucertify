@@ -85,8 +85,10 @@ Feature: Manual certification assignment tests
     And I set the following muform fields in the "dialog[open]" "css_element":
       | Users | Student 1, Student 5 |
     And I click on "Assign users" "button" in the "dialog[open]" "css_element"
-    Then "Student 1" row "Source" column of "reportbuilder-table" table should contain "Manual assignment"
-    And "Student 5" row "Source" column of "reportbuilder-table" table should contain "Manual assignment"
+    Then the following should exist in the mureport:
+      | Full name | Source            |
+      | Student 1 | Manual assignment |
+      | Student 5 | Manual assignment |
     And I should not see "Student 2"
     And I should not see "Student 3"
     And I should not see "Student 4"
@@ -95,33 +97,36 @@ Feature: Manual certification assignment tests
     And I set the following muform fields in the "dialog[open]" "css_element":
       | Cohort | Cohort 2 |
     And I click on "Assign users" "button" in the "dialog[open]" "css_element"
-    Then "Student 1" row "Source" column of "reportbuilder-table" table should contain "Manual assignment"
-    And "Student 2" row "Source" column of "reportbuilder-table" table should contain "Manual assignment"
-    And "Student 5" row "Source" column of "reportbuilder-table" table should contain "Manual assignment"
+    Then the following should exist in the mureport:
+      | Full name | Source            |
+      | Student 1 | Manual assignment |
+      | Student 2 | Manual assignment |
+      | Student 5 | Manual assignment |
     And I should not see "Student 3"
     And I should not see "Student 4"
 
-    And I click on "Remove filter: Archived" "button"
-    And I click on "Actions" "link" in the "Student 2" "table_row"
-    When I click on "Archive assignment" "link" in the "Student 2" "table_row"
+    And I remove the "Archived" mureport filter
+    When I click on "Archive assignment" action in the "Student 2" mureport row
     And I click on "Archive assignment" "button" in the "dialog[open]" "css_element"
-    Then "Student 2" row "Archived" column of "reportbuilder-table" table should contain "Yes"
+    Then the following should exist in the mureport:
+      | Full name | Archived |
+      | Student 2 | Yes      |
 
-    And I click on "Actions" "link" in the "Student 2" "table_row"
-    When I click on "Restore assignment" "link" in the "Student 2" "table_row"
+    When I click on "Restore assignment" action in the "Student 2" mureport row
     And I click on "Restore assignment" "button" in the "dialog[open]" "css_element"
-    Then "Student 2" row "Archived" column of "reportbuilder-table" table should contain "No"
+    Then the following should exist in the mureport:
+      | Full name | Archived |
+      | Student 2 | No       |
 
-    And I click on "Actions" "link" in the "Student 2" "table_row"
-    And I click on "Archive assignment" "link" in the "Student 2" "table_row"
+    And I click on "Archive assignment" action in the "Student 2" mureport row
     And I click on "Archive assignment" "button" in the "dialog[open]" "css_element"
-    And I click on "Actions" "link" in the "Student 2" "table_row"
-    When I click on "Delete assignment" "link" in the "Student 2" "table_row"
+    When I click on "Delete assignment" action in the "Student 2" mureport row
     And I click on "Cancel" "button" in the "dialog[open]" "css_element"
-    Then "Student 2" row "Source" column of "reportbuilder-table" table should contain "Manual assignment"
+    Then the following should exist in the mureport:
+      | Full name | Source            |
+      | Student 2 | Manual assignment |
 
-    And I click on "Actions" "link" in the "Student 2" "table_row"
-    When I click on "Delete assignment" "link" in the "Student 2" "table_row"
+    When I click on "Delete assignment" action in the "Student 2" mureport row
     And I click on "Delete assignment" "button" in the "dialog[open]" "css_element"
     Then I should not see "Student 2"
 
@@ -138,7 +143,7 @@ Feature: Manual certification assignment tests
       | timeuntil | 2035-01-01 00:00 |
     And I click on "Assign users" "button" in the "dialog[open]" "css_element"
     And I follow "Student 1"
-    Then the following should exist in the "reportbuilder-table" table:
+    Then the following should exist in the mureport:
       | Certification due | Window closing | Program     | Expiration     | Re-certify automatically | Status  |
       | Not set           | Not set        | Program 003 | 1/01/35, 00:00 | 2/12/34, 00:00           | Pending |
 
@@ -168,7 +173,9 @@ Feature: Manual certification assignment tests
     And I set the following muform fields in the "dialog[open]" "css_element":
       | Users | Student 1 |
     And I click on "Assign users" "button" in the "dialog[open]" "css_element"
-    Then "Student 1" row "Source" column of "reportbuilder-table" table should contain "Manual assignment"
+    Then the following should exist in the mureport:
+      | Full name | Source            |
+      | Student 1 | Manual assignment |
 
     And I am on the "tool_mucertify > All certifications management" page
     And I follow "Certification 001"
@@ -184,7 +191,9 @@ Feature: Manual certification assignment tests
     And I set the following muform fields in the "dialog[open]" "css_element":
       | Users | Student 1 |
     And I click on "Assign users" "button" in the "dialog[open]" "css_element"
-    And "Student 1" row "Source" column of "reportbuilder-table" table should contain "Manual assignment"
+    And the following should exist in the mureport:
+      | Full name | Source            |
+      | Student 1 | Manual assignment |
     And I click on "Switch tenant" "link"
     And I set the following muform fields in the "dialog[open]" "css_element":
       | Tenant      | Tenant 1         |
@@ -198,7 +207,9 @@ Feature: Manual certification assignment tests
     And I set the following muform fields in the "dialog[open]" "css_element":
       | Users | Tenant 1 Student |
     And I click on "Assign users" "button" in the "dialog[open]" "css_element"
-    Then "Tenant 1 Student" row "Source" column of "reportbuilder-table" table should contain "Manual assignment"
+    Then the following should exist in the mureport:
+      | Full name        | Source            |
+      | Tenant 1 Student | Manual assignment |
 
     And I am on the "tool_mucertify > All certifications management" page
     And I follow "Certification 001"
@@ -208,7 +219,9 @@ Feature: Manual certification assignment tests
     And I set the following muform fields in the "dialog[open]" "css_element":
       | Users | Tenant 1 Student |
     And I click on "Assign users" "button" in the "dialog[open]" "css_element"
-    Then "Tenant 1 Student" row "Source" column of "reportbuilder-table" table should contain "Manual assignment"
+    Then the following should exist in the mureport:
+      | Full name        | Source            |
+      | Tenant 1 Student | Manual assignment |
 
   @javascript @_file_upload
   Scenario: Manager may assign users in bulk using csv to certification
@@ -280,7 +293,7 @@ Feature: Manual certification assignment tests
     And I press "Upload assignments"
     Then I should see "Assigned 3 users, skipped 2."
     And I click on "Student 1" "link"
-    And the following should exist in the "reportbuilder-table" table:
+    And the following should exist in the mureport:
       | Program     | Window opening  | Certification due | Window closing | Expiration  |
       | Program 001 | 11/10/24, 00:00	| 2/01/25, 00:00    | 2/07/25, 00:00 | Not set     |
 
@@ -302,12 +315,12 @@ Feature: Manual certification assignment tests
     And I press "Upload assignments"
     And I should see "Assigned 2 users, skipped 0."
     And I follow "Student 1"
-    Then the following should exist in the "reportbuilder-table" table:
+    Then the following should exist in the mureport:
       | Certification due | Window closing | Program     | Expiration     | Re-certify automatically | Status  |
       | Not set           | Not set        | Program 003 | 1/01/35, 00:00 | 2/12/34, 00:00           | Pending |
     And I click on "Users" "link" in the ".secondary-navigation" "css_element"
     And I follow "Student 2"
-    Then the following should exist in the "reportbuilder-table" table:
+    Then the following should exist in the mureport:
       | Certification due | Window closing | Program     | Expiration     | Re-certify automatically | Status  |
       | Not set           | Not set        | Program 003 | Not set        | If expired               | Pending |
 
@@ -331,13 +344,13 @@ Feature: Manual certification assignment tests
     And I follow "Student 1"
     Then I should see "Temporarily valid" in the "Certification status" definition list item
     And I should see "Tuesday, 2 January 2035, 12:00" in the "Temporary certification until" definition list item
-    And the following should exist in the "reportbuilder-table" table:
+    And the following should exist in the mureport:
       | Certification due | Window closing | Program     | Expiration     | Re-certify automatically | Status  |
       | Not set           | Not set        | Program 003 | Not set        | If expired               | Pending |
     And I click on "Users" "link" in the ".secondary-navigation" "css_element"
     And I follow "Student 2"
     Then I should see "Not certified" in the "Certification status" definition list item
-    And the following should exist in the "reportbuilder-table" table:
+    And the following should exist in the mureport:
       | Certification due | Window closing | Program     | Expiration     | Re-certify automatically | Status  |
       | Not set           | Not set        | Program 003 | Not set        | If expired               | Pending |
 

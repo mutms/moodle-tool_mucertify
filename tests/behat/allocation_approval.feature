@@ -123,29 +123,30 @@ Feature: Certification approval assignments tests
     And I am on the "Cat 1" "tool_mucertify > Certification management" page
     And I follow "Certification 001"
     And I click on "Requests" "link" in the ".secondary-navigation" "css_element"
-    And I click on "Actions" "link" in the "Student 2" "table_row"
-    And I click on "Approve request" "link" in the "Student 2" "table_row"
+    And I click on "Approve request" action in the "Student 2" mureport row
     And I click on "Approve request" "button" in the "dialog[open]" "css_element"
     Then I should not see "Student 2"
     And I follow "Users"
-    And "Student 2" row "Source" column of "reportbuilder-table" table should contain "Requests with approval"
+    And the following should exist in the mureport:
+      | Full name | Source                 |
+      | Student 2 | Requests with approval |
     And I log out
 
     When I log in as "student2"
     And I am on the "tool_mucertify > My certifications" page
-    And "Certification 001" row "Certification status" column of "reportbuilder-table" table should contain "Not certified"
+    And the following should exist in the mureport:
+      | Certification name | Certification status |
+      | Certification 001  | Not certified        |
     And I log out
 
     When I log in as "allocator"
     And I am on the "Cat 1" "tool_mucertify > Certification management" page
     And I follow "Certification 001"
     And I follow "Users"
-    And I click on "Remove filter: Archived" "button"
-    And I click on "Actions" "link" in the "Student 2" "table_row"
-    And I click on "Archive assignment" "link" in the "Student 2" "table_row"
+    And I remove the "Archived" mureport filter
+    And I click on "Archive assignment" action in the "Student 2" mureport row
     And I click on "Archive assignment" "button" in the "dialog[open]" "css_element"
-    And I click on "Actions" "link" in the "Student 2" "table_row"
-    And I click on "Delete assignment" "link" in the "Student 2" "table_row"
+    And I click on "Delete assignment" action in the "Student 2" mureport row
     And I click on "Delete assignment" "button" in the "dialog[open]" "css_element"
     Then I should not see "Student 2"
     And I log out
@@ -181,8 +182,7 @@ Feature: Certification approval assignments tests
     And I am on the "Cat 1" "tool_mucertify > Certification management" page
     And I follow "Certification 001"
     And I click on "Requests" "link" in the ".secondary-navigation" "css_element"
-    And I click on "Actions" "link" in the "Student 2" "table_row"
-    And I click on "Reject request" "link" in the "Student 2" "table_row"
+    And I click on "Reject request" action in the "Student 2" mureport row
     And I set the following muform fields in the "dialog[open]" "css_element":
       | Rejection reason | Sorry mate! |
     And I click on "Reject request" "button" in the "dialog[open]" "css_element"
@@ -201,8 +201,7 @@ Feature: Certification approval assignments tests
     And I am on the "Cat 1" "tool_mucertify > Certification management" page
     And I follow "Certification 001"
     And I click on "Requests" "link" in the ".secondary-navigation" "css_element"
-    And I click on "Actions" "link" in the "Student 2" "table_row"
-    And I click on "Delete request" "link" in the "Student 2" "table_row"
+    And I click on "Delete request" action in the "Student 2" mureport row
     And I click on "Delete request" "button" in the "dialog[open]" "css_element"
     Then I should not see "Student 2"
     And I log out

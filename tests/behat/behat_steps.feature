@@ -49,6 +49,7 @@ Feature: Certifications navigation behat steps test
       | Certification 002 | CR2      | Cat 2    | 0        |
       | Certification 003 | CR3      |          | 1        |
 
+  @javascript
   Scenario: Admin navigates to certifications via behat step
     Given I log in as "admin"
 
@@ -78,20 +79,7 @@ Feature: Certifications navigation behat steps test
     Then I should see "Certification 000"
     And I should see "Certification 001"
     And I should see "Certification 002"
-    And I click on "Remove filter: Archived" "button"
-    And I should see "Certification 003"
-
-    When I click on "Exclude sub-categories: Any" "button"
-    And I click on "Yes" "button" in the ".tool_mulib-report-filter-bar-popover" "css_element"
-    Then I should see "Certification 000"
-    And I should not see "Certification 001"
-    And I should not see "Certification 002"
-    And I should see "Certification 003"
-
-    When I click on "Remove filter: Exclude sub-categories" "button"
-    Then I should see "Certification 000"
-    And I should see "Certification 001"
-    And I should see "Certification 002"
+    And I remove the "Archived" mureport filter
     And I should see "Certification 003"
 
     When I follow "Cat 1"
@@ -100,6 +88,7 @@ Feature: Certifications navigation behat steps test
     And I should not see "Certification 002"
     And I should not see "Certification 003"
 
+  @javascript
   Scenario: Full manager navigates to certifications via behat step
     Given I log in as "manager1"
 
@@ -121,6 +110,7 @@ Feature: Certifications navigation behat steps test
     And I should not see "Certification 002"
     And I should not see "Certification 003"
 
+  @javascript
   Scenario: Category manager navigates to certifications via behat step
     Given I log in as "manager2"
 
@@ -130,6 +120,7 @@ Feature: Certifications navigation behat steps test
     And I should not see "Certification 002"
     And I should not see "Certification 003"
 
+  @javascript
   Scenario: Full viewer navigates to certifications via behat step
     Given I log in as "viewer1"
 
@@ -163,6 +154,7 @@ Feature: Certifications navigation behat steps test
     And I should not see "Certification 002"
     And I should not see "Certification 003"
 
+  @javascript
   Scenario: Category viewer navigates to certifications via behat step
     Given I log in as "viewer2"
 
@@ -172,13 +164,15 @@ Feature: Certifications navigation behat steps test
     And I should not see "Certification 002"
     And I should not see "Certification 003"
 
+  @javascript
   Scenario: Student navigates to My certifications via behat step
     Given I log in as "student1"
 
     When I am on the "tool_mucertify > My certifications" page
     Then I should see "My certifications"
-    And I should see "No assigned certifications found."
+    And I should see "Nothing to display"
 
+  @javascript
   Scenario: User viewer navigates to User certifications via behat step
     Given I log in as "viewer3"
     And the following "tool_mucertify > certification_assignments" exist:
@@ -187,11 +181,12 @@ Feature: Certifications navigation behat steps test
       | Certification 002 | student1 |
 
     When I am on the "student1" "tool_mucertify > User certifications" page
-    Then the following should exist in the "reportbuilder-table" table:
+    Then the following should exist in the mureport:
       | Certification name   | Certification ID | Certification status |
       | Certification 001    | CR1              | Not certified        |
       | Certification 002    | CR2              | Not certified        |
 
+  @javascript
   Scenario: User viewer navigates to User certifications via UI
     Given I log in as "viewer3"
     And the following "tool_mucertify > certification_assignments" exist:
@@ -201,7 +196,7 @@ Feature: Certifications navigation behat steps test
 
     When I am on the "student1" "user > profile" page
     And I follow "Certifications"
-    Then the following should exist in the "reportbuilder-table" table:
+    Then the following should exist in the mureport:
       | Certification name   | Certification ID | Certification status |
       | Certification 001    | CR1              | Not certified        |
       | Certification 002    | CR2              | Not certified        |

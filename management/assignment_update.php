@@ -88,7 +88,7 @@ if ($data = $form->get_data()) {
     $record->id = $assignment->id;
     $sourceclass::assignment_update($record);
     $form->get_element('customfields')->save($assignment->id);
-    $handler->submitted($returnurl);
+    $handler->submitted($returnurl, ['changed' => 'rows']);
 }
 
 $handler->render($form);

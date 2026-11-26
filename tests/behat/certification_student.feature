@@ -117,7 +117,7 @@ Feature: Certification completion by students tests
     And I am on the "tool_mucertify > All certifications management" page
     And I follow "Certification 001"
     And I click on "Users" "link" in the ".secondary-navigation" "css_element"
-    Then the following should exist in the "reportbuilder-table" table:
-      | First name  | Certification status |
+    Then the following should exist in the mureport:
+      | Full name  | Certification status |
       | Student 1   | Valid                |
       | Student 2   | Not certified        |

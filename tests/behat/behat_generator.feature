@@ -34,6 +34,7 @@ Feature: Certifications behat generator tests
       | user     | role          | contextlevel | reference |
       | viewer1  | cviewer       | System       |           |
 
+  @javascript
   Scenario: Certifications Behat generator creates certifications
     When the following "tool_mucertify > certifications" exist:
       | fullname          | idnumber | category | program1 | sources          |
@@ -43,12 +44,11 @@ Feature: Certifications behat generator tests
 
     And I log in as "viewer1"
     And I am on the "tool_mucertify > All certifications management" page
-    Then "Certification 000" row "Category" column of "reportbuilder-table" table should contain "System"
-    And "Certification 000" row "Certification ID" column of "reportbuilder-table" table should contain "CT0"
-    And "Certification 001" row "Category" column of "reportbuilder-table" table should contain "Cat 1"
-    And "Certification 001" row "Certification ID" column of "reportbuilder-table" table should contain "CT1"
-    And "Certification 002" row "Category" column of "reportbuilder-table" table should contain "Cat 2"
-    And "Certification 002" row "Certification ID" column of "reportbuilder-table" table should contain "CT2"
+    Then the following should exist in the mureport:
+      | Certification name | Category | Certification ID |
+      | Certification 000  | System   | CT0              |
+      | Certification 001  | Cat 1    | CT1              |
+      | Certification 002  | Cat 2    | CT2              |
 
     And I follow "Certification 000"
     And I should see "Certification 000" in the "Certification name" definition list item
@@ -93,6 +93,7 @@ Feature: Certifications behat generator tests
     And I should see "Inactive" in the "Self assignment" definition list item
     And I should see "Inactive" in the "Requests with approval" definition list item
 
+  @javascript
   Scenario: Certifications Behat generator creates certification assignments
     Given the following "tool_mucertify > certifications" exist:
       | fullname          | idnumber | program1 |
@@ -109,7 +110,7 @@ Feature: Certifications behat generator tests
     And I am on the "tool_mucertify > All certifications management" page
     And I follow "Certification 000"
     And I follow "Users"
-    Then the following should exist in the "reportbuilder-table" table:
-      | First name | Valid from | Expiration | Certification status | Source            | Archived |
+    Then the following should exist in the mureport:
+      | Full name  | Valid from | Expiration | Certification status | Source            | Archived |
       | Student 1  |            |            | Not certified        | Manual assignment | No       |
       | Student 2  | 1/01/25    | 10/03/25   | Expired              | Manual assignment | No       |

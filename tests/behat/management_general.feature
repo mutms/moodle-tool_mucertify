@@ -63,8 +63,9 @@ Feature: General Certification management tests
     And I should see "System" in the "Category" definition list item
     And I should see "No" in the "Archived" definition list item
     And I am on the "tool_mucertify > All certifications management" page
-    And "Certification 001" row "Category" column of "reportbuilder-table" table should contain "System"
-    And "Certification 001" row "Certification ID" column of "reportbuilder-table" table should contain "CT01"
+    And the following should exist in the mureport:
+      | Certification name | Category | Certification ID |
+      | Certification 001  | System   | CT01             |
 
   @javascript @_file_upload
   Scenario: Manager may create a new certifications with all settings
@@ -92,7 +93,9 @@ Feature: General Certification management tests
     And I should see "Mathematics" in the "Tags" definition list item
     And I should see "Algebra" in the "Tags" definition list item
     And I am on the "Cat 2" "tool_mucertify > Certification management" page
-    And "CT01" row "Assignments" column of "reportbuilder-table" table should contain "0"
+    And the following should exist in the mureport:
+      | Certification ID | Assignments |
+      | CT01             | 0           |
 
   @javascript
   Scenario: Manager may update basic general settings of an existing certification
@@ -227,4 +230,4 @@ Feature: General Certification management tests
 
     When I click on "Delete certification" action from "Certification actions" dropdown
     And I click on "Delete certification" "button" in the "dialog[open]" "css_element"
-    Then I should see "No certifications found"
+    Then I should see "Nothing to display"

@@ -74,7 +74,7 @@ if ($form->is_cancelled()) {
 
 if ($data = $form->get_data()) {
     $sourceclass::assignment_archive($assignment->id);
-    $handler->submitted($returnurl);
+    $handler->submitted($returnurl, ['changed' => 'rows']);
 }
 
 $handler->render($form);

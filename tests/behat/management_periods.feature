@@ -232,7 +232,7 @@ Feature: Certification periods settings management tests
       | timefrom        | 2023-10-05 09:00 |
       | timeuntil       | 2024-10-05 09:00 |
     And I click on "Add period" "button" in the "dialog[open]" "css_element"
-    Then the following should exist in the "reportbuilder-table" table:
+    Then the following should exist in the mureport:
       | Program     | Window opening | Window closing | Expiration         | Re-certify automatically |
       | Program 001 | 5/10/22        | Not set        | Not set            | No                       |
       | Program 002 | 5/10/23        | Not set        | 5/10/24            | 5/09/24                  |
@@ -262,7 +262,7 @@ Feature: Certification periods settings management tests
     And I click on "Override period dates" "button" in the "dialog[open]" "css_element"
     And I press "Delete period"
     And I click on "Delete period" "button" in the "dialog[open]" "css_element"
-    Then the following should exist in the "reportbuilder-table" table:
+    Then the following should exist in the mureport:
       | Program     | Window opening | Window closing | Expiration                 | Re-certify automatically |
       | Program 002 | 5/10/23        | Not set        | 5/10/24                    | 5/09/24                  |
     And I should not see "Program 001"
@@ -313,7 +313,7 @@ Feature: Certification periods settings management tests
     When I set the following muform fields in the "dialog[open]" "css_element":
       | Program         | Program 002      |
     And I click on "Add period" "button" in the "dialog[open]" "css_element"
-    Then the following should exist in the "reportbuilder-table" table:
+    Then the following should exist in the mureport:
       | Program     | Window opening |
       | Program 001 | 5/10/22        |
       | Program 002 | 5/10/23        |

@@ -78,14 +78,12 @@ Feature: Automatic cohorts assignments certification tests
     And I click on "Update" "button" in the "dialog[open]" "css_element"
     Then I should see "Active (Cohort 1, Cohort 2)" in the "Automatic cohort assignment" definition list item
     And I click on "Users" "link" in the ".secondary-navigation" "css_element"
-    And "Student 1" row "Source" column of "reportbuilder-table" table should contain "Automatic cohort assignment"
-    And "Student 1" row "Certification status" column of "reportbuilder-table" table should contain "Not certified"
-    And "Student 2" row "Source" column of "reportbuilder-table" table should contain "Automatic cohort assignment"
-    And "Student 2" row "Certification status" column of "reportbuilder-table" table should contain "Not certified"
-    And "Student 3" row "Source" column of "reportbuilder-table" table should contain "Automatic cohort assignment"
-    And "Student 3" row "Certification status" column of "reportbuilder-table" table should contain "Not certified"
-    And "Student 4" row "Source" column of "reportbuilder-table" table should contain "Automatic cohort assignment"
-    And "Student 4" row "Certification status" column of "reportbuilder-table" table should contain "Not certified"
+    And the following should exist in the mureport:
+      | Full name | Source                      | Certification status |
+      | Student 1 | Automatic cohort assignment | Not certified        |
+      | Student 2 | Automatic cohort assignment | Not certified        |
+      | Student 3 | Automatic cohort assignment | Not certified        |
+      | Student 4 | Automatic cohort assignment | Not certified        |
     And I should not see "Student 5"
 
     When I click on "Assignment settings" "link" in the ".secondary-navigation" "css_element"
@@ -95,15 +93,13 @@ Feature: Automatic cohorts assignments certification tests
     And I click on "Update" "button" in the "dialog[open]" "css_element"
     Then I should see "Active (Cohort 1)" in the "Automatic cohort assignment" definition list item
     And I click on "Users" "link" in the ".secondary-navigation" "css_element"
-    And I click on "Remove filter: Archived" "button"
-    And "Student 1" row "Source" column of "reportbuilder-table" table should contain "Automatic cohort assignment"
-    And "Student 1" row "Certification status" column of "reportbuilder-table" table should contain "Not certified"
-    And "Student 2" row "Source" column of "reportbuilder-table" table should contain "Automatic cohort assignment"
-    And "Student 2" row "Certification status" column of "reportbuilder-table" table should contain "Not certified"
-    And "Student 3" row "Source" column of "reportbuilder-table" table should contain "Automatic cohort assignment"
-    And "Student 3" row "Certification status" column of "reportbuilder-table" table should contain "Not certified"
-    And "Student 4" row "Source" column of "reportbuilder-table" table should contain "Automatic cohort assignment"
-    And "Student 4" row "Certification status" column of "reportbuilder-table" table should contain "Archived"
+    And I remove the "Archived" mureport filter
+    And the following should exist in the mureport:
+      | Full name | Source                      | Certification status |
+      | Student 1 | Automatic cohort assignment | Not certified        |
+      | Student 2 | Automatic cohort assignment | Not certified        |
+      | Student 3 | Automatic cohort assignment | Not certified        |
+      | Student 4 | Automatic cohort assignment | Archived             |
     And I should not see "Student 5"
 
     When I click on "Assignment settings" "link" in the ".secondary-navigation" "css_element"
@@ -113,19 +109,15 @@ Feature: Automatic cohorts assignments certification tests
     And I click on "Update" "button" in the "dialog[open]" "css_element"
     And I should see "Active (Cohort 4)" in the "Automatic cohort assignment" definition list item
     And I click on "Users" "link" in the ".secondary-navigation" "css_element"
-    And I click on "Actions" "link" in the "Student 1" "table_row"
-    And I click on "Delete assignment" "link" in the "Student 1" "table_row"
+    And I click on "Delete assignment" action in the "Student 1" mureport row
     And I click on "Delete assignment" "button" in the "dialog[open]" "css_element"
-    And I click on "Actions" "link" in the "Student 2" "table_row"
-    And I click on "Delete assignment" "link" in the "Student 2" "table_row"
+    And I click on "Delete assignment" action in the "Student 2" mureport row
     And I click on "Delete assignment" "button" in the "dialog[open]" "css_element"
-    And I click on "Actions" "link" in the "Student 3" "table_row"
-    And I click on "Delete assignment" "link" in the "Student 3" "table_row"
+    And I click on "Delete assignment" action in the "Student 3" mureport row
     And I click on "Delete assignment" "button" in the "dialog[open]" "css_element"
-    And I click on "Actions" "link" in the "Student 4" "table_row"
-    And I click on "Delete assignment" "link" in the "Student 4" "table_row"
+    And I click on "Delete assignment" action in the "Student 4" mureport row
     And I click on "Delete assignment" "button" in the "dialog[open]" "css_element"
-    And I should see "No certification assignments found"
+    And I should see "Nothing to display"
     And I click on "Assignment settings" "link" in the ".secondary-navigation" "css_element"
     And I click on "Update Automatic cohort assignment" "link"
     And I set the following muform fields in the "dialog[open]" "css_element":

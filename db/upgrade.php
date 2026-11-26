@@ -196,5 +196,23 @@ function xmldb_tool_mucertify_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026100853, 'tool', 'mucertify');
     }
 
+    if ($oldversion < 2026112653) {
+        $classes = [
+            'tool_mucertify\\reportbuilder\\local\\systemreports\\certifications',
+            'tool_mucertify\\reportbuilder\\local\\systemreports\\assignments',
+            'tool_mucertify\\reportbuilder\\local\\systemreports\\assignments_user',
+            'tool_mucertify\\reportbuilder\\local\\systemreports\\assignment_periods',
+            'tool_mucertify\\reportbuilder\\local\\systemreports\\assignment_periods_user',
+            'tool_mucertify\\reportbuilder\\local\\systemreports\\requests',
+        ];
+        foreach ($classes as $classname) {
+            foreach (\core_reportbuilder\local\models\report::get_records(['source' => $classname]) as $report) {
+                $report->delete();
+            }
+        }
+
+        upgrade_plugin_savepoint(true, 2026112653, 'tool', 'mucertify');
+    }
+
     return true;
 }

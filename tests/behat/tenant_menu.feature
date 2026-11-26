@@ -28,4 +28,4 @@ Feature: Certification management in Tenant management primary menu
 
     When I click on "Tenant management" "link" in the ".primary-navigation" "css_element"
     And I click on "Certification management" "link" in the ".primary-navigation" "css_element"
-    Then I should see "No certifications found"
+    Then I should see "Nothing to display"
